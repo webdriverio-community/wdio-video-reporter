@@ -23,9 +23,6 @@ var config = {
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',
 
-  // Save raw files after videos are rendered
-  saveRaw: false,
-
   // Should an allure report be updated with videos
   // There is a bug, or just bad design really, where
   // Allure is needed to make sure the videos have 
@@ -305,8 +302,6 @@ class Video extends WdioReporter {
         fs.copySync(videoFilePath, filepath);
       });
     }
-
-    if (!config.saveRaw) { fs.removeSync(path.resolve(config.outputDir, config.rawPath)); }
 
     this.write(`\n\nDone!\n`);
   }
