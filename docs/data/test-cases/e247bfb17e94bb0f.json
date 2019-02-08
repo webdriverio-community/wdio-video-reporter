@@ -12,13 +12,13 @@
   "descriptionHtml" : "",
   "status" : "failed",
   "statusMessage" : "Expected '50' to be 30.",
-  "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
+  "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
   "flaky" : false,
   "beforeStages" : [ ],
   "testStage" : {
     "status" : "failed",
     "statusMessage" : "Expected '50' to be 30.",
-    "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
+    "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
     "steps" : [ ],
     "attachments" : [ {
       "uid" : "375120cc176da6c5",

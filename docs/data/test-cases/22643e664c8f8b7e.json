@@ -12,13 +12,13 @@
   "descriptionHtml" : "",
   "status" : "failed",
   "statusMessage" : "Expected false to be true.",
-  "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
+  "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
   "flaky" : false,
   "beforeStages" : [ ],
   "testStage" : {
     "status" : "failed",
     "statusMessage" : "Expected false to be true.",
-    "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
+    "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
     "steps" : [ ],
     "attachments" : [ {
       "uid" : "ccc30e3719573e54",
