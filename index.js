@@ -156,8 +156,6 @@ export default class Video extends WdioReporter {
       });
     }
 
-    if (!config.saveRaw) { fs.removeSync(path.resolve(config.outputDir, config.rawPath)); }
-
     this.write(`\n\nDone!\n`);
   }
 };
