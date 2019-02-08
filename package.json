@@ -1,0 +1,36 @@
+{
+  "name": "wdio-video-reporter",
+  "version": "1.0.0",
+  "description": "Makes videos of failed tests and has optional allure integration (requires Docker on hub-host)",
+  "main": "dist/wdio-video-reporter.js",
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "dev": "rollup -c -w rollup.config.js",
+    "lint": "eslint --ext .js --ignore-path .gitignore lib",
+    "test": "cd test; yarn; echo 'Run yarn test in ./demo'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/presidenten/wdio-video-reporter.git"
+  },
+  "author": "Johan Hernefeldt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/presidenten/wdio-video-reporter/issues"
+  },
+  "homepage": "https://github.com/presidenten/wdio-video-reporter#readme",
+  "dependencies": {
+    "@wdio/allure-reporter": "^5.4.9",
+    "@wdio/reporter": "^5.4.15",
+    "fs-extra": "^6.0.1",
+    "mkdirp": "^0.5.1",
+    "system-sleep": "^1.3.6"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.13.0",
+    "rollup": "^1.1.2",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-pluginutils": "^2.3.3"
+  }
+}
