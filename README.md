@@ -10,14 +10,14 @@ https://presidenten.github.io/wdio-video-reporter/
 
 Pros:
 - Nice videos in your allure reports. Yey.
-- Nice humanspeed videos, even though tests are fast.
+- Nice human speed videos, even though tests are fast.
 - Works with selenium grid
 - Works with all webdrivers that support `saveScreenshot`
 - Tested on desktop browser Chrome, Firefox, Safari
 - Tested on real IOS and Android devices through [Appium](http://appium.io/docs/en/about-appium/getting-started/)
 
 Cons:
-- Screenshots makes the tests slower. This is mitigated by carefully choosing which jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
+- Screenshots makes the tests a little bit slower, but this is mostly mitigated by carefully choosing which jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
 
