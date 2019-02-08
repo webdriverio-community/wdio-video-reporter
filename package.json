@@ -1,7 +1,7 @@
 {
   "name": "wdio-video-reporter",
   "version": "1.1.0",
-  "description": "Makes videos of failed tests and has optional allure integration (requires Docker on hub-host)",
+  "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.js",
   "scripts": {
     "build": "rollup -c rollup.config.js",
