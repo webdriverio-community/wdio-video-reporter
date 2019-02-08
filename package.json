@@ -1,12 +1,12 @@
 {
   "name": "wdio-video-reporter",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Makes videos of failed tests and has optional allure integration (requires Docker on hub-host)",
   "main": "dist/wdio-video-reporter.js",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "dev": "rollup -c -w rollup.config.js",
-    "lint": "eslint --ext .js --ignore-path .gitignore lib",
+    "lint": "eslint --ext .js --ignore-path .gitignore lib index.js",
     "test": "cd test; yarn; echo 'Run yarn test in ./demo'"
   },
   "repository": {

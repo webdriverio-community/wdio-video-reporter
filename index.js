@@ -23,7 +23,7 @@ export default class Video extends WdioReporter {
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
   
     // Debug
-    config.excludedActions.push(...(options.addExcludedActions || []));
+    config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
     this.videos = [];
@@ -45,7 +45,6 @@ export default class Video extends WdioReporter {
       .filter(r => r === 'allure')
       .pop(); 
     config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
-    config.saveRaw = config.debugMode;
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
   }
@@ -53,17 +52,17 @@ export default class Video extends WdioReporter {
   /**
    * Save screenshot or add not available image movie stills
    */
-  onAfterCommand (jsonWireMsg,a,b) {
+  onAfterCommand (jsonWireMsg) {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command[0] || 'undefined';
     helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
     // Filter out non-action commands and keep only last action command
-    if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName)) {
+    if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
       return;
     }
     
     const filename = this.frameNr.toString().padStart(4, '0') + '.png';
-    const filePath = path.resolve(this.recordingPath, filename)
+    const filePath = path.resolve(this.recordingPath, filename);
     
     try {
       browser.saveScreenshot(filePath);
@@ -123,7 +122,7 @@ export default class Video extends WdioReporter {
         allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
       }
 
-      const command = `docker container run --rm -d -v ${this.recordingPath}:/in -v ${path.resolve(config.outputDir)}:/out -e VIDEONAME=${this.testname} -e SLOWDOWN=${config.videoSlowdownMultiplier} presidenten/ffmpeg-pngs-to-mp4:1.1.0-ffmpeg4.0`;
+      const command = `docker container run --rm -d -v ${this.recordingPath}:/in -v ${path.resolve(config.outputDir)}:/out -e VIDEONAME=${this.testname} -e SLOWDOWN=${config.videoSlowdownMultiplier} presidenten/ffmpeg-pngs-to-mp4:1.1.0-ffmpeg4.0`; // eslint-disable-line
       helpers.debugLog(`Docker command: ${command}\n`);
       spawn(command, {
         stdio: 'ignore',
@@ -158,4 +157,4 @@ export default class Video extends WdioReporter {
 
     this.write(`\n\nDone!\n`);
   }
-};
+}
