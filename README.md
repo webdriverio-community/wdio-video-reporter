@@ -10,7 +10,7 @@ https://presidenten.github.io/wdio-video-reporter/
 
 Pros:
 - Nice videos in your allure reports. Yey.
-- Slows down video, even though tests are fast.
+- Nice humanspeed videos, even though tests are fast.
 - Works with selenium grid
 - Works with all webdrivers that support `saveScreenshot`
 - Tested on desktop browser Chrome, Firefox, Safari
