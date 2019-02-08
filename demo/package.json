@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pretest": "rimraf _results_/*; mkdirp _results_/allure-raw",
-    "test": "wdio wdio.conf.js",
     "lint": "eslint --ext .js specs",
-    "allure": "allure generate _results_/allure-raw -o _results_/allure --clean",
-    "postallure": "open http://localhost:8080/index.html && autoreload-server _results_/allure"
+    "pree2e": "rimraf _results_/*; mkdirp _results_/allure-raw",
+    "e2e": "wdio wdio.conf.js",
+    "report": "allure generate _results_/allure-raw -o _results_/allure --clean",
+    "postreport": "open http://localhost:8080/index.html && autoreload-server _results_/allure"
   },
   "author": "",
   "license": "MIT",

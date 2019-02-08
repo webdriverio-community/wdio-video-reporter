@@ -5,6 +5,8 @@ This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates v
 
 `wdio-video-reporter` listens on the [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) and grabs a screenshot on the messagees that are "actions". When the test is doen it uses `ffmpeg` compiled in a `Docker` image to stitch these together to one `mp4` per test case. Docker is used for multi platform support.
 
+Videos ends up in `wdio.config.outputDir`
+
 Pros:
 - Nice videos in your allure reports. Yey.
 - Works with selenium grid
@@ -98,3 +100,10 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-0-0-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 
+Contributing
+============
+
+Fork, make changes, lint, build, and verify that changes work as they should, then make a PR.
+
+The demo folder includes the built version of the library. 
+It is possible to run a small set of tests which contains a few that passes and fails to verify the behaviour of the library.

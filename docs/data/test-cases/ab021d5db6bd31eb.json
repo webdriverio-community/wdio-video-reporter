@@ -1,0 +1,57 @@
+{
+  "uid" : "ab021d5db6bd31eb",
+  "name" : "should be able to edit input (should pass)",
+  "fullName" : "User interactions.should be able to edit input (should pass)",
+  "historyId" : "2ab1c9f4063d98857652bf00fe2f4a60",
+  "time" : {
+    "start" : 1549633038282,
+    "stop" : 1549633043547,
+    "duration" : 5265
+  },
+  "description" : "",
+  "descriptionHtml" : "",
+  "status" : "passed",
+  "flaky" : false,
+  "beforeStages" : [ ],
+  "afterStages" : [ ],
+  "labels" : [ {
+    "name" : "framework",
+    "value" : "wdio"
+  }, {
+    "name" : "language",
+    "value" : "javascript"
+  }, {
+    "name" : "thread",
+    "value" : "0-0"
+  }, {
+    "name" : "suite",
+    "value" : "User interactions"
+  }, {
+    "name" : "testClass",
+    "value" : "User interactions"
+  }, {
+    "name" : "testMethod",
+    "value" : "should be able to edit input (should pass)"
+  }, {
+    "name" : "package",
+    "value" : "User interactions"
+  }, {
+    "name" : "resultFormat",
+    "value" : "allure1"
+  } ],
+  "parameters" : [ {
+    "name" : "browser",
+    "value" : "chrome"
+  } ],
+  "links" : [ ],
+  "hidden" : false,
+  "retry" : false,
+  "extra" : {
+    "severity" : "normal",
+    "retries" : [ ],
+    "categories" : [ ],
+    "tags" : [ ]
+  },
+  "source" : "ab021d5db6bd31eb.json",
+  "parameterValues" : [ "chrome" ]
+}

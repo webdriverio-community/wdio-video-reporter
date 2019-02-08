@@ -1,0 +1,81 @@
+[ {
+  "uid" : "e247bfb17e94bb0f",
+  "name" : "should be able to move slider (fails by design to gen video)",
+  "time" : {
+    "start" : 1549633047311,
+    "stop" : 1549633051545,
+    "duration" : 4234
+  },
+  "status" : "failed",
+  "severity" : "normal"
+}, {
+  "uid" : "1d750af4500eb7a2",
+  "name" : "should be able to multi-select in dropdown (fails by design to gen video)",
+  "time" : {
+    "start" : 1549633046581,
+    "stop" : 1549633050424,
+    "duration" : 3843
+  },
+  "status" : "failed",
+  "severity" : "normal"
+}, {
+  "uid" : "b1df5e2f8c3e92cc",
+  "name" : "should be able to move slider (fails by design to gen video)",
+  "time" : {
+    "start" : 1549633043549,
+    "stop" : 1549633046571,
+    "duration" : 3022
+  },
+  "status" : "failed",
+  "severity" : "normal"
+}, {
+  "uid" : "ed46cf56384f1a5f",
+  "name" : "should handle modals blocking screenshots",
+  "time" : {
+    "start" : 1549633056082,
+    "stop" : 1549633057743,
+    "duration" : 1661
+  },
+  "status" : "passed",
+  "severity" : "normal"
+}, {
+  "uid" : "cd64293a7e9dae23",
+  "name" : "should handle modals blocking screenshots",
+  "time" : {
+    "start" : 1549633050445,
+    "stop" : 1549633053660,
+    "duration" : 3215
+  },
+  "status" : "passed",
+  "severity" : "normal"
+}, {
+  "uid" : "22643e664c8f8b7e",
+  "name" : "should be able to multi-select in dropdown (fails by design to gen video)",
+  "time" : {
+    "start" : 1549633051555,
+    "stop" : 1549633056063,
+    "duration" : 4508
+  },
+  "status" : "failed",
+  "severity" : "normal"
+}, {
+  "uid" : "ab021d5db6bd31eb",
+  "name" : "should be able to edit input (should pass)",
+  "time" : {
+    "start" : 1549633038282,
+    "stop" : 1549633043547,
+    "duration" : 5265
+  },
+  "status" : "passed",
+  "severity" : "normal"
+}, {
+  "uid" : "31767c8a354a7406",
+  "name" : "should be able to edit input (should pass)",
+  "time" : {
+    "start" : 1549633039643,
+    "stop" : 1549633047309,
+    "duration" : 7666
+  },
+  "status" : "passed",
+  "severity" : "normal"
+} ]

@@ -1,0 +1,101 @@
+{
+  "uid" : "b1a8273437954620fa374b796ffaacdd",
+  "name" : "behaviors",
+  "children" : [ {
+    "name" : "should be able to edit input (should pass)",
+    "uid" : "ab021d5db6bd31eb",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "passed",
+    "time" : {
+      "start" : 1549633038282,
+      "stop" : 1549633043547,
+      "duration" : 5265
+    },
+    "flaky" : false,
+    "parameters" : [ "chrome" ]
+  }, {
+    "name" : "should be able to edit input (should pass)",
+    "uid" : "31767c8a354a7406",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "passed",
+    "time" : {
+      "start" : 1549633039643,
+      "stop" : 1549633047309,
+      "duration" : 7666
+    },
+    "flaky" : false,
+    "parameters" : [ "firefox" ]
+  }, {
+    "name" : "should be able to move slider (fails by design to gen video)",
+    "uid" : "b1df5e2f8c3e92cc",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "failed",
+    "time" : {
+      "start" : 1549633043549,
+      "stop" : 1549633046571,
+      "duration" : 3022
+    },
+    "flaky" : false,
+    "parameters" : [ "chrome" ]
+  }, {
+    "name" : "should be able to multi-select in dropdown (fails by design to gen video)",
+    "uid" : "1d750af4500eb7a2",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "failed",
+    "time" : {
+      "start" : 1549633046581,
+      "stop" : 1549633050424,
+      "duration" : 3843
+    },
+    "flaky" : false,
+    "parameters" : [ "chrome" ]
+  }, {
+    "name" : "should be able to move slider (fails by design to gen video)",
+    "uid" : "e247bfb17e94bb0f",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "failed",
+    "time" : {
+      "start" : 1549633047311,
+      "stop" : 1549633051545,
+      "duration" : 4234
+    },
+    "flaky" : false,
+    "parameters" : [ "firefox" ]
+  }, {
+    "name" : "should handle modals blocking screenshots",
+    "uid" : "cd64293a7e9dae23",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "passed",
+    "time" : {
+      "start" : 1549633050445,
+      "stop" : 1549633053660,
+      "duration" : 3215
+    },
+    "flaky" : false,
+    "parameters" : [ "chrome" ]
+  }, {
+    "name" : "should be able to multi-select in dropdown (fails by design to gen video)",
+    "uid" : "22643e664c8f8b7e",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "failed",
+    "time" : {
+      "start" : 1549633051555,
+      "stop" : 1549633056063,
+      "duration" : 4508
+    },
+    "flaky" : false,
+    "parameters" : [ "firefox" ]
+  }, {
+    "name" : "should handle modals blocking screenshots",
+    "uid" : "ed46cf56384f1a5f",
+    "parentUid" : "b1a8273437954620fa374b796ffaacdd",
+    "status" : "passed",
+    "time" : {
+      "start" : 1549633056082,
+      "stop" : 1549633057743,
+      "duration" : 1661
+    },
+    "flaky" : false,
+    "parameters" : [ "firefox" ]
+  } ]
+}

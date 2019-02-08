@@ -1,0 +1,81 @@
+{
+  "uid" : "b1df5e2f8c3e92cc",
+  "name" : "should be able to move slider (fails by design to gen video)",
+  "fullName" : "User interactions.should be able to move slider (fails by design to gen video)",
+  "historyId" : "1a18329f3f641ba3b687da854a2b1a34",
+  "time" : {
+    "start" : 1549633043549,
+    "stop" : 1549633046571,
+    "duration" : 3022
+  },
+  "description" : "",
+  "descriptionHtml" : "",
+  "status" : "failed",
+  "statusMessage" : "Expected '50' to be 30.",
+  "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
+  "flaky" : false,
+  "beforeStages" : [ ],
+  "testStage" : {
+    "status" : "failed",
+    "statusMessage" : "Expected '50' to be 30.",
+    "statusTrace" : "Error: Expected '50' to be 30.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:25:19)",
+    "steps" : [ ],
+    "attachments" : [ {
+      "uid" : "1bd85fef9a68edb0",
+      "name" : "Execution video",
+      "source" : "1bd85fef9a68edb0.mp4",
+      "type" : "video/mp4",
+      "size" : 58847
+    } ],
+    "parameters" : [ ],
+    "stepsCount" : 0,
+    "attachmentsCount" : 1,
+    "shouldDisplayMessage" : true,
+    "hasContent" : true
+  },
+  "afterStages" : [ ],
+  "labels" : [ {
+    "name" : "framework",
+    "value" : "wdio"
+  }, {
+    "name" : "language",
+    "value" : "javascript"
+  }, {
+    "name" : "thread",
+    "value" : "0-0"
+  }, {
+    "name" : "suite",
+    "value" : "User interactions"
+  }, {
+    "name" : "testClass",
+    "value" : "User interactions"
+  }, {
+    "name" : "testMethod",
+    "value" : "should be able to move slider (fails by design to gen video)"
+  }, {
+    "name" : "package",
+    "value" : "User interactions"
+  }, {
+    "name" : "resultFormat",
+    "value" : "allure1"
+  } ],
+  "parameters" : [ {
+    "name" : "browser",
+    "value" : "chrome"
+  } ],
+  "links" : [ ],
+  "hidden" : false,
+  "retry" : false,
+  "extra" : {
+    "severity" : "normal",
+    "retries" : [ ],
+    "categories" : [ {
+      "name" : "Product defects",
+      "matchedStatuses" : [ ],
+      "flaky" : false
+    } ],
+    "tags" : [ ]
+  },
+  "source" : "b1df5e2f8c3e92cc.json",
+  "parameterValues" : [ "chrome" ]
+}

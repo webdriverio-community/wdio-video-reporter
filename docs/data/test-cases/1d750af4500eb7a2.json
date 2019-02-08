@@ -1,0 +1,81 @@
+{
+  "uid" : "1d750af4500eb7a2",
+  "name" : "should be able to multi-select in dropdown (fails by design to gen video)",
+  "fullName" : "User interactions.should be able to multi-select in dropdown (fails by design to gen video)",
+  "historyId" : "2deb604eb3dec70112b59544950a494c",
+  "time" : {
+    "start" : 1549633046581,
+    "stop" : 1549633050424,
+    "duration" : 3843
+  },
+  "description" : "",
+  "descriptionHtml" : "",
+  "status" : "failed",
+  "statusMessage" : "Expected false to be true.",
+  "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
+  "flaky" : false,
+  "beforeStages" : [ ],
+  "testStage" : {
+    "status" : "failed",
+    "statusMessage" : "Expected false to be true.",
+    "statusTrace" : "Error: Expected false to be true.\n                    at <Jasmine>\n                    at <Jasmine>\n                    at UserContext.toBe (/Users/jher00/kod/github/wdio-video-reporter/demo/specs/selenium-easy.e2e.js:44:40)",
+    "steps" : [ ],
+    "attachments" : [ {
+      "uid" : "92bcb38503ee9ad1",
+      "name" : "Execution video",
+      "source" : "92bcb38503ee9ad1.mp4",
+      "type" : "video/mp4",
+      "size" : 61952
+    } ],
+    "parameters" : [ ],
+    "stepsCount" : 0,
+    "attachmentsCount" : 1,
+    "shouldDisplayMessage" : true,
+    "hasContent" : true
+  },
+  "afterStages" : [ ],
+  "labels" : [ {
+    "name" : "framework",
+    "value" : "wdio"
+  }, {
+    "name" : "language",
+    "value" : "javascript"
+  }, {
+    "name" : "thread",
+    "value" : "0-0"
+  }, {
+    "name" : "suite",
+    "value" : "User interactions"
+  }, {
+    "name" : "testClass",
+    "value" : "User interactions"
+  }, {
+    "name" : "testMethod",
+    "value" : "should be able to multi-select in dropdown (fails by design to gen video)"
+  }, {
+    "name" : "package",
+    "value" : "User interactions"
+  }, {
+    "name" : "resultFormat",
+    "value" : "allure1"
+  } ],
+  "parameters" : [ {
+    "name" : "browser",
+    "value" : "chrome"
+  } ],
+  "links" : [ ],
+  "hidden" : false,
+  "retry" : false,
+  "extra" : {
+    "severity" : "normal",
+    "retries" : [ ],
+    "categories" : [ {
+      "name" : "Product defects",
+      "matchedStatuses" : [ ],
+      "flaky" : false
+    } ],
+    "tags" : [ ]
+  },
+  "source" : "1d750af4500eb7a2.json",
+  "parameterValues" : [ "chrome" ]
+}

@@ -1,0 +1,57 @@
+{
+  "uid" : "cd64293a7e9dae23",
+  "name" : "should handle modals blocking screenshots",
+  "fullName" : "Reporter bug fixes (should pass).should handle modals blocking screenshots",
+  "historyId" : "7480f59413e80272a087b85fc749ae68",
+  "time" : {
+    "start" : 1549633050445,
+    "stop" : 1549633053660,
+    "duration" : 3215
+  },
+  "description" : "",
+  "descriptionHtml" : "",
+  "status" : "passed",
+  "flaky" : false,
+  "beforeStages" : [ ],
+  "afterStages" : [ ],
+  "labels" : [ {
+    "name" : "framework",
+    "value" : "wdio"
+  }, {
+    "name" : "language",
+    "value" : "javascript"
+  }, {
+    "name" : "thread",
+    "value" : "0-0"
+  }, {
+    "name" : "suite",
+    "value" : "Reporter bug fixes (should pass)"
+  }, {
+    "name" : "testClass",
+    "value" : "Reporter bug fixes (should pass)"
+  }, {
+    "name" : "testMethod",
+    "value" : "should handle modals blocking screenshots"
+  }, {
+    "name" : "package",
+    "value" : "Reporter bug fixes (should pass)"
+  }, {
+    "name" : "resultFormat",
+    "value" : "allure1"
+  } ],
+  "parameters" : [ {
+    "name" : "browser",
+    "value" : "chrome"
+  } ],
+  "links" : [ ],
+  "hidden" : false,
+  "retry" : false,
+  "extra" : {
+    "severity" : "normal",
+    "retries" : [ ],
+    "categories" : [ ],
+    "tags" : [ ]
+  },
+  "source" : "cd64293a7e9dae23.json",
+  "parameterValues" : [ "chrome" ]
+}
