@@ -7,8 +7,12 @@ This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates v
 
 Videos ends up in `wdio.config.outputDir`
 
+Checkout example Allure report with included videos on failed tests here:
+https://presidenten.github.io/wdio-video-reporter/
+
 Pros:
 - Nice videos in your allure reports. Yey.
+- Slows down video, even though tests are fast.
 - Works with selenium grid
 - Works with all webdrivers that support `saveScreenshot`
 - Tested on desktop browser Chrome, Firefox, Safari
