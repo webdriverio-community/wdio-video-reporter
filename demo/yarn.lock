@@ -678,14 +678,6 @@
     deepmerge "^2.0.1"
     glob "^7.1.2"
 
-"@wdio/dot-reporter@^5.4.15":
-  version "5.4.15"
-  resolved "https://registry.yarnpkg.com/@wdio/dot-reporter/-/dot-reporter-5.4.15.tgz#db35a4b6534302f09925c955fda46147ba6f17b9"
-  integrity sha512-KkKk4/V3wSsRPEzLgdTWAMBfdF1R72EqT2onwAz5KPab7NS2gEfILpn9+zQqILKcvl0DWH0dwsXCNEyqxNUa/w==
-  dependencies:
-    "@wdio/reporter" "^5.4.15"
-    chalk "^2.3.0"
-
 "@wdio/interface@^5.4.6":
   version "5.4.6"
   resolved "https://registry.yarnpkg.com/@wdio/interface/-/interface-5.4.6.tgz#d8a3b6a110ee9c5cf4b15e640b3ad5ab869bdf37"

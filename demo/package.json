@@ -1,6 +1,6 @@
 {
   "name": "wdio-video-reporter-demo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,9 +12,7 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@wdio/dot-reporter": "^5.4.15"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
