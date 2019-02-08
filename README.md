@@ -3,8 +3,6 @@ wdio-video-reporter
 
 This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the testcases automatically get decorated with the videos as well.
 
-`wdio-video-reporter` listens on the [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) and grabs a screenshot on the messagees that are "actions". When the test is doen it uses `ffmpeg` to stitch these together to one `mp4` per test case.
-
 Videos ends up in `wdio.config.outputDir`
 
 Checkout example Allure report with included videos on failed tests here:
@@ -19,11 +17,11 @@ Pros:
 - Tested on real IOS and Android devices through [Appium](http://appium.io/docs/en/about-appium/getting-started/)
 
 Cons:
-- Screenshots makes the tests slower. This is mitigated slightly by carefully choosing which jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) that should result in a screenshot
+- Screenshots makes the tests slower. This is mitigated by carefully choosing which jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
 
-Be sure to take a look at the `./demo` or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+Be sure to take a look at the `./demo` in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
 
 
 Installation
