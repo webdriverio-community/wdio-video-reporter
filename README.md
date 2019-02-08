@@ -1,5 +1,5 @@
-Selenium-js-video-recorder
-==========================
+wdio-video-reporter
+===================
 
 This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the testcases automatically get decorated with the videos as well.
 
