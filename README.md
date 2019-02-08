@@ -36,22 +36,31 @@ Install the reporter
 
 `yarn add wdio-video-reporter`
 
+
 Add the reporter 
------------------
+----------------
+
+At the top of the `wdio.conf.js`-file, require the library:
+```
+const video = require('wdio-video-reporter');
+```
+
+Then add the video reporter to the configuration in the reporters propertu:
+
 ```
  reporters: [
-    ['video', {
+    [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
   ],
 ```
 
-Adding the Allure reporter automatically updates the reports with videos, without any need to configure anything :-)
+Adding the Allure reporter as well, automatically updates the reports with videos without any need to configure anything :-)
 
 ```
  reporters: [
-    ['video', {
+    [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],

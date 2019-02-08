@@ -10,16 +10,9 @@ module.exports = {
   extends: [
     "eslint:recommended"
   ],
-  // check if imports actually resolve
-  'settings': {
-    'import/resolver': {
-      'webpack': {
-        'config': 'build/webpack.base.conf.js'
-      }
-    }
-  },
   // add your custom rules here
-  'rules': {
+  rules: {
+    'semi': 1,
     'no-useless-escape': 0,
     'function-paren-newline': 0,
     'no-multi-spaces': 0,

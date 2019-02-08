@@ -36,7 +36,7 @@ var config = {
   saveAllVideos: false,
 
   // Video slowdown multiplier
-  videoSlowdownMultiplier: 2,
+  videoSlowdownMultiplier: 3,
 
   // Which commands should be excluded from screenshots
   excludedActions: [

@@ -6,6 +6,9 @@ require('@babel/register')({
   babelrc: false,
 });
 
+// Import like this:
+// const video = require('wdio-video-reporter');
+// But for this demo:
 const video = require('../dist/wdio-video-reporter.js');
 
 const config = {
