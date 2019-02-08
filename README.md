@@ -21,7 +21,7 @@ Cons:
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
 
-Be sure to take a look at the `./demo` in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+Be sure to take a look at the [`./demo`](https://github.com/presidenten/wdio-video-reporter/tree/master/demo) in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
 
 
 Installation
