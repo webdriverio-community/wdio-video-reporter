@@ -4,6 +4,7 @@ import mkdirp from 'mkdirp';
 import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';
+import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
 import helpers from './lib/helpers.js';
 import config from './lib/config.js';
@@ -122,8 +123,10 @@ export default class Video extends WdioReporter {
         allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
       }
 
-      const command = `docker container run --rm -d -v ${this.recordingPath}:/in -v ${path.resolve(config.outputDir)}:/out -e VIDEONAME=${this.testname} -e SLOWDOWN=${config.videoSlowdownMultiplier} presidenten/ffmpeg-pngs-to-mp4:1.1.0-ffmpeg4.0`; // eslint-disable-line
-      helpers.debugLog(`Docker command: ${command}\n`);
+      const command = ffmpegPath + ` -y -r 10 -i ${this.recordingPath}/%04d.png -vcodec libx264` +
+        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` + 
+        ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
+      helpers.debugLog(`ffmpeg command: ${command}\n`);
       spawn(command, {
         stdio: 'ignore',
         shell: true,

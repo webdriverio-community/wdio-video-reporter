@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/presidenten/wdio-video-reporter#readme",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "@wdio/allure-reporter": "^5.4.9",
     "@wdio/reporter": "^5.4.15",
     "fs-extra": "^6.0.1",

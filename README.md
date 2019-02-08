@@ -3,7 +3,7 @@ wdio-video-reporter
 
 This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the testcases automatically get decorated with the videos as well.
 
-`wdio-video-reporter` listens on the [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) and grabs a screenshot on the messagees that are "actions". When the test is doen it uses `ffmpeg` compiled in a `Docker` image to stitch these together to one `mp4` per test case. Docker is used for multi platform support.
+`wdio-video-reporter` listens on the [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) and grabs a screenshot on the messagees that are "actions". When the test is doen it uses `ffmpeg` to stitch these together to one `mp4` per test case.
 
 Videos ends up in `wdio.config.outputDir`
 
@@ -23,19 +23,11 @@ Cons:
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
 
-Be sure to take a look at the boilerplate to quickly get up to speed:
-https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker
+Be sure to take a look at the `./demo` or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
 
 
 Installation
 ============
-
-Install docker
---------------
-- Mac https://download.docker.com/mac/stable/Docker.dmg
-- Win https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe
-- Linux `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && sudo usermod -aG docker $USER`
-
 
 Install the reporter
 --------------------
