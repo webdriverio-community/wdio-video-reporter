@@ -6,19 +6,22 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
-import helpers from './lib/helpers.js';
-import config from './lib/config.js';
-import notAvailableImage from './lib/assets/not-available.png';
+import helpers from './helpers.js';
+import config from './config.js';
+import notAvailableImage from './assets/not-available.png';
 
 export default class Video extends WdioReporter {
   /**
-   * Store reporter options
+   * Set reporter options
    */
   constructor (options) {
     super(options);
 
     // User options
     config.outputDir = options.outputDir || options.logFile.replace(/wdio-.*$/, '');
+    if(config.outputDir.length > 1) {
+      config.outputDir = config.outputDir.replace(/\/$/, '');
+    }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
@@ -32,12 +35,13 @@ export default class Video extends WdioReporter {
     this.testname = '';
     this.frameNr = 0;
     this.videos = [];
+    this.config = config;
 
     helpers.setLogger(msg => this.write(msg));
   }
 
   /**
-   * Store wdio config options
+   * Set wdio config options
    */
   onRunnerStart (browser) {
     config.allureOutputDir = browser.config.outputDir;
@@ -56,7 +60,9 @@ export default class Video extends WdioReporter {
   onAfterCommand (jsonWireMsg) {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command[0] || 'undefined';
+
     helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
+
     // Filter out non-action commands and keep only last action command
     if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
       return;
@@ -127,6 +133,7 @@ export default class Video extends WdioReporter {
         ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` + 
         ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
       helpers.debugLog(`ffmpeg command: ${command}\n`);
+
       spawn(command, {
         stdio: 'ignore',
         shell: true,

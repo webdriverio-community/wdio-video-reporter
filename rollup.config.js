@@ -1,12 +1,12 @@
 import { readFileSync } from 'fs';
 import { extname } from 'path';
 import { createFilter } from 'rollup-pluginutils';
-import resolve from 'rollup-plugin-node-resolve'
+import resolve from 'rollup-plugin-node-resolve';
 
 /**
  * Transform imports of pngs to base64
  */
-const png = (options = {}) => {
+const png = (options = {}) => {
   const filter = createFilter(options.include, options.exclude);
   return {
     name: 'png',
@@ -19,7 +19,7 @@ const png = (options = {}) => {
 };
 
 module.exports = {
-  input: 'index.js',
+  input: 'src/index.js',
   output: {
     name: 'VideoRecorder',
     file: 'dist/wdio-video-reporter.js',

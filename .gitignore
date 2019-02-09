@@ -44,3 +44,4 @@ npm-debug.log
 yarn-error.log
 node_modules
 _results_
+coverage

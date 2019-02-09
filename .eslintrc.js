@@ -1,18 +1,22 @@
 module.exports = {
   root: true,
   "env": {
-    "node": true
+    "node": true,
   },
   parser: 'babel-eslint',
   parserOptions: {
-    sourceType: 'module'
+    sourceType: 'module',
   },
   extends: [
-    "eslint:recommended"
+    "eslint:recommended",
   ],
   // add your custom rules here
   rules: {
     'semi': 1,
+    'comma-dangle': ['error', {
+      arrays: 'always-multiline',
+      objects: 'always-multiline',
+    }],
     'no-useless-escape': 0,
     'function-paren-newline': 0,
     'no-multi-spaces': 0,
@@ -52,5 +56,6 @@ module.exports = {
     
     $: true,
     browser: true,
+    jest: true,
   }
 }

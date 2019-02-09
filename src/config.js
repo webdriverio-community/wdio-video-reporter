@@ -15,7 +15,7 @@ export default {
   // There is a bug, or just bad design really, where
   // Allure is needed to make sure the videos have 
   // time to be saved before the process exits
-  usingAllure: true,
+  usingAllure: false,
 
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,

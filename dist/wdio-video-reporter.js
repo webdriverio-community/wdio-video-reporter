@@ -28,7 +28,7 @@ var config = {
   // There is a bug, or just bad design really, where
   // Allure is needed to make sure the videos have 
   // time to be saved before the process exits
-  usingAllure: true,
+  usingAllure: false,
 
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,
@@ -159,13 +159,16 @@ var notAvailableImage = 'iVBORw0KGgoAAAANSUhEUgAAASoAAAEcCAAAAABVcqZDAAAABGdBTUE
 
 class Video extends WdioReporter {
   /**
-   * Store reporter options
+   * Set reporter options
    */
   constructor (options) {
     super(options);
 
     // User options
     config.outputDir = options.outputDir || options.logFile.replace(/wdio-.*$/, '');
+    if(config.outputDir.length > 1) {
+      config.outputDir = config.outputDir.replace(/\/$/, '');
+    }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
@@ -179,12 +182,13 @@ class Video extends WdioReporter {
     this.testname = '';
     this.frameNr = 0;
     this.videos = [];
+    this.config = config;
 
     helpers.setLogger(msg => this.write(msg));
   }
 
   /**
-   * Store wdio config options
+   * Set wdio config options
    */
   onRunnerStart (browser) {
     config.allureOutputDir = browser.config.outputDir;
@@ -203,7 +207,9 @@ class Video extends WdioReporter {
   onAfterCommand (jsonWireMsg) {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command[0] || 'undefined';
+
     helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
+
     // Filter out non-action commands and keep only last action command
     if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
       return;
@@ -274,6 +280,7 @@ class Video extends WdioReporter {
         ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` + 
         ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
       helpers.debugLog(`ffmpeg command: ${command}\n`);
+
       child_process.spawn(command, {
         stdio: 'ignore',
         shell: true,
