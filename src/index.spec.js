@@ -382,5 +382,19 @@ describe('wdio-video-recorder - ', () => {
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
     });
+
+    it('should update Allure report if Allure is present with correct browser videos', () => {
+      const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4', 
+                      'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
+      let video = new Video(options);
+      video.config.allureOutputDir = 'outputDir/allureDir';
+      video.config.usingAllure = true;
+      video.videos = videos;
+
+      video.onRunnerEnd();
+      expect(fsMocks.copySync.mock.calls.length).toBe(2);
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+    });
   });
 });
