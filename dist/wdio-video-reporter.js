@@ -96,17 +96,17 @@ var helpers = {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: false,
     }).replace(/[ ]/g, '--').replace(':', '-');
 
     const filename = encodeURIComponent(
       `${
         fullname.replace(/\s+/g, '-')
-      }--${browserName}--${timestamp}`.replace(/[/]/g, '__')
-    ).replace(/%../, '.')
-     .replace(/[\(|\)]/g, '')
-     .replace(/[\<|\>]/g, '')
-     .replace(/[\[|\]]/g, '');
+      }--${browserName}--${timestamp}`
+    ).replace(/%../g, '')
+     .replace(/\*/g, '')
+     .replace(/\./g, '-')
+     .replace(/[\(|\)]/g, '');
     
     return filename;
   },
@@ -120,7 +120,6 @@ var helpers = {
       writeLog(`\n--- Video ${videoFilePath} ---\n`);
       let waitForExistTimer = 0;
       let waitForRenderTimer = 0;
-
       do {
         sleep(100);
         if (waitForExistTimer % 10 === 0) {
@@ -139,6 +138,7 @@ var helpers = {
         fileStats = fs.statSync(videoFilePath);
         videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
         lastSize = fileStats.size > 48 ? fileStats.size : 0;
+
         sleep(100);
         if (waitForRenderTimer % 10 === 0) {
           writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
