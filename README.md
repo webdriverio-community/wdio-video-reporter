@@ -77,10 +77,10 @@ Normal configuration parameters
 
 Most users may want to set these
 
-- `saveAllVideos` Set to true to save videos for passing tests. ˋDefault: falseˋ
-- `videoSlowdownMultiplier` Integer between [1-100]. Increase if videos are playing to quick. ˋDefault: 3ˋ
-- `videoRenderTimeout` Max seconds to wait for a video to render. ˋDefault: 5ˋ
-- `outputDir` If its not set, it uses wdio.config.outputDir. ˋDefault: undefinedˋ
+- `saveAllVideos` Set to true to save videos for passing tests. `Default: false`
+- `videoSlowdownMultiplier` Integer between [1-100]. Increase if videos are playing to quick. `Default: 3`
+- `videoRenderTimeout` Max seconds to wait for a video to render. `Default: 5`
+- `outputDir` If its not set, it uses wdio.config.outputDir. `Default: undefined`
 
 
 Advanced configuration parameters
@@ -88,8 +88,8 @@ Advanced configuration parameters
 
 Advanced users who want to change when the engine makes a screengrab can edit these. These arrays may be populated with the last word of a [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message, i.e. /session/:sessionId/`buttondown`.
 
-- `addExcludedActions` Add actions where screenshots are unnecessary. ˋDefault: []ˋ
-- `addJsonWireActions` Add actions where screenshots are missing. ˋDefault: []ˋ
+- `addExcludedActions` Add actions where screenshots are unnecessary. `Default: []`
+- `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
 
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-0-0-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
