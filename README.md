@@ -17,7 +17,7 @@ Pros:
 - Tested on real IOS and Android devices through [Appium](http://appium.io/docs/en/about-appium/getting-started/)
 
 Cons:
-- Screenshots makes the tests a little bit slower, but this is mostly mitigated by carefully choosing which jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
+- Screenshots makes the tests a little bit slower, but this is mostly mitigated by carefully choosing which  [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
 
