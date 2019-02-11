@@ -4,6 +4,7 @@
   "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.js",
   "scripts": {
+    "prebuild": "npm run lint && npm run test",
     "build": "rollup -c rollup.config.js",
     "dev": "rollup -c -w rollup.config.js",
     "lint": "eslint --ext .js --ignore-path .gitignore src",
