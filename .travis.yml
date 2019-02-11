@@ -6,5 +6,5 @@
     "sh -e /etc/init.d/xvfb start",
     "yarn"
   ],
-  "script": "npm run testcov"
+  "script": "npm run build && npm run testcov"
 }
