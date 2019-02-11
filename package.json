@@ -4,13 +4,14 @@
   "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.js",
   "scripts": {
-    "prebuild": "npm run lint && npm run test",
+    "prebuild": "npm run lint && npm run testcov",
     "build": "rollup -c rollup.config.js",
+    "ci": "npm run build && npm run codecov",
     "dev": "rollup -c -w rollup.config.js",
     "lint": "eslint --ext .js --ignore-path .gitignore src",
     "test": "jest --config=.jestrc.json",
     "testcov": "jest --coverage --config=.jestrc.json",
-    "posttestcov": "codecov",
+    "codecov": "codecov",
     "testdev": "jest --watch --config=.jestrc.json"
   },
   "repository": {
