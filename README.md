@@ -20,8 +20,14 @@ Cons:
 - Screenshots makes the tests a little bit slower, but this is mostly mitigated by carefully choosing which  [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
 - Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
 
+Quick start
+===========
 
-Be sure to take a look at the [`./demo`](https://github.com/presidenten/wdio-video-reporter/tree/master/demo) in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+Take a look at the [`./demo`](https://github.com/presidenten/wdio-video-reporter/tree/master/demo) in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+
+Note that the demo is also used for manual reporter validation when developing, so dependencies needs to be installed with `yarn` or `npm install` in both main directory and demo directory before running `yarn e2e` or `npm run e2e` in demo directory.
+
+The boilerplate has a more standard setup.
 
 
 Installation
@@ -31,10 +37,12 @@ Install the reporter
 --------------------
 
 `yarn add wdio-video-reporter`
+or
+`npm install wdio-video-reporter`
 
 
-Add the reporter 
-----------------
+Add the reporter to config
+--------------------------
 
 At the top of the `wdio.conf.js`-file, require the library:
 ```
@@ -51,6 +59,9 @@ Then add the video reporter to the configuration in the reporters propertu:
     }],
   ],
 ```
+
+Using with Allure
+-----------------
 
 Adding the Allure reporter as well, automatically updates the reports with videos without any need to configure anything :-)
 
