@@ -8,7 +8,7 @@ Videos ends up in `wdio.config.outputDir`
 Checkout example Allure report with included videos on failed tests here:
 https://presidenten.github.io/wdio-video-reporter/
 
-![example-allure-report](https://imgur.com/fNfT5qs)
+![example-allure-report](https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif)
 
 Pros:
 - Nice videos in your allure reports. Yey.
