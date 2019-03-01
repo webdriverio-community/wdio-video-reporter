@@ -18,6 +18,7 @@
     "node_modules",
     "src"
   ],
+  "setupFiles": ["<rootDir>/node_modules/regenerator-runtime/runtime"],
   "clearMocks": true,
   "resetMocks": true,
   "resetModules": true
