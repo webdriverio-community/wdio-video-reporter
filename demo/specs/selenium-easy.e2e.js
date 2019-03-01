@@ -60,4 +60,4 @@ describe('Reporter bug fixes (should pass)', () => {
     $('button.btn.btn-default.btn-lg').click();
     browser.acceptAlert();
    });
-})
+});
