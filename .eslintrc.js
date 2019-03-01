@@ -1,22 +1,18 @@
 module.exports = {
   root: true,
-  "env": {
-    "node": true,
+  'env': {
+    'node': true
   },
   parser: 'babel-eslint',
   parserOptions: {
-    sourceType: 'module',
+    sourceType: 'module'
   },
   extends: [
-    "eslint:recommended",
+    'eslint:recommended'
   ],
   // add your custom rules here
   rules: {
     'semi': 1,
-    'comma-dangle': ['error', {
-      arrays: 'always-multiline',
-      objects: 'always-multiline',
-    }],
     'no-useless-escape': 0,
     'function-paren-newline': 0,
     'no-multi-spaces': 0,
@@ -34,15 +30,28 @@ module.exports = {
     'consistent-return': 0,
     'no-restricted-syntax': 0,
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
-    'max-len': ["warn", 140, { "ignoreComments": true }]
+    'max-len': ['warn', 140, { 'ignoreComments': true }],
+    'quote-props': ['error', 'as-needed'],
+    'comma-dangle': ['error', {
+      'arrays': 'always-multiline',
+      'objects': 'always-multiline',
+    }],
+    'one-var': ['error', 'never'],
+    'space-in-parens': ['error', 'never'],
+    'space-before-blocks': ['error', 'always'],
+    'quotes': ['error', 'single', { 'allowTemplateLiterals': true }],
+    'no-var': 2,
   },
   globals:{
     window: true,
     document: true,
-
+    jest: true,
     describe: true,
     fdescribe: true,
     xdescribe: true,
+
+    beforeAll: true,
+    afterAll: true,
 
     beforeEach: true,
     afterEach: true,
@@ -53,9 +62,8 @@ module.exports = {
 
     expect: true,
     spyOn: true,
-    
+
     $: true,
     browser: true,
-    jest: true,
   }
 }

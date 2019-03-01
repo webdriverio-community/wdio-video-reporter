@@ -34,7 +34,7 @@ export default {
      .replace(/\*/g, '')
      .replace(/\./g, '-')
      .replace(/[\(|\)]/g, '');
-    
+
     return filename;
   },
 
@@ -42,7 +42,7 @@ export default {
     const existingVideos = [];
     const maxWaiting = 10 * config.videoRenderTimeout;
     writeLog(`Max waiting time: ${maxWaiting}s\n`);
-    
+
     videos.forEach((videoFilePath) => {
       writeLog(`\n--- Video ${videoFilePath} ---\n`);
       let waitForExistTimer = 0;
@@ -53,11 +53,11 @@ export default {
           writeLog('Waiting for video to exist: ' + waitForExistTimer/10 + 's\n');
         }
       } while (!fs.existsSync(videoFilePath) && waitForExistTimer++ < maxWaiting);
-      
+
       if (waitForExistTimer >= maxWaiting) {
         return;
       }
-      
+
       let fileStats = fs.statSync(videoFilePath);
       let lastSize = 0;
       let videoIsReady = false;
@@ -71,7 +71,7 @@ export default {
           writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
         }
       } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
-      
+
       if (waitForRenderTimer < maxWaiting) {
         existingVideos.push(videoFilePath);
       }

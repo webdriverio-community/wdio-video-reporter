@@ -90,7 +90,7 @@ describe('Helpers - ', () => {
     describe('to exist - ', () => {
       beforeEach(() => {
         config.videoRenderTimeout = 5;
-        
+
         let counter = 1;
         fs.default.existsSync = jest.fn(() => counter++ % 3 === 0);
 
@@ -98,24 +98,24 @@ describe('Helpers - ', () => {
           size: 100,
         }));
       });
-  
+
       it('should wait for videos to exist', () => {
         helpers.waitForVideos(videos);
         expect(sleep.default.mock.calls.length).toBe(3*videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
       });
-      
+
       it('should return a list of existing videos', () => {
         const existingVideos = helpers.waitForVideos(videos);
         expect(existingVideos).toEqual(videos);
       });
-      
+
       it('should wait for videos to exist and bail if timeout is reached', () => {
         config.videoRenderTimeout = 0.2;
         const existingVideos = helpers.waitForVideos(videos);
         expect(sleep.default.mock.calls.length).toBe(videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
         expect(existingVideos.length).toEqual(0);
       });
-  
+
       it('should return a list of existing videos after bail', () => {
         let counter = 1;
         // Mock will not return true after first two files
@@ -130,7 +130,7 @@ describe('Helpers - ', () => {
     describe('to render - ', () => {
       beforeEach(() => {
         config.videoRenderTimeout = 5;
-        
+
         fs.default.existsSync = jest.fn(() => true);
 
         let doneSize = false;
@@ -157,14 +157,14 @@ describe('Helpers - ', () => {
         helpers.waitForVideos(videos);
         expect(sleep.default.mock.calls.length).toBe(videos.length + 5*(videos.length)); // wait for exist + 3*(wait for render)
       });
-      
+
       it('should wait for videos to finish rendering and bail if timeout is reached', () => {
         config.videoRenderTimeout = 0.2;
         const existingVideos = helpers.waitForVideos(videos);
         expect(sleep.default.mock.calls.length).toBe(videos.length + 3*(videos.length)); // wait for exist + 2*(wait for render)
         expect(existingVideos.length).toEqual(0);
       });
-  
+
       it('should return a list of finished videos after bail because video did not finish in time', () => {
         // Mock will not stop increasing size after first two
         let counter = 1;
@@ -190,14 +190,14 @@ describe('Helpers - ', () => {
         const existingVideos = helpers.waitForVideos(videos);
         expect(existingVideos).toEqual(videos.slice(0, 2));
       });
-  
+
       it('should return a list of finished videos after bail because video did not render', () => {
         // Mock will not increasing size after first two
         let counter = 1;
         let doneSize = false;
         let size = 45;
         const getSize = () => {
-          if (counter < 3){
+          if (counter < 3) {
             size++;
           }
 

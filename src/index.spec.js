@@ -61,7 +61,7 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.excludedActions).not.toContain(':unitTestingAction1234567890:');
       expect(video.config.jsonWireActions).not.toContain(':unitTestingAction1234567890:');
     });
-    
+
     it('should update config with options', () => {
       const options = {
         logFile,
@@ -72,7 +72,7 @@ describe('wdio-video-recorder - ', () => {
         addExcludedActions: [ ':unitTestingAction1234567890:' ],
         addJsonWireActions: [ ':unitTestingAction1234567890:' ],
       };
-      
+
       const video = new Video(options);
       expect(video.config).not.toEqual(originalConfig);
       expect(video.config.outputDir).toBe(options.outputDir);
@@ -82,13 +82,13 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.excludedActions).toContain(':unitTestingAction1234567890:');
       expect(video.config.jsonWireActions).toContain(':unitTestingAction1234567890:');
     });
-    
+
     it('should remove trailing / in outputDir', () => {
       options.outputDir = 'test/';
       const video = new Video(options);
       expect(video.config.outputDir).toBe('test');
     });
-    
+
     it('should not remove trailing / in outputDir if /', () => {
       options.outputDir = '/';
       const video = new Video(options);
@@ -107,13 +107,13 @@ describe('wdio-video-recorder - ', () => {
 
     it('should set the wdio-logger to the helpers module', () => {
       helpers.default.setLogger = jest.fn();
-      
+
       const video = new Video(options);
       video.config.debugMode = true;
       video.write = jest.fn();
-      
+
       expect(helpers.default.setLogger).toHaveBeenCalled();
-      
+
       helpers.default.debugLog('message');
       expect(writeMock).toHaveBeenCalledWith('message');
     });
@@ -169,14 +169,14 @@ describe('wdio-video-recorder - ', () => {
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(video.frameNr).toBe(0);
       });
-  
+
       it('command is not present in included JsonWireActions', () => {
         let video = new Video(options);
         video.recordingPath = 'folder';
         video.onAfterCommand({ endpoint: '/session/abcdef/piripiri' });
         expect(video.frameNr).toBe(0);
       });
-  
+
       it('command is present in excluded JsonWireActions', () => {
         options.addExcludedActions = [originalConfig.jsonWireActions[0]];
         let video = new Video(options);
@@ -193,10 +193,10 @@ describe('wdio-video-recorder - ', () => {
 
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
-        
+
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0001.png');
-        
+
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0002.png');
       });
@@ -220,19 +220,19 @@ describe('wdio-video-recorder - ', () => {
     });
   });
 
-  describe('onSuiteStart - ', () => {  
+  describe('onSuiteStart - ', () => {
     it('should add suite title to testnameStructure', () => {
       let video = new Video(options);
       expect(video.testnameStructure).toEqual([]);
       video.onSuiteStart({ title: 'DESCRIBE1' });
       expect(video.testnameStructure).toEqual(['DESCRIBE1']);
-      
+
       video.onSuiteStart({ title: 'DESCRIBE2' });
       expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
     });
   });
 
-  describe('onSuiteEnd - ', () => {  
+  describe('onSuiteEnd - ', () => {
     it('should remove suite title from testnameStructure', () => {
       let video = new Video(options);
       video.testnameStructure = ['DESCRIBE1', 'DESCRIBE2', 'DESCRIBE3'];
@@ -245,7 +245,7 @@ describe('wdio-video-recorder - ', () => {
     });
   });
 
-  describe('onTestStart - ', () => {  
+  describe('onTestStart - ', () => {
     it('should add test title to testnameStructure', () => {
       let video = new Video(options);
       video.testnameStructure = ['DESCRIBE'];
@@ -279,7 +279,7 @@ describe('wdio-video-recorder - ', () => {
     });
   });
 
-  describe('onTestSkip - ', () => {  
+  describe('onTestSkip - ', () => {
     it('should remove folder at current recordingPath', () => {
       let video = new Video(options);
       video.recordingPath = 'PATH';
@@ -288,7 +288,7 @@ describe('wdio-video-recorder - ', () => {
     });
   });
 
-  describe('onTestEnd - ', () => {  
+  describe('onTestEnd - ', () => {
     beforeEach(() => {
       cpMocks.spawn = jest.fn();
       allureMocks.addAttachment = jest.fn();
@@ -314,7 +314,7 @@ describe('wdio-video-recorder - ', () => {
       let video = new Video(options);
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-      
+
       allureMocks.addAttachment = jest.fn();
       options.saveAllVideos = true;
       video = new Video(options);
@@ -333,7 +333,7 @@ describe('wdio-video-recorder - ', () => {
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(allureMocks.addAttachment).toHaveBeenCalled();
     });
-    
+
     it('should not spawn ffmpeg on passed tests', () => {
       let video = new Video(options);
       video.onTestEnd({ title: 'TEST', state: 'passed' });
@@ -350,7 +350,7 @@ describe('wdio-video-recorder - ', () => {
 
   describe('onRunnerEnd - ', () => {
     const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
-    
+
     beforeEach(() => {
       resetFsMocks();
       helpers.default.waitForVideos = jest.fn().mockReturnValue(videos);
@@ -384,7 +384,7 @@ describe('wdio-video-recorder - ', () => {
     });
 
     it('should update Allure report if Allure is present with correct browser videos', () => {
-      const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4', 
+      const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4',
                       'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';

@@ -25,7 +25,7 @@ export default class Video extends WdioReporter {
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
-  
+
     // Debug
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
@@ -48,12 +48,12 @@ export default class Video extends WdioReporter {
     config.usingAllure = browser.config.reporters
       .map(r => typeof r === 'object' ? r[0] : r)
       .filter(r => r === 'allure')
-      .pop(); 
+      .pop();
     config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
   }
-  
+
   /**
    * Save screenshot or add not available image movie stills
    */
@@ -67,10 +67,10 @@ export default class Video extends WdioReporter {
     if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
       return;
     }
-    
+
     const filename = this.frameNr.toString().padStart(4, '0') + '.png';
     const filePath = path.resolve(this.recordingPath, filename);
-    
+
     try {
       browser.saveScreenshot(filePath);
       helpers.debugLog('- Screenshot!!\n');
@@ -80,7 +80,7 @@ export default class Video extends WdioReporter {
     }
     this.frameNr++;
   }
-  
+
   /**
    * Add suite name to naming structure
    */
@@ -113,7 +113,7 @@ export default class Video extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    fs.removeSync(this.recordingPath);   
+    fs.removeSync(this.recordingPath);
   }
 
   /**
@@ -130,7 +130,7 @@ export default class Video extends WdioReporter {
       }
 
       const command = ffmpegPath + ` -y -r 10 -i ${this.recordingPath}/%04d.png -vcodec libx264` +
-        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` + 
+        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
         ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
       helpers.debugLog(`ffmpeg command: ${command}\n`);
 

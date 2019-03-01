@@ -13,7 +13,7 @@ export default {
 
   // Should an allure report be updated with videos
   // There is a bug, or just bad design really, where
-  // Allure is needed to make sure the videos have 
+  // Allure is needed to make sure the videos have
   // time to be saved before the process exits
   usingAllure: false,
 
