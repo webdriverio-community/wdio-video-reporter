@@ -32,5 +32,15 @@ module.exports = {
       modulesOnly: true,
     }),
   ],
+  external: [
+    'mkdirp',
+    'fs-extra',
+    '@ffmpeg-installer/ffmpeg',
+    '@wdio/reporter',
+    '@wdio/allure-reporter',
+    'system-sleep',
+    'path',
+    'child_process',
+  ],
 };
 
