@@ -1,10 +1,13 @@
-import sleep from 'system-sleep';
 import fs from 'fs-extra';
 
 import config from './config.js';
 
 let writeLog;
 export default {
+  sleep(ms) {
+    const stop = new Date().getTime();
+    while(new Date().getTime() < stop + ms);
+  },
 
   setLogger(obj) {
     writeLog = obj;
@@ -41,41 +44,42 @@ export default {
   waitForVideos(videos) {
     const existingVideos = [];
     const maxWaiting = 10 * config.videoRenderTimeout;
-    writeLog(`Max waiting time: ${maxWaiting}s\n`);
 
-    videos.forEach((videoFilePath) => {
-      writeLog(`\n--- Video ${videoFilePath} ---\n`);
+    writeLog(`Max waiting time: ${config.videoRenderTimeout}s\n`);
+
+    for (let idx in videos) {
+      writeLog(`\n--- Video ${videos[idx]} ---\n`);
       let waitForExistTimer = 0;
       let waitForRenderTimer = 0;
+
       do {
-        sleep(100);
+        this.sleep(100);
         if (waitForExistTimer % 10 === 0) {
           writeLog('Waiting for video to exist: ' + waitForExistTimer/10 + 's\n');
         }
-      } while (!fs.existsSync(videoFilePath) && waitForExistTimer++ < maxWaiting);
+      } while (!fs.existsSync(videos[idx]) && waitForExistTimer++ < maxWaiting);
 
-      if (waitForExistTimer >= maxWaiting) {
-        return;
-      }
+      if (waitForExistTimer < maxWaiting) {
+        let fileStats = fs.statSync(videos[idx]);
+        let lastSize = 0;
+        let videoIsReady = false;
 
-      let fileStats = fs.statSync(videoFilePath);
-      let lastSize = 0;
-      let videoIsReady = false;
-      do {
-        fileStats = fs.statSync(videoFilePath);
-        videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
-        lastSize = fileStats.size > 48 ? fileStats.size : 0;
+        do {
+          fileStats = fs.statSync(videos[idx]);
+          videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
+          lastSize = fileStats.size > 48 ? fileStats.size : 0;
 
-        sleep(100);
-        if (waitForRenderTimer % 10 === 0) {
-          writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
+          this.sleep(100);
+          if (waitForRenderTimer % 10 === 0) {
+            writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
+          }
+        } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
+
+        if (waitForRenderTimer < maxWaiting) {
+          existingVideos.push(videos[idx]);
         }
-      } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
-
-      if (waitForRenderTimer < maxWaiting) {
-        existingVideos.push(videoFilePath);
       }
-    });
+    }
 
     return existingVideos;
   },

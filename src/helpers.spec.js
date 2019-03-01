@@ -3,7 +3,6 @@
  */
 
 import * as fs from 'fs-extra';
-import * as sleep from 'system-sleep';
 
 import helpers from './helpers.js';
 import config from './config.js';
@@ -16,7 +15,7 @@ describe('Helpers - ', () => {
     config.debugMode = false;
     config.videoRenderTimeout = 5;
 
-    sleep.default = jest.fn(() => {});
+   helpers.sleep = jest.fn(() => {});
   });
 
 
@@ -101,7 +100,7 @@ describe('Helpers - ', () => {
 
       it('should wait for videos to exist', () => {
         helpers.waitForVideos(videos);
-        expect(sleep.default.mock.calls.length).toBe(3*videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
+        expect(helpers.sleep.mock.calls.length).toBe(3*videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
       });
 
       it('should return a list of existing videos', () => {
@@ -112,7 +111,7 @@ describe('Helpers - ', () => {
       it('should wait for videos to exist and bail if timeout is reached', () => {
         config.videoRenderTimeout = 0.2;
         const existingVideos = helpers.waitForVideos(videos);
-        expect(sleep.default.mock.calls.length).toBe(videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
+        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
         expect(existingVideos.length).toEqual(0);
       });
 
@@ -155,13 +154,13 @@ describe('Helpers - ', () => {
 
       it('should wait for videos to finish rendering', () => {
         helpers.waitForVideos(videos);
-        expect(sleep.default.mock.calls.length).toBe(videos.length + 5*(videos.length)); // wait for exist + 3*(wait for render)
+        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 5*(videos.length)); // wait for exist + 3*(wait for render)
       });
 
       it('should wait for videos to finish rendering and bail if timeout is reached', () => {
         config.videoRenderTimeout = 0.2;
         const existingVideos = helpers.waitForVideos(videos);
-        expect(sleep.default.mock.calls.length).toBe(videos.length + 3*(videos.length)); // wait for exist + 2*(wait for render)
+        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 3*(videos.length)); // wait for exist + 2*(wait for render)
         expect(existingVideos.length).toEqual(0);
       });
 

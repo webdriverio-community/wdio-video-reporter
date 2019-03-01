@@ -9,7 +9,6 @@ var fs = _interopDefault(require('fs-extra'));
 var path = _interopDefault(require('path'));
 var child_process = require('child_process');
 var ffmpeg = require('@ffmpeg-installer/ffmpeg');
-var sleep = _interopDefault(require('system-sleep'));
 
 var config = {
   debugMode: false,
@@ -26,7 +25,7 @@ var config = {
 
   // Should an allure report be updated with videos
   // There is a bug, or just bad design really, where
-  // Allure is needed to make sure the videos have 
+  // Allure is needed to make sure the videos have
   // time to be saved before the process exits
   usingAllure: false,
 
@@ -81,6 +80,10 @@ var config = {
 
 let writeLog;
 var helpers = {
+  sleep(ms) {
+    const stop = new Date().getTime();
+    while(new Date().getTime() < stop + ms);
+  },
 
   setLogger(obj) {
     writeLog = obj;
@@ -110,48 +113,49 @@ var helpers = {
      .replace(/\*/g, '')
      .replace(/\./g, '-')
      .replace(/[\(|\)]/g, '');
-    
+
     return filename;
   },
 
   waitForVideos(videos) {
     const existingVideos = [];
     const maxWaiting = 10 * config.videoRenderTimeout;
-    writeLog(`Max waiting time: ${maxWaiting}s\n`);
-    
-    videos.forEach((videoFilePath) => {
-      writeLog(`\n--- Video ${videoFilePath} ---\n`);
+
+    writeLog(`Max waiting time: ${config.videoRenderTimeout}s\n`);
+
+    for (let idx in videos) {
+      writeLog(`\n--- Video ${videos[idx]} ---\n`);
       let waitForExistTimer = 0;
       let waitForRenderTimer = 0;
+
       do {
-        sleep(100);
+        this.sleep(100);
         if (waitForExistTimer % 10 === 0) {
           writeLog('Waiting for video to exist: ' + waitForExistTimer/10 + 's\n');
         }
-      } while (!fs.existsSync(videoFilePath) && waitForExistTimer++ < maxWaiting);
-      
-      if (waitForExistTimer >= maxWaiting) {
-        return;
-      }
-      
-      let fileStats = fs.statSync(videoFilePath);
-      let lastSize = 0;
-      let videoIsReady = false;
-      do {
-        fileStats = fs.statSync(videoFilePath);
-        videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
-        lastSize = fileStats.size > 48 ? fileStats.size : 0;
+      } while (!fs.existsSync(videos[idx]) && waitForExistTimer++ < maxWaiting);
 
-        sleep(100);
-        if (waitForRenderTimer % 10 === 0) {
-          writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
+      if (waitForExistTimer < maxWaiting) {
+        let fileStats = fs.statSync(videos[idx]);
+        let lastSize = 0;
+        let videoIsReady = false;
+
+        do {
+          fileStats = fs.statSync(videos[idx]);
+          videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
+          lastSize = fileStats.size > 48 ? fileStats.size : 0;
+
+          this.sleep(100);
+          if (waitForRenderTimer % 10 === 0) {
+            writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
+          }
+        } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
+
+        if (waitForRenderTimer < maxWaiting) {
+          existingVideos.push(videos[idx]);
         }
-      } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
-      
-      if (waitForRenderTimer < maxWaiting) {
-        existingVideos.push(videoFilePath);
       }
-    });
+    }
 
     return existingVideos;
   },
@@ -175,7 +179,7 @@ class Video extends WdioReporter {
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
-  
+
     // Debug
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
@@ -198,12 +202,12 @@ class Video extends WdioReporter {
     config.usingAllure = browser.config.reporters
       .map(r => typeof r === 'object' ? r[0] : r)
       .filter(r => r === 'allure')
-      .pop(); 
+      .pop();
     config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
   }
-  
+
   /**
    * Save screenshot or add not available image movie stills
    */
@@ -217,10 +221,10 @@ class Video extends WdioReporter {
     if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
       return;
     }
-    
+
     const filename = this.frameNr.toString().padStart(4, '0') + '.png';
     const filePath = path.resolve(this.recordingPath, filename);
-    
+
     try {
       browser.saveScreenshot(filePath);
       helpers.debugLog('- Screenshot!!\n');
@@ -230,7 +234,7 @@ class Video extends WdioReporter {
     }
     this.frameNr++;
   }
-  
+
   /**
    * Add suite name to naming structure
    */
@@ -263,7 +267,7 @@ class Video extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    fs.removeSync(this.recordingPath);   
+    fs.removeSync(this.recordingPath);
   }
 
   /**
@@ -280,7 +284,7 @@ class Video extends WdioReporter {
       }
 
       const command = ffmpeg.path + ` -y -r 10 -i ${this.recordingPath}/%04d.png -vcodec libx264` +
-        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` + 
+        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
         ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
       helpers.debugLog(`ffmpeg command: ${command}\n`);
 
