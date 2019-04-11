@@ -58,24 +58,25 @@ describe('Helpers - ', () => {
     });
 
     it('should generate name in form: name--browser--date', () => {
-      expect(helpers.generateFilename(browser, name)).toBe(`${name}--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, name)).toBe(`--${browser}--${date}`);
     });
 
     it('should replace space with -', () => {
       const testname = name + ' space';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-space--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`--${browser}--${date}`);
     });
 
     it('should replace . with -', () => {
       const testname = name + '.dot';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-dot--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`--${browser}--${date}`);
     });
 
     it('should remove characters: /?<>\\/:*|"()[]<>%', () => {
       const testname = name + '-/?<>\\/:*|"()[]<>%comment/';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-comment--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`--${browser}--${date}`);
     });
   });
+
 
 
 
