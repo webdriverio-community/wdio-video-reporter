@@ -50,30 +50,48 @@ describe('Helpers - ', () => {
     const date = 'DATE-TIME';
 
     beforeEach(() => {
+      let counter = 0;
       global.Date = jest.fn(() => ({
         toLocaleString() {
           return date;
+        },
+        getMilliseconds() {
+          return ('000' + counter++).slice(-3);
         },
       }));
     });
 
     it('should generate name in form: name--browser--date', () => {
-      expect(helpers.generateFilename(browser, name)).toBe(`${name}--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, name)).toBe(`${name}--${browser}--${date}-000`);
     });
 
     it('should replace space with -', () => {
       const testname = name + ' space';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-space--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-space--${browser}--${date}-000`);
     });
 
     it('should replace . with -', () => {
       const testname = name + '.dot';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-dot--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-dot--${browser}--${date}-000`);
     });
 
     it('should remove characters: /?<>\\/:*|"()[]<>%', () => {
       const testname = name + '-/?<>\\/:*|"()[]<>%comment/';
-      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-comment--${browser}--${date}`);
+      expect(helpers.generateFilename(browser, testname)).toBe(`${name}-comment--${browser}--${date}-000`);
+    });
+
+    it('should keep filenames <= 250 chars', () => {
+      const sixyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
+      const testname256 = sixyFourChars + sixyFourChars + sixyFourChars + sixyFourChars;
+      expect(helpers.generateFilename(browser, testname256).length).toBe(250);
+    });
+
+    it('should keep truncated filenames unique', () => {
+      const sixyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
+      const testname256 = sixyFourChars + sixyFourChars + sixyFourChars + sixyFourChars;
+      const name1 = helpers.generateFilename(browser, testname256);
+      const name2 = helpers.generateFilename(browser, testname256);
+      expect(name1).not.toBe(name2);
     });
   });
 

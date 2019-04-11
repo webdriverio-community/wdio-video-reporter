@@ -96,16 +96,19 @@ var helpers = {
   },
 
   generateFilename(browserName, fullname) {
-    const timestamp = new Date().toLocaleString('iso', {
+    const date = new Date();
+    const msec = ('000' + date.getMilliseconds()).slice(-3);
+    const timestamp = date.toLocaleString('iso', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
       hour12: false,
-    }).replace(/[ ]/g, '--').replace(':', '-');
+    }).replace(/[ ]/g, '--').replace(/:|\//g, '-') + `-${msec}`;
 
-    const filename = encodeURIComponent(
+    let filename = encodeURIComponent(
       `${
         fullname.replace(/\s+/g, '-')
       }--${browserName}--${timestamp}`
@@ -113,6 +116,11 @@ var helpers = {
      .replace(/\*/g, '')
      .replace(/\./g, '-')
      .replace(/[\(|\)]/g, '');
+
+    if (filename.length > 250) {
+      const truncLength = (250 - 2)/2;
+      filename = filename.slice(0, truncLength) + '--' + filename.slice(-truncLength);
+    }
 
     return filename;
   },
