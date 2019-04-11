@@ -54,6 +54,7 @@ const config = {
     {
       maxInstances: 1,
       browserName: 'firefox',
+      acceptInsecureCerts: true,
     },
   ],
   
