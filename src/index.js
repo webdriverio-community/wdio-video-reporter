@@ -107,6 +107,10 @@ export default class Video extends WdioReporter {
     this.frameNr = 0;
     this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
     mkdirp.sync(this.recordingPath);
+
+    if(config.usingAllure && browser.capabilities.deviceType) {
+      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+    }
   }
 
   /**
