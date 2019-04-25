@@ -246,6 +246,10 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onTestStart - ', () => {
+    beforeEach(() => {
+      allureMocks.addAttachment = jest.fn();
+    });
+
     it('should add test title to testnameStructure', () => {
       let video = new Video(options);
       video.testnameStructure = ['DESCRIBE'];
@@ -268,6 +272,39 @@ describe('wdio-video-recorder - ', () => {
       video.onTestStart({ title: 'TEST' });
       expect(video.testname).not.toEqual(undefined);
       expect(helpers.default.generateFilename).toHaveBeenCalled();
+    });
+
+    it('should append deviceType to browsername', () => {
+      helpers.default.generateFilename = jest.fn();
+      let video = new Video(options);
+      video.testname = undefined;
+      video.onTestStart({ title: 'TEST' });
+      expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST')
+
+      helpers.default.generateFilename = jest.fn();
+      global.browser.capabilities.deviceType = 'myDevice';
+      video = new Video(options);
+      video.testname = undefined;
+      video.onTestStart({ title: 'TEST' });
+      expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
+    });
+
+    it('should add deviceType as argument to allure', () => {
+      global.browser.capabilities.deviceType = 'myDevice';
+
+      configModule.default.usingAllure = false;
+      allureMocks.addArgument = jest.fn();
+      let video = new Video(options);
+      video.testname = undefined;
+      video.onTestStart({ title: 'TEST' });
+      expect(allureMocks.addArgument).not.toHaveBeenCalled();
+
+      configModule.default.usingAllure = true;
+      allureMocks.addArgument = jest.fn();
+      video = new Video(options);
+      video.testname = undefined;
+      video.onTestStart({ title: 'TEST' });
+      expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
     });
 
     it('should set recordingpath', () => {
