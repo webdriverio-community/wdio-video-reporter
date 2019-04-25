@@ -111,10 +111,6 @@ export default class Video extends WdioReporter {
     this.frameNr = 0;
     this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
     mkdirp.sync(this.recordingPath);
-
-    if(config.usingAllure && browser.capabilities.deviceType) {
-      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
-    }
   }
 
   /**
@@ -129,6 +125,11 @@ export default class Video extends WdioReporter {
    */
   onTestEnd (test) {
     this.testnameStructure.pop();
+
+    if(config.usingAllure && browser.capabilities.deviceType) {
+      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+    }
+
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
       const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
       this.videos.push(videoPath);

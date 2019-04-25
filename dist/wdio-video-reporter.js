@@ -265,14 +265,14 @@ class Video extends WdioReporter {
     helpers.debugLog(`\n\n--- New test: ${test.title} ---\n`);
     this.testnameStructure.push(test.title.replace(/ /g, '-'));
     const fullname = this.testnameStructure.slice(1).reduce((cur,acc) => cur + '--' + acc, this.testnameStructure[0]);
-    this.testname = helpers.generateFilename(browser.capabilities.browserName.toUpperCase(), fullname);
+    let browserName = browser.capabilities.browserName.toUpperCase();
+    if (browser.capabilities.deviceType) {
+      browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
+    }
+    this.testname = helpers.generateFilename(browserName, fullname);
     this.frameNr = 0;
     this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
     mkdirp.sync(this.recordingPath);
-
-    if(config.usingAllure && browser.capabilities.deviceType) {
-      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
-    }
   }
 
   /**
@@ -287,6 +287,11 @@ class Video extends WdioReporter {
    */
   onTestEnd (test) {
     this.testnameStructure.pop();
+
+    if(config.usingAllure && browser.capabilities.deviceType) {
+      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+    }
+
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
       const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
       this.videos.push(videoPath);
