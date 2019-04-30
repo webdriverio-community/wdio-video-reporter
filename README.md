@@ -1,26 +1,36 @@
 wdio-video-reporter [![Build Status](https://travis-ci.org/presidenten/wdio-video-reporter.svg?branch=master)](https://travis-ci.org/presidenten/wdio-video-reporter) [![Code Coverage](https://codecov.io/gh/presidenten/wdio-video-reporter/branch/master/graph/badge.svg)](https://codecov.io/gh/presidenten/wdio-video-reporter)
 ===================
 
-This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the testcases automatically get decorated with the videos as well.
+This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the test cases automatically get decorated with the videos as well.
 
 Videos ends up in `wdio.config.outputDir`
 
 Checkout example Allure report with included videos on failed tests here:
-https://presidenten.github.io/wdio-video-reporter/
+https://presidenten.github.io/wdio-video-reporter-example-report/
 
-![example-allure-report](https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif)
+![example-allure-report](https://presidenten.github.io/wdio-video-reporter-example-report/example.gif)
 
 Pros:
-- Nice videos in your allure reports. Yey.
-- Nice human speed videos, even though tests are fast.
-- Works with selenium grid
+- Nice videos in your allure reports
+- Nice human speed videos, even though tests are fast
+- Works with Selenium grid
 - Works with all webdrivers that support `saveScreenshot`
-- Tested on desktop browser Chrome, Firefox, Safari
-- Tested on real IOS and Android devices through [Appium](http://appium.io/docs/en/about-appium/getting-started/)
+- Verified on the following Deskop browsers using Selenium 3.141.59:
+  - Chrome
+  - Firefox
+  - Safari
+  - Internet Explorer 11
+  - Microsoft Edge
+- Verified on the following ios and android devices with [Appium](http://appium.io/docs/en/about-appium/getting-started/) 1.13.0-beta3:
+  - Iphone 8
+  - Ipad Gen 6
+  - Samsung galaxy S9
+  - Samsung galaxy tab A10
 
 Cons:
-- Screenshots makes the tests a little bit slower, but this is mostly mitigated by carefully choosing which  [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message that should result in a screenshot
-- Selenium drivers doesnt include alert-boxes and popups in screenshots, so they are not visible in the videos
+- Works by taking screenshots after "actions", which makes the tests a little bit slower. This is mitigated by carefully choosing which [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) messages that should result in a screenshot
+- Selenium drivers doesn't include alert-boxes and popups in screenshots, so they are not visible in the videos
+
 
 Quick start
 ===========
@@ -61,6 +71,7 @@ Then add the video reporter to the configuration in the reporters propertu:
     }],
   ],
 ```
+
 
 Using with Allure
 -----------------
@@ -104,7 +115,42 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 - `addExcludedActions` Add actions where screenshots are unnecessary. `Default: []`
 - `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
 
-To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-0-0-Video-reporter.log`. This will also leave the screenshots output directory intact for review
+To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
+
+
+Appium setup
+------------
+
+Since `wdio-video-reporter` v1.2.4 there is support to help Allure differentiate between safari and chrome browsers on desktop and devices.
+The reporter uses the custom property `deviceType` to id the different devices.
+Recommended values are `phone` and `tablet`.
+It is recommended to include `browserVersion` as well for _all_ browsers to avoid a bug in Chrome webdriver when using devices in same Selenium grid as desktop Chrome browsers.
+
+The generated video files will also get `deviceType` added to the browser name.
+
+Example appium configuration:
+```
+  "capabilities": [
+    {
+      ...
+      "deviceType": "phone",
+      "browserVersion": "73.0-phone-1",
+      ...
+    }
+  ],
+```
+
+And `wdio-config.json`:
+```
+  capabilities: [
+    {
+      ...
+      'appium:deviceType': 'phone',
+      "browserVersion": "73.0-phone-1",
+      ...
+    },
+  ],
+```
 
 
 Contributing
