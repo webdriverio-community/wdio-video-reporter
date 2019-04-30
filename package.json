@@ -18,6 +18,11 @@
     "type": "git",
     "url": "git+https://github.com/presidenten/wdio-video-reporter.git"
   },
+  "majestic": {
+    "args": [
+      "--config=.jestrc.json"
+    ]
+  },
   "author": "Johan Hernefeldt",
   "license": "MIT",
   "bugs": {
