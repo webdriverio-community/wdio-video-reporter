@@ -288,8 +288,13 @@ class Video extends WdioReporter {
   onTestEnd (test) {
     this.testnameStructure.pop();
 
-    if(config.usingAllure && browser.capabilities.deviceType) {
-      allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+    if(config.usingAllure) {
+      if (browser.capabilities.deviceType) {
+        allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+      }
+      if (browser.capabilities.browserVersion) {
+        allureReporter.addArgument('browserVersion', browser.capabilities.browserVersion);
+      }
     }
 
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {

@@ -381,6 +381,24 @@ describe('wdio-video-recorder - ', () => {
       expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
     });
 
+    it('should add browserVersion as argument to allure', () => {
+      global.browser.capabilities.browserVersion = '1.2.3';
+
+      configModule.default.usingAllure = false;
+      allureMocks.addArgument = jest.fn();
+      let video = new Video(options);
+      video.testname = undefined;
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      expect(allureMocks.addArgument).not.toHaveBeenCalled();
+
+      configModule.default.usingAllure = true;
+      allureMocks.addArgument = jest.fn();
+      video = new Video(options);
+      video.testname = undefined;
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');
+    });
+
   });
 
   describe('onRunnerEnd - ', () => {
