@@ -1,6 +1,8 @@
 wdio-video-reporter [![Build Status](https://travis-ci.org/presidenten/wdio-video-reporter.svg?branch=master)](https://travis-ci.org/presidenten/wdio-video-reporter) [![Code Coverage](https://codecov.io/gh/presidenten/wdio-video-reporter/branch/master/graph/badge.svg)](https://codecov.io/gh/presidenten/wdio-video-reporter)
 ===================
 
+![Logo](https://presidenten.github.io/wdio-video-reporter-example-report/wdio-video-reporter.png)
+
 This is a reporter for [Webdriver IO v5](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the test cases automatically get decorated with the videos as well.
 
 Videos ends up in `wdio.config.outputDir`
