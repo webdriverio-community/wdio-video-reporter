@@ -37,9 +37,9 @@ const config = {
       disableWebdriverScreenshotsReporting: true,
     }],
   ],
-  
-  
-  
+
+
+
   // ============
   // Capabilities
   // ============
@@ -54,12 +54,11 @@ const config = {
     {
       maxInstances: 1,
       browserName: 'firefox',
-      acceptInsecureCerts: true,
     },
   ],
-  
-  
-  
+
+
+
   // ==================
   // Some nice defaults
   // ==================
