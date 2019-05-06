@@ -37,9 +37,8 @@ export default {
         fullname.replace(/\s+/g, '-')
       }--${browserName}--${timestamp}`
     ).replace(/%../g, '')
-     .replace(/\*/g, '')
      .replace(/\./g, '-')
-     .replace(/[\(|\)]/g, '');
+     .replace(/[/\\?%*:'|"<>()]/g, '');
 
     if (filename.length > 250) {
       const truncLength = (250 - 2)/2;
