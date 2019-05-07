@@ -75,8 +75,8 @@ describe('Helpers - ', () => {
       expect(helpers.generateFilename(browser, testname)).toBe(`${name}-dot--${browser}--${date}-000`);
     });
 
-    it('should remove characters: /?<>\\/:*|"()[]<>%', () => {
-      const testname = name + '-/?<>\\/:*|"()[]<>%comment/';
+    it('should remove characters: /?<>\\/:*|"()[]\'<>%', () => {
+      const testname = name + '-/?<>\\/:*|"()[]\'<>%comment/';
       expect(helpers.generateFilename(browser, testname)).toBe(`${name}-comment--${browser}--${date}-000`);
     });
 
