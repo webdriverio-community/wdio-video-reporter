@@ -7,6 +7,8 @@ import * as fs from 'fs-extra';
 import helpers from './helpers.js';
 import config from './config.js';
 
+const originalSleep = helpers.sleep;
+
 describe('Helpers - ', () => {
   let logger = jest.fn();
 
@@ -15,10 +17,45 @@ describe('Helpers - ', () => {
     config.debugMode = false;
     config.videoRenderTimeout = 5;
 
-   helpers.sleep = jest.fn(() => {});
+    helpers.sleep = jest.fn(() => {});
   });
 
+  describe('sleep - ', () => {
+    let originalDate;
 
+    beforeEach(() => {
+      let counter = 0;
+
+      originalDate = Date;
+
+      global.Date = class extends Date {
+        constructor() {
+          super();
+          return counter;
+        }
+
+        getTime() {
+          return counter++;
+        }
+
+        getCounter() {
+          return counter;
+        }
+      };
+
+      helpers.sleep = originalSleep;
+    });
+
+    afterEach(() => {
+      global.Date = originalDate;
+    });
+
+    it('should sleep until requested time has passed', () => {
+      helpers.sleep(100);
+
+      expect(new Date().getCounter()).toBe(100 + 1);
+    });
+  });
 
   describe('debugLog - ', () => {
     const msg = 'A log line';
