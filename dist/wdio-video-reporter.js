@@ -113,9 +113,8 @@ var helpers = {
         fullname.replace(/\s+/g, '-')
       }--${browserName}--${timestamp}`
     ).replace(/%../g, '')
-     .replace(/\*/g, '')
      .replace(/\./g, '-')
-     .replace(/[\(|\)]/g, '');
+     .replace(/[/\\?%*:'|"<>()]/g, '');
 
     if (filename.length > 250) {
       const truncLength = (250 - 2)/2;
@@ -180,7 +179,7 @@ class Video extends WdioReporter {
     super(options);
 
     // User options
-    config.outputDir = options.outputDir || options.logFile.replace(/wdio-.*$/, '');
+    config.outputDir = options.outputDir || config.outputDir;
     if(config.outputDir.length > 1) {
       config.outputDir = config.outputDir.replace(/\/$/, '');
     }

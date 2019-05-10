@@ -18,7 +18,7 @@ export default class Video extends WdioReporter {
     super(options);
 
     // User options
-    config.outputDir = options.outputDir || options.logFile.replace(/wdio-.*$/, '');
+    config.outputDir = options.outputDir || config.outputDir;
     if(config.outputDir.length > 1) {
       config.outputDir = config.outputDir.replace(/\/$/, '');
     }

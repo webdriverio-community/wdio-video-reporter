@@ -95,16 +95,6 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.outputDir).toBe('/');
     });
 
-    it('should set output dir to logfileDir if outputDir is undefined', () => {
-      const options = {
-        logFile,
-      };
-
-      const video = new Video(options);
-      expect(video.config).not.toEqual(originalConfig);
-      expect(video.config.outputDir).toBe(outputDir);
-    });
-
     it('should set the wdio-logger to the helpers module', () => {
       helpers.default.setLogger = jest.fn();
 
@@ -287,10 +277,19 @@ describe('wdio-video-recorder - ', () => {
 
     it('should set recordingpath', () => {
       helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
+      options.outputDir = 'test/';
 
       let video = new Video(options);
       video.onTestStart({ title: 'TEST' });
-      expect(video.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      expect(video.recordingPath).toEqual('test/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+    });
+
+    it('should set recordingpath when outputDir is not configured', () => {
+      helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
+
+      let video = new Video(options);
+      video.onTestStart({ title: 'TEST' });
+      expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
     });
   });
 
