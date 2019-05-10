@@ -59,7 +59,7 @@ export default class Video extends WdioReporter {
    */
   onAfterCommand (jsonWireMsg) {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
-    const commandName = command[0] || 'undefined';
+    const commandName = command ? command[0] : 'undefined';
 
     helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 

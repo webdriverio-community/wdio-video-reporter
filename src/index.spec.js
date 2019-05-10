@@ -174,6 +174,14 @@ describe('wdio-video-recorder - ', () => {
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(video.frameNr).toBe(0);
       });
+
+      it('regexp fails to identify command', () => {
+        options.addExcludedActions = [originalConfig.jsonWireActions[0]];
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        video.onAfterCommand({ endpoint: '/nothing-to-see-here/' });
+        expect(video.frameNr).toBe(0);
+      });
     });
 
     describe('should create video frame when -', () => {
