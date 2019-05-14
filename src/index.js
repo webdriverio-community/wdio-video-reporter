@@ -50,7 +50,8 @@ export default class Video extends WdioReporter {
       config.allureOutputDir = path.resolve(allureConfig[1].outputDir);
     }
     config.usingAllure = !!allureConfig;
-    config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
+    const logLevel = browser.config.logLevel;
+    config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
   }
