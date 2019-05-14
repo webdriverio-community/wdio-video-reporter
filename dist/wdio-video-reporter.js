@@ -206,10 +206,11 @@ class Video extends WdioReporter {
    */
   onRunnerStart (browser) {
     config.allureOutputDir = browser.config.outputDir;
-    config.usingAllure = browser.config.reporters
-      .map(r => typeof r === 'object' ? r[0] : r)
-      .filter(r => r === 'allure')
-      .pop();
+    const allureConfig = browser.config.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
+    if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
+      config.allureOutputDir = path.resolve(allureConfig[1].outputDir);
+    }
+    config.usingAllure = !!allureConfig;
     config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
@@ -220,7 +221,7 @@ class Video extends WdioReporter {
    */
   onAfterCommand (jsonWireMsg) {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
-    const commandName = command[0] || 'undefined';
+    const commandName = command ? command[0] : 'undefined';
 
     helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 
@@ -320,27 +321,34 @@ class Video extends WdioReporter {
    * Finalize report if using allure and clean up
    */
   onRunnerEnd () {
-    helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
-    this.videos = helpers.waitForVideos(this.videos);
-    helpers.debugLog(`\n--- Videos are done ---\n\n`);
+    try {
+      helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
+      this.videos = helpers.waitForVideos(this.videos);
+      helpers.debugLog(`\n--- Videos are done ---\n\n`);
 
-    this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
+      this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
 
-    if (config.usingAllure) {
-      helpers.debugLog(`--- Patching allure report ---\n`);
+      if (config.usingAllure) {
+        helpers.debugLog(`--- Patching allure report ---\n`);
 
-      fs
-      .readdirSync(config.allureOutputDir)
-      .filter(line => line.includes('.mp4'))
-      .map(filename => path.resolve(config.allureOutputDir + '/' + filename))
-      .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
-      .forEach((filepath) => {
-        const videoFilePath = fs.readFileSync(filepath).toString();// The contents of the placeholder file is the video path
-        fs.copySync(videoFilePath, filepath);
-      });
+        fs
+        .readdirSync(config.allureOutputDir)
+        .filter(line => line.includes('.mp4'))
+        .map(filename => path.resolve(config.allureOutputDir, filename))
+        .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
+        .forEach((filepath) => {
+          const videoFilePath = fs.readFileSync(filepath).toString();// The contents of the placeholder file is the video path
+          fs.copySync(videoFilePath, filepath);
+        });
+      }
+
+      this.write(`\n\nDone!\n`);
     }
-
-    this.write(`\n\nDone!\n`);
+    catch(e) {
+      this.write('Error during onRunnerEnd:');
+      this.write(e.message);
+      this.write(e.stack);
+    }
   }
 }
 

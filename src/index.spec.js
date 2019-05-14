@@ -119,6 +119,14 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.allureOutputDir).toBe(browser.config.outputDir);
     });
 
+    it('should use custom allure outputDir if set in config', () => {
+      global.browser.config.reporters.push(['allure', { outputDir: 'customDir'}]);
+
+      let video = new Video(options);
+      video.onRunnerStart(browser);
+      expect(video.config.allureOutputDir).toBe('customDir');
+    });
+
     it('should figure out if allure is being used', () => {
       let video = new Video(options);
       video.onRunnerStart(browser);
@@ -455,6 +463,22 @@ describe('wdio-video-recorder - ', () => {
       expect(fsMocks.copySync.mock.calls.length).toBe(2);
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+    });
+
+    it('should write error message if failing', () => {
+      fsMocks.readFileSync = jest.fn().mockImplementation(() => {
+        throw new Error('Error message');
+      });
+
+      let video = new Video(options);
+      video.write = jest.fn();
+      video.config.allureOutputDir = 'outputDir/allureDir';
+      video.config.usingAllure = true;
+      video.videos = videos;
+
+      video.onRunnerEnd();
+
+      expect(video.write.mock.calls[2][0]).toBe('Error message');
     });
   });
 });
