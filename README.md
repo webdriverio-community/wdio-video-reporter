@@ -37,11 +37,9 @@ Cons:
 Quick start
 ===========
 
-Take a look at the [`./demo`](https://github.com/presidenten/wdio-video-reporter/tree/master/demo) in the repo or the [boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+Checkout the simple template at [https://github.com/presidenten/wdio-template](https://github.com/presidenten/wdio-template) or the [selenium in docker boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
 
-Note that the demo is also used for manual reporter validation when developing, so dependencies needs to be installed with `yarn` or `npm install` in both main directory and demo directory before running `yarn e2e` or `npm run e2e` in demo directory.
-
-The boilerplate has a more standard setup.
+Clone one of the repositories and install dependencies with `yarn` or `npm install`. Then run `yarn e2e` or `npm run e2e` in demo directory and finally `yarn report` or `npm run report` to see allure report.
 
 
 Installation
