@@ -31,6 +31,7 @@ export default class Video extends WdioReporter {
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
     this.videos = [];
+    this.ffmpegCommands = [];
     this.testnameStructure = [];
     this.testname = '';
     this.frameNr = 0;
@@ -138,6 +139,15 @@ export default class Video extends WdioReporter {
     }
 
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
+      const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
+      try {
+        browser.saveScreenshot(filePath);
+        helpers.debugLog('- Screenshot!!\n');
+      } catch (e) {
+        fs.writeFile(filePath, notAvailableImage, 'base64');
+        helpers.debugLog('- Screenshot not available...\n');
+      }
+
       const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
       this.videos.push(videoPath);
 
@@ -151,10 +161,7 @@ export default class Video extends WdioReporter {
 
       helpers.debugLog(`ffmpeg command: ${command}\n`);
 
-      spawn(command, {
-        stdio: 'ignore',
-        shell: true,
-      });
+      this.ffmpegCommands.push(command);
     }
   }
 
@@ -164,6 +171,7 @@ export default class Video extends WdioReporter {
   onRunnerEnd () {
     try {
       helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
+      this.ffmpegCommands.forEach((cmd) => spawn(cmd, { stdio: 'ignore', shell: true}));
       this.videos = helpers.waitForVideos(this.videos);
       helpers.debugLog(`\n--- Videos are done ---\n\n`);
 

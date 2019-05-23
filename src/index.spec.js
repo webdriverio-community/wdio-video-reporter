@@ -328,19 +328,6 @@ describe('wdio-video-recorder - ', () => {
       configModule.default.usingAllure = false;
     });
 
-    it('should spawn ffmpeg when tests fail', () => {
-      let video = new Video(options);
-      video.onTestEnd({ title: 'TEST', state: 'failed' });
-      expect(cpMocks.spawn).toHaveBeenCalled();
-    });
-
-    it('should spawn ffmpeg when saveAllVideos is true', () => {
-      options.saveAllVideos = true;
-      let video = new Video(options);
-      video.onTestEnd({ title: 'TEST', state: 'passed' });
-      expect(cpMocks.spawn).toHaveBeenCalled();
-    });
-
     it('should add video attachment placeholder to Allure, if using Allure', () => {
       let video = new Video(options);
       video.onTestEnd({ title: 'TEST', state: 'failed' });
@@ -363,12 +350,6 @@ describe('wdio-video-recorder - ', () => {
       video.config.usingAllure = true;
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(allureMocks.addAttachment).toHaveBeenCalled();
-    });
-
-    it('should not spawn ffmpeg on passed tests', () => {
-      let video = new Video(options);
-      video.onTestEnd({ title: 'TEST', state: 'passed' });
-      expect(cpMocks.spawn).not.toHaveBeenCalled();
     });
 
     it('should remove test title from testnameStructure', () => {
@@ -414,6 +395,39 @@ describe('wdio-video-recorder - ', () => {
       expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');
     });
 
+    it('should not take a last screenshot if test passed', () => {
+      let video = new Video(options);
+      video.recordingPath = 'folder';
+
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      expect(browser.saveScreenshot).not.toHaveBeenCalledWith('folder/0000.png');
+    });
+
+    it('should take a last screenshot if test failed', () => {
+      let video = new Video(options);
+      video.recordingPath = 'folder';
+
+      video.onTestEnd({ title: 'TEST', state: 'failed' });
+      expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
+    });
+
+    it('should take a last screenshot if test passed and config saveAllvideos', () => {
+      options.saveAllVideos = true;
+      let video = new Video(options);
+      video.recordingPath = 'folder';
+
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
+    });
+
+    it('should write notAvailable.png as last screenshot if saveScreenshot fails', () => {
+      browser.saveScreenshot.mockImplementationOnce(() => { throw 'error'; });
+      let video = new Video(options);
+      video.recordingPath = 'folder';
+
+      video.onTestEnd({ title: 'TEST', state: 'failed' });
+      expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0000.png', 'file-mock', 'base64');
+    });
   });
 
   describe('onRunnerEnd - ', () => {
@@ -422,6 +436,32 @@ describe('wdio-video-recorder - ', () => {
     beforeEach(() => {
       resetFsMocks();
       helpers.default.waitForVideos = jest.fn().mockReturnValue(videos);
+    });
+
+    it('should not spawn ffmpeg on passed tests', () => {
+      let video = new Video(options);
+
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      video.onRunnerEnd();
+      expect(cpMocks.spawn).not.toHaveBeenCalled();
+    });
+
+
+    it('should spawn ffmpeg when tests fail', () => {
+      let video = new Video(options);
+
+      video.onTestEnd({ title: 'TEST', state: 'failed' });
+      video.onRunnerEnd();
+      expect(cpMocks.spawn).toHaveBeenCalled();
+    });
+
+    it('should spawn ffmpeg when saveAllVideos is true', () => {
+      options.saveAllVideos = true;
+      let video = new Video(options);
+
+      video.onTestEnd({ title: 'TEST', state: 'passed' });
+      video.onRunnerEnd();
+      expect(cpMocks.spawn).toHaveBeenCalled();
     });
 
     it('should wait for videos to render', () => {

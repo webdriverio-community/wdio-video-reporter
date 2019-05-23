@@ -192,6 +192,7 @@ class Video extends WdioReporter {
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
     this.videos = [];
+    this.ffmpegCommands = [];
     this.testnameStructure = [];
     this.testname = '';
     this.frameNr = 0;
@@ -211,7 +212,8 @@ class Video extends WdioReporter {
       config.allureOutputDir = path.resolve(allureConfig[1].outputDir);
     }
     config.usingAllure = !!allureConfig;
-    config.debugMode = browser.config.logLevel.toLowerCase() === 'debug';
+    const logLevel = browser.config.logLevel;
+    config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
   }
@@ -298,6 +300,15 @@ class Video extends WdioReporter {
     }
 
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
+      const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
+      try {
+        browser.saveScreenshot(filePath);
+        helpers.debugLog('- Screenshot!!\n');
+      } catch (e) {
+        fs.writeFile(filePath, notAvailableImage, 'base64');
+        helpers.debugLog('- Screenshot not available...\n');
+      }
+
       const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
       this.videos.push(videoPath);
 
@@ -305,15 +316,13 @@ class Video extends WdioReporter {
         allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
       }
 
-      const command = ffmpeg.path + ` -y -r 10 -i ${this.recordingPath}/%04d.png -vcodec libx264` +
+      const command = `"${ffmpeg.path}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
         ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-        ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
+        ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
+
       helpers.debugLog(`ffmpeg command: ${command}\n`);
 
-      child_process.spawn(command, {
-        stdio: 'ignore',
-        shell: true,
-      });
+      this.ffmpegCommands.push(command);
     }
   }
 
@@ -323,6 +332,7 @@ class Video extends WdioReporter {
   onRunnerEnd () {
     try {
       helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
+      this.ffmpegCommands.forEach((cmd) => child_process.spawn(cmd, { stdio: 'ignore', shell: true}));
       this.videos = helpers.waitForVideos(this.videos);
       helpers.debugLog(`\n--- Videos are done ---\n\n`);
 
