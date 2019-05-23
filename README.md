@@ -37,7 +37,7 @@ Cons:
 Quick start
 ===========
 
-Checkout the simple template at [https://github.com/presidenten/wdio-template](https://github.com/presidenten/wdio-template) or the [selenium in docker boilerplate](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
+Checkout the simple template at [wdio-template](https://github.com/presidenten/wdio-template) or the [boilerplate with docker](https://github.com/presidenten/WebdriverIO-wdio-v5-boilerplate-with-videos-and-docker) to quickly get up to speed.
 
 Clone one of the repositories and install dependencies with `yarn` or `npm install`. Then run `yarn e2e` or `npm run e2e` in demo directory and finally `yarn report` or `npm run report` to see allure report.
 
