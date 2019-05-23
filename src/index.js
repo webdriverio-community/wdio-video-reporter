@@ -145,9 +145,10 @@ export default class Video extends WdioReporter {
         allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
       }
 
-      const command = ffmpegPath + ` -y -r 10 -i ${this.recordingPath}/%04d.png -vcodec libx264` +
+      const command = `"${ffmpegPath}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
         ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-        ` ${path.resolve(config.outputDir, this.testname)}.mp4`;
+        ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
+
       helpers.debugLog(`ffmpeg command: ${command}\n`);
 
       spawn(command, {
