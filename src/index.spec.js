@@ -55,8 +55,7 @@ describe('wdio-video-recorder - ', () => {
     });
 
    it('should keep default config', () => {
-      options.outputDir = originalConfig.outputDir; // To avoid triggering logFile parsing for outputDir
-      const video = new Video(options);
+      const video = new Video({}); // To avoid triggering logFile parsing for outputDir
       expect(video.config).toEqual(originalConfig);
       expect(video.config.excludedActions).not.toContain(':unitTestingAction1234567890:');
       expect(video.config.jsonWireActions).not.toContain(':unitTestingAction1234567890:');
@@ -65,7 +64,6 @@ describe('wdio-video-recorder - ', () => {
     it('should update config with options', () => {
       const options = {
         logFile,
-        outputDir: 'test',
         saveAllVideos: 'test',
         videoSlowdownMultiplier: 'test',
         videoRenderTimeout: 'test',
@@ -75,7 +73,7 @@ describe('wdio-video-recorder - ', () => {
 
       const video = new Video(options);
       expect(video.config).not.toEqual(originalConfig);
-      expect(video.config.outputDir).toBe(options.outputDir);
+      expect(video.config.outputDir).toBe(outputDir);
       expect(video.config.saveAllVideos).toBe(options.saveAllVideos);
       expect(video.config.videoSlowdownMultiplier).toBe(options.videoSlowdownMultiplier);
       expect(video.config.videoRenderTimeout).toBe(options.videoRenderTimeout);
@@ -84,13 +82,14 @@ describe('wdio-video-recorder - ', () => {
     });
 
     it('should remove trailing / in outputDir', () => {
-      options.outputDir = 'test/';
+      options = { logFile: 'test/' + logFileFilename };
+
       const video = new Video(options);
       expect(video.config.outputDir).toBe('test');
     });
 
     it('should not remove trailing / in outputDir if /', () => {
-      options.outputDir = '/';
+      options = { logFile: '\/' + logFileFilename };
       const video = new Video(options);
       expect(video.config.outputDir).toBe('/');
     });
@@ -293,11 +292,10 @@ describe('wdio-video-recorder - ', () => {
 
     it('should set recordingpath', () => {
       helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-      options.outputDir = 'test/';
 
       let video = new Video(options);
       video.onTestStart({ title: 'TEST' });
-      expect(video.recordingPath).toEqual('test/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      expect(video.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
     });
 
     it('should set recordingpath when outputDir is not configured', () => {

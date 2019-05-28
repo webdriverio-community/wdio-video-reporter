@@ -179,9 +179,10 @@ class Video extends WdioReporter {
     super(options);
 
     // User options
-    config.outputDir = options.outputDir || config.outputDir;
+    // Wdio doesn't pass outputDir, but logFile which includes outputDir
+    config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
     if(config.outputDir.length > 1) {
-      config.outputDir = config.outputDir.replace(/\/$/, '');
+      config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
     }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
