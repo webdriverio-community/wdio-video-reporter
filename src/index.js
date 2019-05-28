@@ -20,7 +20,7 @@ export default class Video extends WdioReporter {
     // User options
     config.outputDir = options.outputDir || config.outputDir;
     if(config.outputDir.length > 1) {
-      config.outputDir = config.outputDir.replace(/\/$/, '');
+      config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
     }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
