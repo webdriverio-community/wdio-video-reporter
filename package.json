@@ -31,8 +31,8 @@
   "homepage": "https://github.com/presidenten/wdio-video-reporter#readme",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
-    "@wdio/allure-reporter": "^5.7.11",
-    "@wdio/reporter": "^5.7.8",
+    "@wdio/allure-reporter": "^5.9.3",
+    "@wdio/reporter": "^5.9.3",
     "fs-extra": "^6.0.1",
     "mkdirp": "^0.5.1"
   },
@@ -45,8 +45,8 @@
     "codecov": "^3.5.0",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
-    "rollup": "^1.12.3",
-    "rollup-plugin-node-resolve": "^5.0.0",
-    "rollup-pluginutils": "^2.7.1"
+    "rollup": "^1.14.0",
+    "rollup-plugin-node-resolve": "^5.0.1",
+    "rollup-pluginutils": "^2.8.1"
   }
 }
