@@ -12,13 +12,13 @@ A clear and concise description of what the bug is.
 
 **Log**
 Please set `wdio.config.logLevel = 'debug'`, then post the whole file called `wdio-0-0-video-reporter.log`.
-If it is very large, consider using a [gist](http://gist.github.com).
+If it is very large, consider using a gist - http://gist.github.com.
 
 **To Reproduce**
 Include code or an example repository that can easily be set up.
 
-A great way to isolate an issue is and get a quicker fix, is to fork this repo: https://github.com/presidenten/wdio-template
-Check if the issue is existing in the template, otherwise override wdio config with your settings and try to reproduce the test code that causes the issue by using different web controls on [Selenium Easy](https://www.seleniumeasy.com/test/) or [The Internet](https://the-internet.herokuapp.com/).
+A great way to help isolate an issue and thus get a quicker fix, is to fork this repo: https://github.com/presidenten/wdio-template
+Check if the issue is existing in the template, otherwise override wdio config with your settings and try to reproduce the test code that causes the issue by using different web controls on Selenium Easy (https://www.seleniumeasy.com/test/) or The Internet (https://the-internet.herokuapp.com/).
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
