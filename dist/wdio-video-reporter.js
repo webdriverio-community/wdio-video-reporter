@@ -18,7 +18,7 @@ var config = {
   videoRenderTimeout: 5,
 
   outputDir: '_results_',
-  allureOutputDir: '_results_/allure-raw',
+  allureOutputDir: 'allure-results',
 
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',
@@ -207,7 +207,6 @@ class Video extends WdioReporter {
    * Set wdio config options
    */
   onRunnerStart (browser) {
-    config.allureOutputDir = browser.config.outputDir;
     const allureConfig = browser.config.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
     if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
       config.allureOutputDir = path.resolve(allureConfig[1].outputDir);
