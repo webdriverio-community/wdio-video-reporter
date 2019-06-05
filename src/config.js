@@ -6,7 +6,7 @@ export default {
   videoRenderTimeout: 5,
 
   outputDir: '_results_',
-  allureOutputDir: '_results_/allure-raw',
+  allureOutputDir: 'allure-results',
 
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',

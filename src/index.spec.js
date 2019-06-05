@@ -19,6 +19,7 @@ const outputDir = 'outputDir';
 const logFileFilename = 'wdio-0-0-Video-reporter.log';
 const logFile = outputDir + '/' + logFileFilename;
 const originalConfig = JSON.parse(JSON.stringify(configModule.default));
+const allureDefaultOutputDir = 'allure-results';
 
 describe('wdio-video-recorder - ', () => {
   let options;
@@ -112,10 +113,10 @@ describe('wdio-video-recorder - ', () => {
     beforeEach(() => {
     });
 
-    it('should save Allure outputDir (automatically gets set as outputdir by wdio)', () => {
+    it('should user Allure default outputDir if not set in wdio config', () => {
       const video = new Video(options);
       video.onRunnerStart(browser);
-      expect(video.config.allureOutputDir).toBe(browser.config.outputDir);
+      expect(video.config.allureOutputDir).toBe(allureDefaultOutputDir);
     });
 
     it('should use custom allure outputDir if set in config', () => {
