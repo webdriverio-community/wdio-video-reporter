@@ -1,6 +1,9 @@
 import fs from 'fs-extra';
+import path from 'path';
+import mkdirp from 'mkdirp';
 
 import config from './config.js';
+import notAvailableImage from './assets/not-available.png';
 
 let writeLog;
 export default {
@@ -19,6 +22,73 @@ export default {
     }
   },
 
+  // Check if there are multiple browsers
+  // Actions need to be performed for browser or all multiremote browsers
+  // Return list of browsers
+  getBrowsers(browser) {
+    const browsers = [];
+    if (browser.isMultiremote) {
+      Object.keys(browser.capabilities).forEach(key => {
+        let value = browser.capabilities[key];
+        this.browsers.push({
+          isMultiremote: true,
+          name: key,
+          obj: value,
+        });
+      });
+    } else {
+      browsers.push({
+        name: 'browser',
+        obj: browser,
+      });
+    }
+
+    return browsers;
+  },
+
+  // Take screenshot for each browser passed
+  takeScreenshot(browsers) {
+    browsers.forEach(b => {
+      let filePath;
+
+      try {
+          let filename;
+          if (b.name === 'browser') {
+            filename = b.frameNr.toString().padStart(4, '0') + '.png';
+          } else {
+            filename = b.name + '-' + b.frameNr.toString().padStart(4, '0') + '.png';            
+          }
+          filePath = path.resolve(b.recordingPath, filename);
+          global[b.name].saveScreenshot(filePath);
+          b.frameNr++;
+
+      } catch (e) {
+        fs.writeFile(filePath, notAvailableImage, 'base64');
+        this.debugLog('- Screenshot not available...\n');
+      }
+    });
+  },
+
+  setBrowserAttributes(browsers, config, fullname) {
+    browsers.forEach(b => {
+      if (b.name === 'browser') {
+         b.browserName = b.obj.capabilities.browserName.toUpperCase();
+      } else{
+        b.browserName = `${b.obj.browserName.toUpperCase()}-${b.name}`;
+      }
+      if (b.obj.capabilities.hasOwnProperty('deviceType') && b.obj.capabilities.deviceType) {
+        b.browserName += `-${b.obj.capabilities.deviceType.replace(/ /g, '-')}`;
+      }
+    });
+
+    browsers.forEach(b => {
+      b.testname = this.generateFilename(b.browserName, fullname);
+      b.frameNr = 0;
+      b.recordingPath = path.resolve(config.outputDir, config.rawPath, b.testname);
+      mkdirp.sync(path.resolve(config.outputDir, config.rawPath, b.testname));
+    });  
+  },
+  
   generateFilename(browserName, fullname) {
     const date = new Date();
     const msec = ('000' + date.getMilliseconds()).slice(-3);

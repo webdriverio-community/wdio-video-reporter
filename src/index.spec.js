@@ -170,7 +170,11 @@ describe('wdio-video-recorder - ', () => {
 
       it('command is not present in included JsonWireActions', () => {
         let video = new Video(options);
-        video.recordingPath = 'folder';
+        video.onRunnerStart(browser);
+        video.onTestStart({ title: 'TEST' });      
+        video.browsers.forEach(b => {
+          b.recordingPath = 'folder';
+        });
         video.onAfterCommand({ endpoint: '/session/abcdef/piripiri' });
         expect(video.frameNr).toBe(0);
       });
@@ -178,7 +182,11 @@ describe('wdio-video-recorder - ', () => {
       it('command is present in excluded JsonWireActions', () => {
         options.addExcludedActions = [originalConfig.jsonWireActions[0]];
         let video = new Video(options);
-        video.recordingPath = 'folder';
+        video.onRunnerStart(browser);
+        video.onTestStart({ title: 'TEST' });      
+        video.browsers.forEach(b => {
+          b.recordingPath = 'folder';
+        });
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(video.frameNr).toBe(0);
       });
@@ -186,7 +194,11 @@ describe('wdio-video-recorder - ', () => {
       it('regexp fails to identify command', () => {
         options.addExcludedActions = [originalConfig.jsonWireActions[0]];
         let video = new Video(options);
-        video.recordingPath = 'folder';
+        video.onRunnerStart(browser);
+        video.onTestStart({ title: 'TEST' });      
+        video.browsers.forEach(b => {
+          b.recordingPath = 'folder';
+        });
         video.onAfterCommand({ endpoint: '/nothing-to-see-here/' });
         expect(video.frameNr).toBe(0);
       });
@@ -195,8 +207,11 @@ describe('wdio-video-recorder - ', () => {
     describe('should create video frame when -', () => {
       it('command is present in included JsonWireActions', () => {
         let video = new Video(options);
-        video.recordingPath = 'folder';
-
+        video.onRunnerStart(browser);
+        video.onTestStart({ title: 'TEST' });      
+        video.browsers.forEach(b => {
+          b.recordingPath = 'folder';
+        });
         video.onAfterCommand({ endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0] });
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
 
@@ -261,33 +276,49 @@ describe('wdio-video-recorder - ', () => {
 
     it('should reset frameNr', () => {
       let video = new Video(options);
-      video.frameNr = 42;
+      video.browsers.forEach(b => {
+        b.frameNr = 42;
+      });
       video.onTestStart({ title: 'TEST' });
-      expect(video.frameNr).toEqual(0);
+      video.browsers.forEach(b => {
+        expect(b.frameNr).toEqual(0);
+      });
     });
 
     it('should generate testname', () => {
       helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
 
       let video = new Video(options);
-      video.testname = undefined;
-      video.onTestStart({ title: 'TEST' });
-      expect(video.testname).not.toEqual(undefined);
-      expect(helpers.default.generateFilename).toHaveBeenCalled();
+      video.onRunnerStart(browser);
+      video.browsers.forEach(b => {
+        b.testname = undefined;
+      });      
+      video.onTestStart({ title: 'TEST' });      
+      video.browsers.forEach(b => {
+        expect(b.testname).not.toEqual(undefined);
+        expect(helpers.default.generateFilename).toHaveBeenCalled();
+      });            
     });
 
     it('should append deviceType to browsername', () => {
       helpers.default.generateFilename = jest.fn();
       let video = new Video(options);
-      video.testname = undefined;
-      video.onTestStart({ title: 'TEST' });
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });      
+      video.browsers.forEach(b => {
+        b.testname = undefined;
+      });      
       expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
 
       helpers.default.generateFilename = jest.fn();
-      global.browser.capabilities.deviceType = 'myDevice';
+      
       video = new Video(options);
-      video.testname = undefined;
+      video.onRunnerStart(browser);
+      video.browsers.forEach(b => {
+        b.obj.capabilities.deviceType = 'myDevice';
+      });
       video.onTestStart({ title: 'TEST' });
+
       expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
     });
 
@@ -296,7 +327,9 @@ describe('wdio-video-recorder - ', () => {
 
       let video = new Video(options);
       video.onTestStart({ title: 'TEST' });
-      expect(video.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      video.browsers.forEach(b => {
+        expect(b.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      });
     });
 
     it('should set recordingpath when outputDir is not configured', () => {
@@ -304,7 +337,9 @@ describe('wdio-video-recorder - ', () => {
 
       let video = new Video(options);
       video.onTestStart({ title: 'TEST' });
-      expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      video.browsers.forEach(b => {
+        expect(b.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
+      });
     });
   });
 
@@ -335,17 +370,23 @@ describe('wdio-video-recorder - ', () => {
       allureMocks.addAttachment = jest.fn();
       options.saveAllVideos = true;
       video = new Video(options);
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });      
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(allureMocks.addAttachment).not.toHaveBeenCalled();
 
       allureMocks.addAttachment = jest.fn();
       video = new Video(options);
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });      
       video.config.usingAllure = true;
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(allureMocks.addAttachment).toHaveBeenCalled();
 
       allureMocks.addAttachment = jest.fn();
       video = new Video(options);
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });      
       video.config.usingAllure = true;
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(allureMocks.addAttachment).toHaveBeenCalled();
@@ -359,53 +400,71 @@ describe('wdio-video-recorder - ', () => {
     });
 
     it('should add deviceType as argument to allure', () => {
-      global.browser.capabilities.deviceType = 'myDevice';
-
+      let video = new Video(options);
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.obj.capabilities.deviceType = 'myDevice';
+      });
       configModule.default.usingAllure = false;
       allureMocks.addArgument = jest.fn();
-      let video = new Video(options);
-      video.testname = undefined;
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(allureMocks.addArgument).not.toHaveBeenCalled();
 
+      video = new Video(options);
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.obj.capabilities.deviceType = 'myDevice';
+      });
       configModule.default.usingAllure = true;
       allureMocks.addArgument = jest.fn();
-      video = new Video(options);
-      video.testname = undefined;
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
     });
 
     it('should add browserVersion as argument to allure', () => {
-      global.browser.capabilities.browserVersion = '1.2.3';
-
       configModule.default.usingAllure = false;
       allureMocks.addArgument = jest.fn();
       let video = new Video(options);
-      video.testname = undefined;
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.testname = undefined;
+      });
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(allureMocks.addArgument).not.toHaveBeenCalled();
 
-      configModule.default.usingAllure = true;
       allureMocks.addArgument = jest.fn();
       video = new Video(options);
-      video.testname = undefined;
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      configModule.default.usingAllure = true;
+      video.browsers.forEach(b => {
+        b.obj.capabilities.browserVersion = '1.2.3';
+      });
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');
     });
 
     it('should not take a last screenshot if test passed', () => {
       let video = new Video(options);
-      video.recordingPath = 'folder';
-
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.recordingPath = 'folder';
+      });
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(browser.saveScreenshot).not.toHaveBeenCalledWith('folder/0000.png');
     });
 
     it('should take a last screenshot if test failed', () => {
       let video = new Video(options);
-      video.recordingPath = 'folder';
-
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.recordingPath = 'folder';
+      });   
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
     });
@@ -413,8 +472,11 @@ describe('wdio-video-recorder - ', () => {
     it('should take a last screenshot if test passed and config saveAllvideos', () => {
       options.saveAllVideos = true;
       let video = new Video(options);
-      video.recordingPath = 'folder';
-
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.recordingPath = 'folder';
+      });      
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
     });
@@ -422,8 +484,12 @@ describe('wdio-video-recorder - ', () => {
     it('should write notAvailable.png as last screenshot if saveScreenshot fails', () => {
       browser.saveScreenshot.mockImplementationOnce(() => { throw 'error'; });
       let video = new Video(options);
-      video.recordingPath = 'folder';
-
+      
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
+      video.browsers.forEach(b => {
+        b.recordingPath = 'folder';
+      });
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0000.png', 'file-mock', 'base64');
     });
@@ -449,6 +515,8 @@ describe('wdio-video-recorder - ', () => {
     it('should spawn ffmpeg when tests fail', () => {
       let video = new Video(options);
 
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
       video.onTestEnd({ title: 'TEST', state: 'failed' });
       video.onRunnerEnd();
       expect(cpMocks.spawn).toHaveBeenCalled();
@@ -458,6 +526,8 @@ describe('wdio-video-recorder - ', () => {
       options.saveAllVideos = true;
       let video = new Video(options);
 
+      video.onRunnerStart(browser);
+      video.onTestStart({ title: 'TEST' });
       video.onTestEnd({ title: 'TEST', state: 'passed' });
       video.onRunnerEnd();
       expect(cpMocks.spawn).toHaveBeenCalled();
