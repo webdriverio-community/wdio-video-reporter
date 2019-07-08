@@ -281,7 +281,9 @@ class Video extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    fs.removeSync(this.recordingPath);
+    if(this.recordingPath !== undefined) {
+      fs.removeSync(this.recordingPath);
+    }
   }
 
   /**
