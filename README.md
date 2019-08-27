@@ -88,7 +88,7 @@ Adding the Allure reporter as well, automatically updates the reports with video
       outputDir: './_results_/allure-raw',
       disableWebdriverStepsReporting: true,
       disableWebdriverScreenshotsReporting: true,
-    }],s
+    }],
   ],
 ```
 
