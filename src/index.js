@@ -15,6 +15,9 @@ export default class Video extends WdioReporter {
    * Set reporter options
    */
   constructor (options) {
+    if (options.logLevel === 'silent') {
+      options.logFile = undefined;
+    }
     super(options);
 
     // User options

@@ -55,6 +55,13 @@ describe('wdio-video-recorder - ', () => {
       expect(video.optionsSetInConstructor).toBe(options);
     });
 
+    it('should respect logLevel silent', () => {
+      options.logLevel = 'silent';
+      expect(options.logFile).toBe(logFile);
+      new Video(options);
+      expect(options.logFile).toBe(undefined);
+    });
+
    it('should keep default config', () => {
       const video = new Video({}); // To avoid triggering logFile parsing for outputDir
       expect(video.config).toEqual(originalConfig);
@@ -315,7 +322,7 @@ describe('wdio-video-recorder - ', () => {
       video.onTestSkip();
       expect(fsMocks.removeSync).toHaveBeenCalledWith('PATH');
     });
-  
+
     it('should not call removeSync if recordingPath is undefined', () => {
       let video = new Video(options);
       video.recordingPath = undefined;
