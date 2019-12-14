@@ -4,7 +4,7 @@ import path from 'path';
 import helpers from '../helpers.js';
 import config from '../config.js';
 
-module.exports = {
+export default {
   /**
    * Init
    */

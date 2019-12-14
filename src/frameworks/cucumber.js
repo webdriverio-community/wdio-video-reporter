@@ -6,9 +6,9 @@ import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
 import helpers from '../helpers.js';
 import config from '../config.js';
-import notAvailableImage from './assets/not-available.png';
+import notAvailableImage from '../assets/not-available.png';
 
-module.exports = {
+export default {
   /**
    * Init
    */

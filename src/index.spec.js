@@ -10,6 +10,17 @@ import * as configModule from './config.js';
 import * as helpers from './helpers.js';
 import Video from './index.js';
 
+jest.mock('./frameworks/default.js', () => ({
+  frameworkInit: jest.fn().mockImplementation(),
+}));
+
+jest.mock('./frameworks/cucumber.js', () => ({
+  frameworkInit: jest.fn().mockImplementation(),
+}));
+
+import defaultFrameworkMock from 'frameworks/default.js';
+import cucumberFrameworkMock from 'frameworks/cucumber.js';
+
 // Built in modules are not mocked by default
 jest.mock('path');
 jest.mock('child_process');
@@ -26,6 +37,8 @@ describe('wdio-video-recorder - ', () => {
   beforeEach(() => {
     resetFsMocks();
     resetWriteMock();
+    defaultFrameworkMock.frameworkInit.mockReset();
+    cucumberFrameworkMock.frameworkInit.mockReset();
 
     options = { logFile };
 
@@ -165,7 +178,7 @@ describe('wdio-video-recorder - ', () => {
       jest.mock('frameworks/default.js', () => ({
         frameworkInit: jest.fn().mockImplementation(),
       }));
-      const defaultFrameworkMock = require('frameworks/default.js');
+
 
       let video = new Video(options);
       browser.config.framework = undefined;
@@ -195,11 +208,6 @@ describe('wdio-video-recorder - ', () => {
     });
 
     it('should import code for the correct framework - cucumber', () => {
-      jest.mock('./frameworks/cucumber.js', () => ({
-        frameworkInit: jest.fn().mockImplementation(),
-      }));
-      const cucumberFrameworkMock = require('./frameworks/cucumber.js');
-
       let video = new Video(options);
       browser.config.framework = 'cucumber';
       video.onRunnerStart(browser);
