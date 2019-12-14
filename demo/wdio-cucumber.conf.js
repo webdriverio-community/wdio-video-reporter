@@ -22,12 +22,12 @@ const config = {
   // ===============
   // Custom settings
   // ===============
-  logLevel: 'debug', // trace | debug | info | warn | error | silent
+  logLevel: 'info', // trace | debug | info | warn | error | silent
   outputDir: './_results_',
   reporters: [
     'spec',
     [video, {
-      saveAllVideos: true,       // If true, also saves videos for successful test cases
+      saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering
     }],
@@ -63,9 +63,6 @@ const config = {
   // ==================
   // Some nice defaults
   // ==================
-  specs: [
-    './cucumber-scenarios/**/*.feature',
-  ],
   deprecationWarnings: true,
   maxInstances: 10,
   sync: true,
@@ -78,6 +75,9 @@ const config = {
   // =================
   // Cucumber settings
   // =================
+  specs: [
+    './cucumber-scenarios/**/*.feature',
+  ],
   framework: 'cucumber',
   cucumberOpts: {
     requireModule: ['@babel/register'],
