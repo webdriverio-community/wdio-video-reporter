@@ -118,6 +118,20 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 
+Cucumber support
+----------------
+
+The settings need to be updated to run Cucumber:
+- `framework: 'cucumber'` Tells the wdio and the framework that Cucumber is used instead of Jasmine
+- `cucumberOpts: {...}` Put all your cucumber options here. Check the [Cucumber boilerplate](https://github.com/webdriverio/cucumber-boilerplate) for examples
+- `specs: ['./src/**/*.features']` To use the correct file ending
+
+If you are using the Allure reporter, please add the following Allure option
+- `useCucumberStepReporter: true`
+
+For a complete example, checkout the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
+
+
 Appium setup
 ------------
 
@@ -160,3 +174,8 @@ Fork, make changes, write some tests, lint, run tests, build, and verify in the 
 
 The demo folder works with the built version of the library, so make sure to build if you added new features and want to try them out.
 
+
+Thanks
+======
+
+Thanks to [Jonn Set](https://github.com/jonn-set) for fixing Cucumber support which alot of users have asked for.
