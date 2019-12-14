@@ -27,7 +27,7 @@ describe('wdio-video-recorder - ', () => {
     resetFsMocks();
     resetWriteMock();
 
-    options = {logFile};
+    options = { logFile };
 
     Object.keys(configModule.default).forEach((key) => {
       configModule.default[key] = originalConfig[key];
@@ -40,7 +40,7 @@ describe('wdio-video-recorder - ', () => {
       },
       config: {
         logLevel: 'info',
-        framework: 'mocha',
+        framework: 'jasmine',
         outputDir: 'test/allure',
         reporters: [
           'video',
@@ -160,6 +160,51 @@ describe('wdio-video-recorder - ', () => {
       video.onRunnerStart(browser);
       expect(video.config.debugMode).toBeTruthy();
     });
+
+    it('should import code for the correct framework - default', () => {
+      jest.mock('frameworks/default.js', () => ({
+        frameworkInit: jest.fn().mockImplementation(),
+      }));
+      const defaultFrameworkMock = require('frameworks/default.js');
+
+      let video = new Video(options);
+      browser.config.framework = undefined;
+      video.onRunnerStart(browser);
+      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+      defaultFrameworkMock.frameworkInit.mockReset();
+
+      video = new Video(options);
+      browser.config.framework = 'jasmine';
+      video.onRunnerStart(browser);
+      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+      defaultFrameworkMock.frameworkInit.mockReset();
+
+      video = new Video(options);
+      browser.config.framework = 'mocha';
+      video.onRunnerStart(browser);
+      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+      defaultFrameworkMock.frameworkInit.mockReset();
+
+      video = new Video(options);
+      browser.config.framework = '123456789';
+      video.onRunnerStart(browser);
+      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+    });
+
+    it('should import code for the correct framework - cucumber', () => {
+      jest.mock('./frameworks/cucumber.js', () => ({
+        frameworkInit: jest.fn().mockImplementation(),
+      }));
+      const cucumberFrameworkMock = require('./frameworks/cucumber.js');
+
+      let video = new Video(options);
+      browser.config.framework = 'cucumber';
+      video.onRunnerStart(browser);
+      expect(cucumberFrameworkMock.frameworkInit).toHaveBeenCalled();
+    });
   });
 
   describe('onAfterCommand - ', () => {
@@ -240,102 +285,23 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onSuiteStart - ', () => {
-
-    it('should add suite title to testnameStructure', () => {
+    it('should call frameworks onSuiteStart', () => {
       let video = new Video(options);
-      expect(video.testnameStructure).toEqual([]);
-      video.onSuiteStart({title: 'DESCRIBE1'});
-      expect(video.testnameStructure).toEqual(['DESCRIBE1']);
-
-      video.onSuiteStart({title: 'DESCRIBE2'});
-      expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
+      video.framework = {
+        onSuiteStart: jest.fn(),
+      };
+      video.onSuiteStart({title: 'TEST'});
+      expect(video.framework.onSuiteStart).toHaveBeenCalled();
     });
-
-    describe('cucumber - ', () => {
-
-      beforeEach(() => {
-        global.browser.config.framework = 'cucumber';
-      });
-
-      describe('scenario - ', () => {
-        it('should add suite title to testnameStructure', () => {
-          let video = new Video(options);
-          expect(video.testnameStructure).toEqual([]);
-          video.onSuiteStart({title: 'DESCRIBE1', type: 'scenario'});
-          expect(video.testnameStructure).toEqual(['DESCRIBE1']);
-
-          video.onSuiteStart({title: 'DESCRIBE2', type: 'scenario'});
-          expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
-        });
-
-        it('should reset frameNr', () => {
-          let video = new Video(options);
-          video.frameNr = 42;
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(video.frameNr).toEqual(0);
-        });
-
-        it('should generate testname', () => {
-          helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-          let video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(video.testname).not.toEqual(undefined);
-          expect(helpers.default.generateFilename).toHaveBeenCalled();
-        });
-
-        it('should append deviceType to browsername', () => {
-          helpers.default.generateFilename = jest.fn();
-          let video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
-
-          helpers.default.generateFilename = jest.fn();
-          global.browser.capabilities.deviceType = 'myDevice';
-          video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
-        });
-
-        it('should set recordingpath', () => {
-          helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-          let video = new Video(options);
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(video.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
-        });
-
-        it('should set recordingpath when outputDir is not configured', () => {
-          helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-          let video = new Video(options);
-          video.onSuiteStart({title: 'TEST', type: 'scenario'});
-          expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
-        });
-      });
-
-      describe('feature - ', () => {
-        it('should not generate testname', () => {
-          helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-          let video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteStart({title: 'TEST', type: 'feature'});
-          expect(video.testname).toEqual(undefined);
-          expect(helpers.default.generateFilename).not.toHaveBeenCalled();
-        });
-      });
-    });
-
   });
 
   describe('onSuiteEnd - ', () => {
     it('should remove suite title from testnameStructure', () => {
       global.browser.config.framework = 'mocha';
       let video = new Video(options);
+      video.framework = {
+        onSuiteEnd: jest.fn(),
+      };
       video.testnameStructure = ['DESCRIBE1', 'DESCRIBE2', 'DESCRIBE3'];
       video.onSuiteEnd({title: 'DESCRIBE3'});
       expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
@@ -345,236 +311,25 @@ describe('wdio-video-recorder - ', () => {
       expect(video.testnameStructure).toEqual([]);
     });
 
-    describe('cucumber - ', () => {
-
-      beforeEach(() => {
-        cpMocks.spawn = jest.fn();
-        allureMocks.addAttachment = jest.fn();
-        allureMocks.addArgument = jest.fn();
-        options.saveAllVideos = false;
-        global.browser.config.framework = 'cucumber';
-        configModule.default.saveAllVideos = false;
-        configModule.default.usingAllure = false;
-      });
-
-      describe('scenario - ', () => {
-
-        let passedScenario = {
-          type: 'scenario',
-          title: 'SCENARIO 1',
-          tests: [
-            {
-              type: 'test',
-              title: 'TEST 1',
-              state: 'passed   ',
-            },
-            {
-              type: 'test',
-              title: 'TEST 2',
-              state: 'passed',
-            },
-          ],
-        };
-        let failedScenario = {
-          type: 'scenario',
-          title: 'SCENARIO 1',
-          tests: [
-            {
-              type: 'test',
-              title: 'TEST 1',
-              state: 'failed',
-            },
-          ],
-        };
-
-/*        it('should remove suite title from testnameStructure', () => {
-          let video = new Video(options);
-          video.testnameStructure = ['DESCRIBE1', 'DESCRIBE2', 'DESCRIBE3'];
-          video.onSuiteEnd({title: 'DESCRIBE3'});
-          expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
-          video.onSuiteEnd({title: 'DESCRIBE2'});
-          expect(video.testnameStructure).toEqual(['DESCRIBE1']);
-          video.onSuiteEnd({title: 'DESCRIBE1'});
-          expect(video.testnameStructure).toEqual([]);
-        });*/
-
-        it('should add video attachment placeholder to Allure, if using Allure', () => {
-          let video = new Video(options);
-          video.onSuiteEnd(failedScenario);
-          expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-
-          allureMocks.addAttachment = jest.fn();
-          options.saveAllVideos = true;
-          video = new Video(options);
-          video.onSuiteEnd(passedScenario);
-          expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-
-          allureMocks.addAttachment = jest.fn();
-          video = new Video(options);
-          video.config.usingAllure = true;
-          video.onSuiteEnd(failedScenario);
-          expect(allureMocks.addAttachment).toHaveBeenCalled();
-
-          allureMocks.addAttachment = jest.fn();
-          video = new Video(options);
-          video.config.usingAllure = true;
-          video.onSuiteEnd(failedScenario);
-          expect(allureMocks.addAttachment).toHaveBeenCalled();
-        });
-
-        it('should add deviceType as argument to allure', () => {
-          global.browser.capabilities.deviceType = 'myDevice';
-
-          configModule.default.usingAllure = false;
-          allureMocks.addArgument = jest.fn();
-          let video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteEnd(passedScenario);
-          expect(allureMocks.addArgument).not.toHaveBeenCalled();
-
-          configModule.default.usingAllure = true;
-          allureMocks.addArgument = jest.fn();
-          video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteEnd(passedScenario);
-          expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
-        });
-
-        it('should add browserVersion as argument to allure', () => {
-          global.browser.capabilities.browserVersion = '1.2.3';
-
-          configModule.default.usingAllure = false;
-          allureMocks.addArgument = jest.fn();
-          let video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteEnd(passedScenario);
-          expect(allureMocks.addArgument).not.toHaveBeenCalled();
-
-          configModule.default.usingAllure = true;
-          allureMocks.addArgument = jest.fn();
-          video = new Video(options);
-          video.testname = undefined;
-          video.onSuiteEnd(passedScenario);
-          expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');
-        });
-
-        it('should not take a last screenshot if test passed', () => {
-          let video = new Video(options);
-          video.recordingPath = 'folder';
-
-          video.onSuiteEnd(passedScenario);
-          expect(browser.saveScreenshot).not.toHaveBeenCalledWith('folder/0000.png');
-        });
-
-        it('should take a last screenshot if test failed', () => {
-          let video = new Video(options);
-          video.recordingPath = 'folder';
-
-          video.onSuiteEnd(failedScenario);
-          expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
-        });
-
-        it('should take a last screenshot if test passed and config saveAllvideos', () => {
-          options.saveAllVideos = true;
-          let video = new Video(options);
-          video.recordingPath = 'folder';
-
-          video.onSuiteEnd(passedScenario);
-          expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
-        });
-
-        it('should write notAvailable.png as last screenshot if saveScreenshot fails', () => {
-          browser.saveScreenshot.mockImplementationOnce(() => {
-            throw 'error';
-          });
-          let video = new Video(options);
-          video.recordingPath = 'folder';
-
-          video.onSuiteEnd(failedScenario);
-          expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0000.png', 'file-mock', 'base64');
-        });
-      });
-
-      describe('feature - ', () => {
-        it('should not add video attachment placeholder to Allure, if using Allure', () => {
-          let video = new Video(options);
-
-          allureMocks.addAttachment = jest.fn();
-          options.saveAllVideos = true;
-          video.onSuiteEnd({title: 'TEST', type: 'feature'});
-          expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-
-        });
-      });
+    it('should call frameworks onSuiteEnd', () => {
+      let video = new Video(options);
+      video.framework = {
+        onSuiteEnd: jest.fn(),
+      };
+      video.onSuiteEnd({title: 'TEST'});
+      expect(video.framework.onSuiteEnd).toHaveBeenCalled();
     });
-
   });
 
   describe('onTestStart - ', () => {
-    it('should add test title to testnameStructure', () => {
+    it('should call frameworks onTestStart', () => {
       let video = new Video(options);
-      video.testnameStructure = ['DESCRIBE'];
+      video.framework = {
+        onTestStart: jest.fn(),
+      };
       video.onTestStart({title: 'TEST'});
-      expect(video.testnameStructure).toEqual(['DESCRIBE', 'TEST']);
+      expect(video.framework.onTestStart).toHaveBeenCalled();
     });
-
-    it('should reset frameNr', () => {
-      let video = new Video(options);
-      video.frameNr = 42;
-      video.onTestStart({title: 'TEST'});
-      expect(video.frameNr).toEqual(0);
-    });
-
-    it('should generate testname', () => {
-      helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-      let video = new Video(options);
-      video.testname = undefined;
-      video.onTestStart({title: 'TEST'});
-      expect(video.testname).not.toEqual(undefined);
-      expect(helpers.default.generateFilename).toHaveBeenCalled();
-    });
-
-    it('should append deviceType to browsername', () => {
-      helpers.default.generateFilename = jest.fn();
-      let video = new Video(options);
-      video.testname = undefined;
-      video.onTestStart({title: 'TEST'});
-      expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
-
-      helpers.default.generateFilename = jest.fn();
-      global.browser.capabilities.deviceType = 'myDevice';
-      video = new Video(options);
-      video.testname = undefined;
-      video.onTestStart({title: 'TEST'});
-      expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
-    });
-
-    it('should set recordingpath', () => {
-      helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-      let video = new Video(options);
-      video.onTestStart({title: 'TEST'});
-      expect(video.recordingPath).toEqual(outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
-    });
-
-    it('should set recordingpath when outputDir is not configured', () => {
-      helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => 'TEST-NAME');
-
-      let video = new Video(options);
-      video.onTestStart({title: 'TEST'});
-      expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
-    });
-
-    describe('cucumber - ', () => {
-      it('should not add test title to testnameStructure', () => {
-        global.browser.config.framework = 'cucumber';
-        let video = new Video(options);
-        video.onTestStart({title: 'TEST'});
-        expect(video.testnameStructure).toEqual([]);
-      });
-    });
-
   });
 
   describe('onTestSkip - ', () => {

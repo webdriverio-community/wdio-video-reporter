@@ -4,7 +4,6 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var WdioReporter = _interopDefault(require('@wdio/reporter'));
 var allureReporter = _interopDefault(require('@wdio/allure-reporter'));
-var mkdirp = _interopDefault(require('mkdirp'));
 var fs = _interopDefault(require('fs-extra'));
 var path = _interopDefault(require('path'));
 var child_process = require('child_process');
@@ -219,6 +218,11 @@ class Video extends WdioReporter {
     config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
+
+    // Jasmine and Mocha ought to behave the same regarding test-structure
+    const framework = browser.config.framework === 'cucumber' ? 'cucumber.js' : 'default.js';
+    this.framework = require(path.resolve('frameworks', framework));
+    this.framework.frameworkInit.call(this, browser);
   }
 
   /**
@@ -253,22 +257,7 @@ class Video extends WdioReporter {
    */
   onSuiteStart (suite) {
     helpers.debugLog(`\n\n\n--- New suite: ${suite.title} ---\n`);
-    this.testnameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
-    if (browser.config.framework === 'cucumber') {
-      if (suite.type === 'scenario') {
-        const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-        let browserName = browser.capabilities.browserName.toUpperCase();
-        if (browser.capabilities.deviceType) {
-          browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
-        }
-        this.testname = helpers.generateFilename(browserName, fullname);
-        this.frameNr = 0;
-        this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
-        if (!fs.existsSync(this.recordingPath)) {
-          mkdirp.sync(this.recordingPath);
-        }
-      }
-    }
+    this.framework.onSuiteStart.call(this, suite);
   }
 
   /**
@@ -276,65 +265,14 @@ class Video extends WdioReporter {
    */
   onSuiteEnd (suite) {
     this.testnameStructure.pop();
-    if (browser.config.framework === 'cucumber') {
-
-      if (config.usingAllure) {
-        if (browser.capabilities.deviceType) {
-          allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
-        }
-        if (browser.capabilities.browserVersion) {
-          allureReporter.addArgument('browserVersion', browser.capabilities.browserVersion);
-        }
-      }
-
-      if (suite.type === 'scenario' &&
-        (suite.tests.filter(test => test.state === 'failed').length > 0 ||
-          (suite.tests.filter(test => test.state === 'failed').length === 0 && config.saveAllVideos))) {
-
-        const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
-        try {
-          browser.saveScreenshot(filePath);
-          helpers.debugLog('- Screenshot!!\n');
-        } catch (e) {
-          fs.writeFile(filePath, notAvailableImage, 'base64');
-          helpers.debugLog('- Screenshot not available...\n');
-        }
-
-        const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
-        this.videos.push(videoPath);
-
-        if (config.usingAllure) {
-          allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-        }
-
-        const command = `"${ffmpeg.path}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
-          ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-          ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
-
-        helpers.debugLog(`ffmpeg command: ${command}\n`);
-
-        this.ffmpegCommands.push(command);
-      }
-    }
+    this.framework.onSuiteEnd.call(this, suite);
   }
 
   /**
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (test) {
-    if (browser.config.framework !== 'cucumber') {
-      helpers.debugLog(`\n\n--- New test: ${test.title} ---\n`);
-      this.testnameStructure.push(test.title.replace(/ /g, '-'));
-      const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-      let browserName = browser.capabilities.browserName.toUpperCase();
-      if (browser.capabilities.deviceType) {
-        browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
-      }
-      this.testname = helpers.generateFilename(browserName, fullname);
-      this.frameNr = 0;
-      this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
-      mkdirp.sync(this.recordingPath);
-    }
+    this.framework.onTestStart.call(this, test);
   }
 
   /**
@@ -347,8 +285,7 @@ class Video extends WdioReporter {
   }
 
   /**
-   * Add attachment to Allue if applicable and start to generate the video
-   * Not applicable to Cucumber
+   * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {
     this.testnameStructure.pop();
