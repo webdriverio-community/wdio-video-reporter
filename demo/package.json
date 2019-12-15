@@ -9,8 +9,7 @@
     "e2e": "wdio wdio.conf.js",
     "pree2e-cucumber": "rimraf _results_/*; mkdirp _results_/allure-raw",
     "e2e-cucumber": "wdio wdio-cucumber.conf.js",
-    "report": "allure generate _results_/allure-raw -o _results_/allure --clean && allure open _results_/allure",
-    "postreport": "open http://localhost:8080/index.html && autoreload-server _results_/allure"
+    "report": "allure generate _results_/allure-raw -o _results_/allure --clean && allure open _results_/allure"
   },
   "author": "",
   "license": "MIT",
@@ -35,8 +34,6 @@
     "allure-commandline": "^2.13.0",
     "eslint": "^5.16.0",
     "mkdirp": "^0.5.1",
-    "open": "^0.0.5",
-    "rimraf": "^3.0.0",
-    "simple-autoreload-server": "^0.2.7"
+    "rimraf": "^3.0.0"
   }
 }
