@@ -126,8 +126,9 @@ The settings need to be updated to run Cucumber:
 - `cucumberOpts: {...}` Put all your cucumber options here. Check the [Cucumber boilerplate](https://github.com/webdriverio/cucumber-boilerplate) for examples
 - `specs: ['./src/**/*.features']` To use the correct file ending
 
-If you are using the Allure reporter, please add the following Allure option
+If you are using the Allure reporter, make sure to use `assert` from `Chai` in your steps declaration, and add the following Allure option
 - `useCucumberStepReporter: true`
+
 
 For a complete example, checkout the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
 
