@@ -117,6 +117,13 @@ export default class Video extends WdioReporter {
   }
 
   /**
+   * Remove empty directories
+   */
+  onTestSkip (test) {
+    this.framework.onTestSkip.call(this, test);
+  }
+
+  /**
    * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {

@@ -175,30 +175,30 @@ var defaultFramework = {
   /**
    * Init
    */
-  // frameworkInit () {
-  //
-  // },
+  frameworkInit () {
+
+  },
 
   /**
    * Set reporter options
    */
-  // constructor () {
-  //
-  // },
+  constructor () {
+
+  },
 
   /**
    * Set wdio config options
    */
-  // onRunnerStart () {
-  //
-  // },
+  onRunnerStart () {
+
+  },
 
   /**
    * Save screenshot or add not available image movie stills
    */
-  // onAfterCommand () {
-  //
-  // },
+  onAfterCommand () {
+
+  },
 
   /**
    * Add suite name to naming structure
@@ -210,9 +210,9 @@ var defaultFramework = {
   /**
    * Cleare suite name from naming structure
    */
-  // onSuiteEnd () {
-  //
-  // },
+  onSuiteEnd () {
+
+  },
 
   /**
    * Setup filename based on test name and prepare storage directory
@@ -244,45 +244,45 @@ var defaultFramework = {
    * Add attachment to Allue if applicable and start to generate the video
    * Not applicable to Cucumber
    */
-  // onTestEnd () {
-  //
-  // },
+  onTestEnd () {
+
+  },
 
   /**
    * Finalize report if using allure and clean up
    */
-  // onRunnerEnd () {
-  //
-  // },
+  onRunnerEnd () {
+
+  },
 };
 
 var cucumberFramework = {
   /**
    * Init
    */
-  // frameworkInit () {
-  //
-  // },
+  frameworkInit () {
+
+  },
   /**
    * Set reporter options
    */
-  // constructor () {
-  //
-  // },
+  constructor () {
+
+  },
 
   /**
    * Set wdio config options
    */
-  // onRunnerStart () {
-  //
-  // },
+  onRunnerStart () {
+
+  },
 
   /**
    * Save screenshot or add not available image movie stills
    */
-  // onAfterCommand () {
-  //
-  // },
+  onAfterCommand () {
+
+  },
 
   /**
    * Add suite name to naming structure
@@ -353,31 +353,31 @@ var cucumberFramework = {
   /**
    * Setup filename based on test name and prepare storage directory
    */
-  // onTestStart () {
-  //
-  // },
+  onTestStart () {
+
+  },
 
   /**
    * Remove empty directories
    */
-  // onTestSkip () {
-  //
-  // },
+  onTestSkip () {
+
+  },
 
   /**
    * Add attachment to Allue if applicable and start to generate the video
    * Not applicable to Cucumber
    */
-  // onTestEnd () {
-  //
-  // },
+  onTestEnd () {
+
+  },
 
   /**
    * Finalize report if using allure and clean up
    */
-  // onRunnerEnd () {
-  //
-  // },
+  onRunnerEnd () {
+
+  },
 };
 
 class Video extends WdioReporter {
@@ -482,6 +482,13 @@ class Video extends WdioReporter {
    */
   onTestStart (test) {
     this.framework.onTestStart.call(this, test);
+  }
+
+  /**
+   * Remove empty directories
+   */
+  onTestSkip (test) {
+    this.framework.onTestSkip.call(this, test);
   }
 
   /**
