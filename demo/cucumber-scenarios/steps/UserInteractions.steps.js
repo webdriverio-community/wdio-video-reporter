@@ -1,5 +1,5 @@
 import { Given, When, Then } from 'cucumber';
-import assert from 'assert';
+import {assert} from 'chai';
 
 Given(/^I navigate to base url$/, () => {
   browser.url('http://www.seleniumeasy.com/test/');
