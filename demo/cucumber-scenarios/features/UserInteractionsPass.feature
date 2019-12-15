@@ -1,4 +1,4 @@
-Feature: User interactions
+Feature: User interactions - Pass
 
   Background:
     Given I navigate to base url
