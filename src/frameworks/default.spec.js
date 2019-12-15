@@ -3,7 +3,7 @@
  */
 
 import { resetWriteMock } from '@wdio/reporter';
-import { resetFsMocks } from 'fs-extra';
+import {fsMocks, resetFsMocks} from 'fs-extra';
 import * as configModule from '../config.js';
 import * as helpers from '../helpers.js';
 import defaultFramework from './default.js';
@@ -34,6 +34,9 @@ describe('wdio-video-recorder - default framework - ', () => {
     }
     onSuiteStart (test) {
       defaultFramework.onSuiteStart.call(this, test);
+    }
+    onTestSkip(test) {
+      defaultFramework.onTestSkip.call(this, test);
     }
   }
 
@@ -134,4 +137,21 @@ describe('wdio-video-recorder - default framework - ', () => {
       expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
     });
   });
+
+  describe('onTestSkip - ', () => {
+    it('should remove folder at current recordingPath', () => {
+      let video = new Video(options);
+      video.recordingPath = 'PATH';
+      video.onTestSkip();
+      expect(fsMocks.removeSync).toHaveBeenCalledWith('PATH');
+    });
+
+    it('should not call removeSync if recordingPath is undefined', () => {
+      let video = new Video(options);
+      video.recordingPath = undefined;
+      video.onTestSkip();
+      expect(fsMocks.removeSync).not.toHaveBeenCalled();
+    });
+  });
+
 });

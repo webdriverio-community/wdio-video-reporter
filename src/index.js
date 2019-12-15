@@ -117,15 +117,6 @@ export default class Video extends WdioReporter {
   }
 
   /**
-   * Remove empty directories
-   */
-  onTestSkip () {
-    if(this.recordingPath !== undefined) {
-      fs.removeSync(this.recordingPath);
-    }
-  }
-
-  /**
    * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {

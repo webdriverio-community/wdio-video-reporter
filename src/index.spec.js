@@ -340,22 +340,6 @@ describe('wdio-video-recorder - ', () => {
     });
   });
 
-  describe('onTestSkip - ', () => {
-    it('should remove folder at current recordingPath', () => {
-      let video = new Video(options);
-      video.recordingPath = 'PATH';
-      video.onTestSkip();
-      expect(fsMocks.removeSync).toHaveBeenCalledWith('PATH');
-    });
-
-    it('should not call removeSync if recordingPath is undefined', () => {
-      let video = new Video(options);
-      video.recordingPath = undefined;
-      video.onTestSkip();
-      expect(fsMocks.removeSync).not.toHaveBeenCalled();
-    });
-  });
-
   describe('onTestEnd - ', () => {
     beforeEach(() => {
       cpMocks.spawn = jest.fn();

@@ -1,5 +1,6 @@
 import mkdirp from 'mkdirp';
 import path from 'path';
+import fs from 'fs-extra';
 
 import helpers from '../helpers.js';
 import config from '../config.js';
@@ -68,7 +69,9 @@ export default {
    * Remove empty directories
    */
   onTestSkip () {
-
+    if(this.recordingPath !== undefined) {
+      fs.removeSync(this.recordingPath);
+    }
   },
 
   /**
