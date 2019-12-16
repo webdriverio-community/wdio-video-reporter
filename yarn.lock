@@ -1054,10 +1054,10 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@wdio/allure-reporter@^5.16.11":
-  version "5.16.11"
-  resolved "https://registry.yarnpkg.com/@wdio/allure-reporter/-/allure-reporter-5.16.11.tgz#df73bae59abcd91ccc5bfb1eb9de7207e75490b9"
-  integrity sha512-T5lUC6+CYRQhrrGaOjsX7uO9pD8qz0W85Dzd64jwirOOUyWrNNcRvIMboymEW1Zw8oiJkOp7Dkcpoig9rSz2jg==
+"@wdio/allure-reporter@^5.16.16":
+  version "5.16.16"
+  resolved "https://registry.yarnpkg.com/@wdio/allure-reporter/-/allure-reporter-5.16.16.tgz#a3039faf7f8fb7d110e6c05c093ba5e8a77724c6"
+  integrity sha512-A+Eluwlysr/JUsn9GzeeW7iHJdxj86tsHaBW3dy0eNYtYU+XuKf5X8YFzaapp6NTUNlCW0lhd+/YeTq8w6c6mQ==
   dependencies:
     "@wdio/reporter" "5.15.2"
     allure-js-commons "^1.3.2"
@@ -4340,10 +4340,10 @@ rollup-pluginutils@^2.8.1, rollup-pluginutils@^2.8.2:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@^1.27.12:
-  version "1.27.12"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-1.27.12.tgz#cf84db4b4edaf187eaba95232f34de7cd4d22d9c"
-  integrity sha512-51iR7n6NQfdQJlRrIktaGmkdt395A8Vue7CdnlrK6UhY9DY2GaKsTdljWeXisJuZh+w90Gz8VFNh5X+yxP20oQ==
+rollup@^1.27.13:
+  version "1.27.13"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-1.27.13.tgz#d6d3500512daacbf8de54d2800de62d893085b90"
+  integrity sha512-hDi7M07MpmNSDE8YVwGVFA8L7n8jTLJ4lG65nMAijAyqBe//rtu4JdxjUBE7JqXfdpqxqDTbCDys9WcqdpsQvw==
   dependencies:
     "@types/estree" "*"
     "@types/node" "*"
