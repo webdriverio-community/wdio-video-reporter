@@ -121,15 +121,24 @@ To see processed messages, set `wdio.config.logLevel: 'debug'` and check `output
 Cucumber support
 ----------------
 
-The settings need to be updated to run Cucumber:
-- `framework: 'cucumber'` Tells the wdio and the framework that Cucumber is used instead of Jasmine
-- `cucumberOpts: {...}` Put all your cucumber options here. Check the [Cucumber boilerplate](https://github.com/webdriverio/cucumber-boilerplate) for examples
-- `specs: ['./src/**/*.features']` To use the correct file ending
+If you are using the Allure reporter, you need to ensure you do the following:
 
-If you are using the Allure reporter, make sure to use `assert` from `Chai` in your steps declaration, and add the following Allure option
-- `useCucumberStepReporter: true`
-
-
+- Use `chai` instead of using the built-in node assertions otherwise the failed tests gets reported as broken in your steps definitions
+- Add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
+    ```
+     reporters: [
+        [video, {
+          saveAllVideos: false,       // If true, also saves videos for successful test cases
+          videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
+        }],
+        ['allure', {
+          outputDir: './_results_/allure-raw',
+          disableWebdriverStepsReporting: true,
+          disableWebdriverScreenshotsReporting: true,
+          useCucumberStepReporter: true
+        }],
+      ],
+    ```
 For a complete example, checkout the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
 
 
