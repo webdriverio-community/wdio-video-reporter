@@ -14,7 +14,6 @@ const video = require('../dist/wdio-video-reporter.js');
 const config = {
   // Setup the browser window
   before: function (capabilities, specs) {
-    browser.setWindowPosition(0, 0);
     browser.setWindowSize(1320, 768);
   },
 
@@ -75,7 +74,7 @@ const config = {
   connectionRetryCount: 3,
   framework: 'jasmine',
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 100000,
+    defaultTimeoutInterval: 120000,
     expectationResultHandler: function(passed, assertion) {
     }
   },
