@@ -179,4 +179,4 @@ The demo folder works with the built version of the library, so make sure to bui
 Thanks
 ======
 
-Thanks to [Jonn Set](https://github.com/jonn-set) for fixing Cucumber support which alot of users have asked for.
+Thanks to [Johnson E](https://github.com/jonn-set) for fixing Cucumber support which alot of users have asked for.
