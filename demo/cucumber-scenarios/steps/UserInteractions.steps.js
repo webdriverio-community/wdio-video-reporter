@@ -16,13 +16,11 @@ Given(/^I open Advanced Examples tab$/, () => {
 });
 
 When(/I open '(.+)' demo$/, (demo) => {
-  console.log('selector:', `.list-group-item[href*="${demo}"]`);
   $(`.list-group-item[href*="${demo}"]`).click();
 });
 
 When(/I enter message '(.+)'$/, (message) => {
   $('#get-input input').setValue(message);
-
 });
 
 When(/I click 'Show Message'$/, () => {
