@@ -10,7 +10,6 @@ import defaultFramework from './default.js';
 
 // Built in modules are not mocked by default
 jest.mock('path');
-jest.mock('child_process');
 
 const defaultOutputDir = '_results_';
 const logFileFilename = 'wdio-0-0-Video-reporter.log';
@@ -23,7 +22,7 @@ describe('wdio-video-recorder - default framework - ', () => {
   class Video {
     constructor () {
       this.videos = [];
-      this.ffmpegCommands = [];
+      this.videoPromises = [];
       this.testnameStructure = [];
       this.testname = '';
       this.frameNr = 0;

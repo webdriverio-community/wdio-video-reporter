@@ -2,8 +2,6 @@ import WdioReporter from '@wdio/reporter';
 import allureReporter from '@wdio/allure-reporter';
 import fs from 'fs-extra';
 import path from 'path';
-import { spawn } from 'child_process';
-import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
 import helpers from './helpers.js';
 import config from './config.js';
@@ -22,6 +20,8 @@ export default class Video extends WdioReporter {
     }
     super(options);
 
+    this.isDone = false;
+
     // User options
     // Wdio doesn't pass outputDir, but logFile which includes outputDir
     config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
@@ -37,7 +37,7 @@ export default class Video extends WdioReporter {
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
     this.videos = [];
-    this.ffmpegCommands = [];
+    this.videoPromises = [];
     this.testnameStructure = [];
     this.testname = '';
     this.frameNr = 0;
@@ -45,6 +45,14 @@ export default class Video extends WdioReporter {
     this.config = config;
 
     helpers.setLogger(msg => this.write(msg));
+  }
+
+
+  /**
+   * overwrite isSynchronised method
+   */
+  get isSynchronised () {
+    return this.isDone;
   }
 
   /**
@@ -148,20 +156,7 @@ export default class Video extends WdioReporter {
         helpers.debugLog('- Screenshot not available...\n');
       }
 
-      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
-      this.videos.push(videoPath);
-
-      if (config.usingAllure) {
-        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-      }
-
-      const command = `"${ffmpegPath}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
-        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-        ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
-
-      helpers.debugLog(`ffmpeg command: ${command}\n`);
-
-      this.ffmpegCommands.push(command);
+      helpers.generateVideo.call(this);
     }
   }
 
@@ -169,34 +164,52 @@ export default class Video extends WdioReporter {
    * Finalize report if using allure and clean up
    */
   onRunnerEnd () {
-    try {
-      helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
-      this.ffmpegCommands.forEach((cmd) => spawn(cmd, { stdio: 'ignore', shell: true}));
-      this.videos = helpers.waitForVideos(this.videos);
-      helpers.debugLog(`\n--- Videos are done ---\n\n`);
+    helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
+    let started = false;
 
-      this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
+    const wrapItUp = () => {
+      if (!started) {
+        try {
+          started = true;
+          helpers.debugLog(`\n--- Videos are done ---\n\n`);
 
-      if (config.usingAllure) {
-        helpers.debugLog(`--- Patching allure report ---\n`);
+          this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
 
-        fs
-        .readdirSync(config.allureOutputDir)
-        .filter(line => line.includes('.mp4'))
-        .map(filename => path.resolve(config.allureOutputDir, filename))
-        .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
-        .forEach((filepath) => {
-          const videoFilePath = fs.readFileSync(filepath).toString();// The contents of the placeholder file is the video path
-          fs.copySync(videoFilePath, filepath);
-        });
+          if (config.usingAllure) {
+            helpers.debugLog(`--- Patching allure report ---\n`);
+
+            fs
+            .readdirSync(config.allureOutputDir)
+            .filter(line => line.includes('.mp4'))
+            .map(filename => path.resolve(config.allureOutputDir, filename))
+            .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
+            .forEach((filepath) => {
+              const videoFilePath = fs.readFileSync(filepath).toString(); // The contents of the placeholder file is the video path
+              if (fs.existsSync(videoFilePath)) {
+                fs.copySync(videoFilePath, filepath);
+              }
+            });
+          }
+
+          this.write(`\n\nDone!\n`);
+          this.isDone = true;
+        }
+        catch(e) {
+          this.write('Error during onRunnerEnd:');
+          this.write(e.message);
+          this.write(e.stack);
+        }
       }
+    };
 
-      this.write(`\n\nDone!\n`);
-    }
-    catch(e) {
-      this.write('Error during onRunnerEnd:');
-      this.write(e.message);
-      this.write(e.stack);
-    }
+    Promise.all(this.videoPromises)
+      .then(wrapItUp)
+      .catch(wrapItUp);
+
+    setTimeout(() => {
+      helpers.debugLog(`videoRenderTimeout triggered, not all videos finished rendering`);
+      this.write(`videoRenderTimeout triggered, not all videos finished rendering`);
+      wrapItUp();
+    }, config.videoRenderTimeout*1000);
   }
 }

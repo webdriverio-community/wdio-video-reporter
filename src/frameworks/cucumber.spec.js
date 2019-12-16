@@ -6,14 +6,12 @@ import { resetWriteMock } from '@wdio/reporter';
 import { allureMocks } from '@wdio/allure-reporter';
 import { fsMocks, resetFsMocks } from 'fs-extra';
 import mkdirpMock from 'mkdirp';
-import { cpMocks } from 'child_process';
 import * as configModule from '../config.js';
 import * as helpers from '../helpers.js';
 import cucumber from './cucumber.js';
 
 // Built in modules are not mocked by default
 jest.mock('path');
-jest.mock('child_process');
 
 const defaultOutputDir = '_results_';
 const logFileFilename = 'wdio-0-0-Video-reporter.log';
@@ -26,7 +24,7 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
   class Video {
     constructor () {
       this.videos = [];
-      this.ffmpegCommands = [];
+      this.videoPromises = [];
       this.testnameStructure = [];
       this.testname = '';
       this.frameNr = 0;
@@ -167,9 +165,10 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
 
   describe('onSuiteEnd - ', () => {
     beforeEach(() => {
-      cpMocks.spawn = jest.fn();
       allureMocks.addAttachment = jest.fn();
       allureMocks.addArgument = jest.fn();
+      helpers.default.generateVideo = jest.fn();
+
       options.saveAllVideos = false;
       configModule.default.saveAllVideos = false;
       configModule.default.usingAllure = false;
@@ -203,30 +202,6 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
           },
         ],
       };
-
-      it('should add video attachment placeholder to Allure, if using Allure', () => {
-        let video = new Video(options);
-        video.onSuiteEnd(failedScenario);
-        expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-
-        allureMocks.addAttachment = jest.fn();
-        options.saveAllVideos = true;
-        video = new Video(options);
-        video.onSuiteEnd(passedScenario);
-        expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-
-        configModule.default.usingAllure = true;
-        allureMocks.addAttachment = jest.fn();
-        video = new Video(options);
-        video.onSuiteEnd(failedScenario);
-        expect(allureMocks.addAttachment).toHaveBeenCalled();
-
-        configModule.default.usingAllure = true;
-        allureMocks.addAttachment = jest.fn();
-        video = new Video(options);
-        video.onSuiteEnd(failedScenario);
-        expect(allureMocks.addAttachment).toHaveBeenCalled();
-      });
 
       it('should add deviceType as argument to allure', () => {
         global.browser.capabilities.deviceType = 'myDevice';
@@ -298,6 +273,32 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
 
         video.onSuiteEnd(failedScenario);
         expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0000.png', 'file-mock', 'base64');
+      });
+
+      it('should generate videos for failed tests', () => {
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+
+        video.onSuiteEnd(failedScenario);
+
+        expect(helpers.default.generateVideo).toHaveBeenCalled();
+      });
+
+      it('should not generate videos for passed tests', () => {
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+
+        video.onSuiteEnd(passedScenario);
+        expect(helpers.default.generateVideo).not.toHaveBeenCalled();
+      });
+
+      it('should generate videos for passed tests when saveAllVideos is set', () => {
+        configModule.default.saveAllVideos = true;
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+
+        video.onSuiteEnd(passedScenario);
+        expect(helpers.default.generateVideo).toHaveBeenCalled();
       });
     });
 

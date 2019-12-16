@@ -2,7 +2,6 @@ import allureReporter from '@wdio/allure-reporter';
 import mkdirp from 'mkdirp';
 import fs from 'fs-extra';
 import path from 'path';
-import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
 import helpers from '../helpers.js';
 import config from '../config.js';
@@ -57,7 +56,7 @@ export default {
   },
 
   /**
-   * Cleare suite name from naming structure
+   * Clear suite name from naming structure
    */
   onSuiteEnd (suite) {
     if (config.usingAllure) {
@@ -70,7 +69,6 @@ export default {
     }
 
     if (suite.type === 'scenario') {
-
       const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0;
       const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0;
 
@@ -84,20 +82,7 @@ export default {
           helpers.debugLog('- Screenshot not available...\n');
         }
 
-        const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
-        this.videos.push(videoPath);
-
-        if (config.usingAllure) {
-          allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-        }
-
-        const command = `"${ffmpegPath}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
-          ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-          ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
-
-        helpers.debugLog(`ffmpeg command: ${command}\n`);
-
-        this.ffmpegCommands.push(command);
+        helpers.generateVideo.call(this);
       }
     }
   },

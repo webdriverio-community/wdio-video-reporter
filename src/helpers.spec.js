@@ -2,60 +2,37 @@
  * All externals have basic mocks in folder `./__mocks__`
  */
 
-import * as fs from 'fs-extra';
+import {allureMocks} from '@wdio/allure-reporter';
+import {cpMocks} from 'child_process';
 
 import helpers from './helpers.js';
 import config from './config.js';
 
-const originalSleep = helpers.sleep;
+// Built in modules are not mocked by default
+jest.mock('path');
+jest.mock('child_process');
+
 
 describe('Helpers - ', () => {
   let logger = jest.fn();
+
+  class Video {
+    constructor () {
+      this.videos = [];
+      this.videoPromises = [];
+      this.testnameStructure = [];
+      this.testname = '';
+      this.frameNr = 0;
+      this.videos = [];
+    }
+  }
 
   beforeEach(() => {
     helpers.setLogger(logger);
     config.debugMode = false;
     config.videoRenderTimeout = 5;
-
-    helpers.sleep = jest.fn(() => {});
   });
 
-  describe('sleep - ', () => {
-    let originalDate;
-
-    beforeEach(() => {
-      let counter = 0;
-
-      originalDate = Date;
-
-      global.Date = class extends Date {
-        constructor() {
-          super();
-          return counter;
-        }
-
-        getTime() {
-          return counter++;
-        }
-
-        getCounter() {
-          return counter;
-        }
-      };
-
-      helpers.sleep = originalSleep;
-    });
-
-    afterEach(() => {
-      global.Date = originalDate;
-    });
-
-    it('should sleep until requested time has passed', () => {
-      helpers.sleep(100);
-
-      expect(new Date().getCounter()).toBe(100 + 1);
-    });
-  });
 
   describe('debugLog - ', () => {
     const msg = 'A log line';
@@ -133,146 +110,51 @@ describe('Helpers - ', () => {
   });
 
 
+  describe('generateVideo - ', () => {
+    let video;
+    let videoPromiseResolved;
+    beforeEach(() => {
+      video = new Video();
+      video.testname = 'TEST';
+      video.recordingPath = 'FOLDER';
 
-  describe('waitForVideos - ', () => {
-    let videos = [
-      'file1.mp4',
-      'file2.mp4',
-      'file3.mp4',
-    ];
-
-    describe('to exist - ', () => {
-      beforeEach(() => {
-        config.videoRenderTimeout = 5;
-
-        let counter = 1;
-        fs.default.existsSync = jest.fn(() => counter++ % 3 === 0);
-
-        fs.default.statSync = jest.fn(() => ({
-          size: 100,
-        }));
-      });
-
-      it('should wait for videos to exist', () => {
-        helpers.waitForVideos(videos);
-        expect(helpers.sleep.mock.calls.length).toBe(3*videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
-      });
-
-      it('should return a list of existing videos', () => {
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(existingVideos).toEqual(videos);
-      });
-
-      it('should wait for videos to exist and bail if timeout is reached', () => {
-        config.videoRenderTimeout = 0.2;
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 2*(videos.length)); // wait for exist + 2*(wait for render)
-        expect(existingVideos.length).toEqual(0);
-      });
-
-      it('should return a list of existing videos after bail', () => {
-        let counter = 1;
-        // Mock will not return true after first two files
-        fs.default.existsSync = jest.fn(() => counter++ % 3 == 0 && counter < 9);
-
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(existingVideos).toEqual(videos.slice(0,2));
-      });
+      videoPromiseResolved = false;
+      cpMocks.spawn = jest.fn().mockReturnValue({ on(msg, cb) {
+        if (msg === 'close') {
+          videoPromiseResolved = true;
+          cb();
+        }
+      }});
     });
 
+    it('should not add video attachment placeholder to Allure, if not using Allure', () => {
+      helpers.generateVideo.call(video);
+      expect(allureMocks.addAttachment).not.toHaveBeenCalled();
+    });
 
-    describe('to render - ', () => {
-      beforeEach(() => {
-        config.videoRenderTimeout = 5;
+    it('should add video attachment placeholder to Allure, if using Allure', () => {
+      allureMocks.addAttachment = jest.fn();
+      config.usingAllure = true;
+      helpers.generateVideo.call(video);
+      expect(allureMocks.addAttachment).toHaveBeenCalled();
+    });
 
-        fs.default.existsSync = jest.fn(() => true);
+    it('should type ffmpeg command to log', () => {
+      config.debugMode = true;
+      helpers.generateVideo.call(video);
+      expect(logger.mock.calls[0][0].includes('ffmpeg command')).toBeTruthy();
+    });
 
-        let doneSize = false;
-        let size = 45;
-        const getSize = () => {
-          size++;
-          if (size > 50) {
-            size = 50;
-            if (!doneSize) {
-              doneSize = true;
-            } else {
-              size = 46;
-              doneSize = false;
-            }
-          }
-          return size;
-        };
-        fs.default.statSync = jest.fn(() => ({
-          size: getSize(),
-        }));
-      });
+    it('should spawn ffmpeg to generate the video', () => {
+      helpers.generateVideo.call(video);
 
-      it('should wait for videos to finish rendering', () => {
-        helpers.waitForVideos(videos);
-        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 5*(videos.length)); // wait for exist + 3*(wait for render)
-      });
+      expect(cpMocks.spawn).toHaveBeenCalled();
+    });
 
-      it('should wait for videos to finish rendering and bail if timeout is reached', () => {
-        config.videoRenderTimeout = 0.2;
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(helpers.sleep.mock.calls.length).toBe(videos.length + 3*(videos.length)); // wait for exist + 2*(wait for render)
-        expect(existingVideos.length).toEqual(0);
-      });
+    it('should resolve when ffmpeg is done', () => {
+      helpers.generateVideo.call(video);
 
-      it('should return a list of finished videos after bail because video did not finish in time', () => {
-        // Mock will not stop increasing size after first two
-        let counter = 1;
-        let doneSize = false;
-        let size = 45;
-        const getSize = () => {
-          size++;
-          if (size > 50 && counter < 3) {
-            size = 50;
-            if (!doneSize) {
-              doneSize = true;
-            } else {
-              size = 46;
-              doneSize = false;
-              counter ++;
-            }
-          }
-          return size;
-        };
-        fs.default.statSync = jest.fn(() => ({
-          size: getSize(),
-        }));
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(existingVideos).toEqual(videos.slice(0, 2));
-      });
-
-      it('should return a list of finished videos after bail because video did not render', () => {
-        // Mock will not increasing size after first two
-        let counter = 1;
-        let doneSize = false;
-        let size = 45;
-        const getSize = () => {
-          if (counter < 3) {
-            size++;
-          }
-
-          if (size > 50) {
-            size = 50;
-            if (!doneSize) {
-              doneSize = true;
-            } else {
-              size = 46;
-              doneSize = false;
-              counter ++;
-            }
-          }
-          return size;
-        };
-        fs.default.statSync = jest.fn(() => ({
-          size: getSize(),
-        }));
-        const existingVideos = helpers.waitForVideos(videos);
-        expect(existingVideos).toEqual(videos.slice(0, 2));
-      });
+      expect(videoPromiseResolved).toBeTruthy();
     });
   });
 });

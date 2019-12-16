@@ -1,5 +1,5 @@
 export const cpMocks = {
-  spawn: jest.fn(),
+  spawn: jest.fn().mockReturnValue({ on: jest.fn() }),
 };
 
-export const spawn = (...args) => { cpMocks.spawn(...args); };
+export const spawn = (...args) => { return cpMocks.spawn(...args); };

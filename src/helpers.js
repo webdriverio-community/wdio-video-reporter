@@ -1,14 +1,12 @@
-import fs from 'fs-extra';
+import allureReporter from '@wdio/allure-reporter';
+import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
+import path from 'path';
+import { spawn } from 'child_process';
 
 import config from './config.js';
 
 let writeLog;
 export default {
-  sleep(ms) {
-    const stop = new Date().getTime();
-    while(new Date().getTime() < stop + ms);
-  },
-
   setLogger(obj) {
     writeLog = obj;
   },
@@ -48,47 +46,42 @@ export default {
     return filename;
   },
 
-  waitForVideos(videos) {
-    const existingVideos = [];
-    const maxWaiting = 10 * config.videoRenderTimeout;
+  generateVideo() {
+    const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+    this.videos.push(videoPath);
 
-    writeLog(`Max waiting time: ${config.videoRenderTimeout}s\n`);
-
-    for (let idx in videos) {
-      writeLog(`\n--- Video ${videos[idx]} ---\n`);
-      let waitForExistTimer = 0;
-      let waitForRenderTimer = 0;
-
-      do {
-        this.sleep(100);
-        if (waitForExistTimer % 10 === 0) {
-          writeLog('Waiting for video to exist: ' + waitForExistTimer/10 + 's\n');
-        }
-      } while (!fs.existsSync(videos[idx]) && waitForExistTimer++ < maxWaiting);
-
-      if (waitForExistTimer < maxWaiting) {
-        let fileStats = fs.statSync(videos[idx]);
-        let lastSize = 0;
-        let videoIsReady = false;
-
-        do {
-          fileStats = fs.statSync(videos[idx]);
-          videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
-          lastSize = fileStats.size > 48 ? fileStats.size : 0;
-
-          this.sleep(100);
-          if (waitForRenderTimer % 10 === 0) {
-            writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
-          }
-        } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
-
-        if (waitForRenderTimer < maxWaiting) {
-          existingVideos.push(videos[idx]);
-        }
-      }
+    if (config.usingAllure) {
+      allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
     }
 
-    return existingVideos;
-  },
+    const command = `"${ffmpegPath}"`;
+    const args = [
+      '-y',
+      '-r', '10',
+      '-i', `"${this.recordingPath}/%04d.png"`,
+      '-vcodec', 'libx264',
+      '-crf', '32',
+      '-pix_fmt', 'yuv420p',
+      '-vf', `"scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
+      `"${videoPath}"`,
+    ];
 
+    if (config.debugMode) {
+      writeLog(`ffmpeg command: ${command + ' ' + args}\n`);
+    }
+
+    const promise = new Promise((resolve) => {
+      const cp = spawn(command, args, {
+        stdio: 'ignore',
+        shell: true,
+        windowsHide: true,
+      });
+
+      cp.on('close', () => {
+        resolve();
+      });
+    });
+
+    this.videoPromises.push(promise);
+  },
 };
