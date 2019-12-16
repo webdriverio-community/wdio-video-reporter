@@ -724,18 +724,18 @@
   dependencies:
     "@types/node" "*"
 
-"@wdio/allure-reporter@^5.16.11":
-  version "5.16.11"
-  resolved "https://registry.yarnpkg.com/@wdio/allure-reporter/-/allure-reporter-5.16.11.tgz#df73bae59abcd91ccc5bfb1eb9de7207e75490b9"
-  integrity sha512-T5lUC6+CYRQhrrGaOjsX7uO9pD8qz0W85Dzd64jwirOOUyWrNNcRvIMboymEW1Zw8oiJkOp7Dkcpoig9rSz2jg==
+"@wdio/allure-reporter@^5.16.16":
+  version "5.16.16"
+  resolved "https://registry.yarnpkg.com/@wdio/allure-reporter/-/allure-reporter-5.16.16.tgz#a3039faf7f8fb7d110e6c05c093ba5e8a77724c6"
+  integrity sha512-A+Eluwlysr/JUsn9GzeeW7iHJdxj86tsHaBW3dy0eNYtYU+XuKf5X8YFzaapp6NTUNlCW0lhd+/YeTq8w6c6mQ==
   dependencies:
     "@wdio/reporter" "5.15.2"
     allure-js-commons "^1.3.2"
 
-"@wdio/cli@^5.16.15":
-  version "5.16.15"
-  resolved "https://registry.yarnpkg.com/@wdio/cli/-/cli-5.16.15.tgz#545ad3aa8565a82861bb55804cb4d594d2d14744"
-  integrity sha512-5jwo6/++a1iNV7nAJ7dvom8LMaInnj4b4lRObkjWsG0VGqw0fYdHaZNVHyuLGFiIVbR+WMj87kw/tNm+AQtUcQ==
+"@wdio/cli@^5.16.16":
+  version "5.16.16"
+  resolved "https://registry.yarnpkg.com/@wdio/cli/-/cli-5.16.16.tgz#c5c1552608fbb69899b350c149d03273c0128a01"
+  integrity sha512-l/aPZAJ0svdbC96HiZLPef4wbA1ETl+w7ome3r09nBfx1eqgzB0HTUtNlzeUErhqd8eICCWkZOiuasTVPK8iLw==
   dependencies:
     "@wdio/config" "5.16.11"
     "@wdio/logger" "5.16.10"
