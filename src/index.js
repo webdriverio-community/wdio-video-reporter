@@ -72,6 +72,10 @@ export default class Video extends WdioReporter {
     // Jasmine and Mocha ought to behave the same regarding test-structure
     this.framework = browser.config.framework === 'cucumber' ? cucumberFramework : defaultFramework;
     this.framework.frameworkInit.call(this, browser);
+
+    if(config.usingAllure) {
+      process.on('exit', () => this.onExit.call(this));
+    }
   }
 
   /**
@@ -161,44 +165,21 @@ export default class Video extends WdioReporter {
   }
 
   /**
-   * Finalize report if using allure and clean up
+   * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
+    let abortTimer;
     let started = false;
-
     const wrapItUp = () => {
       if (!started) {
-        try {
-          started = true;
-          helpers.debugLog(`\n--- Videos are done ---\n\n`);
+        clearTimeout(abortTimer);
+        started = true;
+        helpers.debugLog(`\n--- FFMPEG is done ---\n\n`);
 
-          this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
+        this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
 
-          if (config.usingAllure) {
-            helpers.debugLog(`--- Patching allure report ---\n`);
-
-            fs
-            .readdirSync(config.allureOutputDir)
-            .filter(line => line.includes('.mp4'))
-            .map(filename => path.resolve(config.allureOutputDir, filename))
-            .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
-            .forEach((filepath) => {
-              const videoFilePath = fs.readFileSync(filepath).toString(); // The contents of the placeholder file is the video path
-              if (fs.existsSync(videoFilePath)) {
-                fs.copySync(videoFilePath, filepath);
-              }
-            });
-          }
-
-          this.write(`\n\nDone!\n`);
-          this.isDone = true;
-        }
-        catch(e) {
-          this.write('Error during onRunnerEnd:');
-          this.write(e.message);
-          this.write(e.stack);
-        }
+        this.write(`\n\nVideo reporter Done!\n`);
+        this.isDone = true;
       }
     };
 
@@ -206,10 +187,39 @@ export default class Video extends WdioReporter {
       .then(wrapItUp)
       .catch(wrapItUp);
 
-    setTimeout(() => {
-      helpers.debugLog(`videoRenderTimeout triggered, not all videos finished rendering`);
-      this.write(`videoRenderTimeout triggered, not all videos finished rendering`);
+
+    abortTimer = setTimeout(() => {
+      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up`);
       wrapItUp();
     }, config.videoRenderTimeout*1000);
   }
+
+  /**
+   * Finalize allure report
+   */
+  onExit () {
+    const abortTime = new Date().getTime() + config.videoRenderTimeout*1000;
+
+    helpers.waitForVideosToExist(this.videos, abortTime);
+    helpers.waitForVideosToBeWritten(this.videos, abortTime);
+
+    if (new Date().getTime() > abortTime) {
+      console.log(`videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure`);
+    }
+
+    fs
+      .readdirSync(config.allureOutputDir)
+      .filter(line => line.includes('.mp4'))
+      .map(filename => path.resolve(config.allureOutputDir, filename))
+      .filter(allureFile => fs.statSync(allureFile).size < 1024)
+      .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
+      .forEach((filePath) => {
+        const videoFilePath = fs.readFileSync(filePath).toString(); // The contents of the placeholder file is the video path
+        if (fs.existsSync(videoFilePath)) {
+          fs.copySync(videoFilePath, filePath);
+        }
+      });
+  }
 }
+
+

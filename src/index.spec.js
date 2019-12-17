@@ -133,6 +133,10 @@ describe('wdio-video-recorder - ', () => {
 
   describe('onRunnerStart - ', () => {
     beforeEach(() => {
+      process.on = jest.fn();
+    });
+    afterEach(() => {
+      process.on.mockRestore();
     });
 
     it('should user Allure default outputDir if not set in wdio config', () => {
@@ -181,7 +185,6 @@ describe('wdio-video-recorder - ', () => {
         frameworkInit: jest.fn().mockImplementation(),
       }));
 
-
       let video = new Video(options);
       browser.config.framework = undefined;
       video.onRunnerStart(browser);
@@ -214,6 +217,19 @@ describe('wdio-video-recorder - ', () => {
       browser.config.framework = 'cucumber';
       video.onRunnerStart(browser);
       expect(cucumberFrameworkMock.frameworkInit).toHaveBeenCalled();
+    });
+
+    it('should only register exit handler if using allure', () => {
+      let video = new Video(options);
+      video.onRunnerStart(browser);
+
+      expect(process.on).not.toHaveBeenCalled();
+
+      browser.config.reporters = [['allure', {config: {}}]];
+      video = new Video(options);
+      video.onRunnerStart(browser);
+
+      expect(process.on).toHaveBeenCalled();
     });
   });
 
@@ -512,7 +528,8 @@ describe('wdio-video-recorder - ', () => {
       expect(video.isDone).toBeTruthy();
     });
 
-    it('should not wrap up twice if promises resolve after videoRenderTimeout', async () => {
+    it('should not wrapup twice if promises resolve after videoRenderTimeout', async () => {
+      global.clearTimeout = jest.fn();
       let video = new Video(options);
       video.videos = videos;
       video.config.usingAllure = true;
@@ -525,38 +542,80 @@ describe('wdio-video-recorder - ', () => {
       jest.advanceTimersByTime(video.config.videoRenderTimeout*1001);
       await flushPromises();
 
-      expect(fsMocks.readdirSync.mock.calls.length).toBe(1);
+      expect(global.clearTimeout.mock.calls.length).toBe(1);
 
       resolve();
       await flushPromises();
 
-      expect(fsMocks.readdirSync.mock.calls.length).toBe(1);
+      expect(global.clearTimeout.mock.calls.length).toBe(1);
+    });
+  });
+
+  describe('onExit - ', () => {
+    const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
+    let originalDate = Date;
+    let currentTime = 0;
+
+    beforeEach(() => {
+      resetFsMocks();
+      jest.useFakeTimers();
+      helpers.default.waitForVideosToExist = jest.fn();
+      helpers.default.waitForVideosToBeWritten = jest.fn();
+      global.console.log = jest.fn();
+
+      global.Date = class extends Date {
+        constructor() {
+          super();
+          this.getTime = jest.fn().mockReturnValue(currentTime);
+        }
+      };
     });
 
-    it('should not try to update Allure report if Allure is not present', async () => {
-      let video = new Video(options);
-      video.videos = videos;
-
-      video.onRunnerEnd();
-      await flushPromises();
-
-      expect(fsMocks.readdirSync).not.toHaveBeenCalled();
+    afterEach(() => {
+      global.console.log.mockRestore();
+      global.date = originalDate;
     });
 
-    it('should update Allure report if Allure is present', async () => {
+    it('should wait for videos to done', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
       video.videos = videos;
 
-      video.onRunnerEnd();
-      await flushPromises();
+      video.onExit();
+
+      expect(helpers.default.waitForVideosToExist).toHaveBeenCalled();
+      expect(helpers.default.waitForVideosToBeWritten).toHaveBeenCalled();
+    });
+
+    it('should print warning if videoRenderTimeout is triggered', () => {
+      let video = new Video(options);
+      video.config.allureOutputDir = 'outputDir/allureDir';
+      video.config.usingAllure = true;
+      video.videos = videos;
+
+      helpers.default.waitForVideosToBeWritten = jest.fn().mockImplementation(() => {
+        currentTime = configModule.default.videoRenderTimeout*1000 + 1;
+      });
+
+      video.onExit();
+
+      expect(global.console.log.mock.calls[0][0].includes('videoRenderTimeout triggered')).toBeTruthy();
+    });
+
+    it('should update Allure report if Allure is present', () => {
+      let video = new Video(options);
+      video.config.allureOutputDir = 'outputDir/allureDir';
+      video.config.usingAllure = true;
+      video.videos = videos;
+
+      video.onExit();
 
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
     });
 
-    it('should not try to copy missing files to Allure', async () => {
+    it('should not try to copy missing files to Allure', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -564,13 +623,12 @@ describe('wdio-video-recorder - ', () => {
 
       fsMocks.existsSync = jest.fn().mockReturnValue(false);
 
-      video.onRunnerEnd();
-      await flushPromises();
+      video.onExit();
 
       expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
     });
 
-    it('should update Allure report if Allure is present with correct browser videos', async () => {
+    it('should update Allure report if Allure is present with correct browser videos', () => {
       const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4',
         'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
       let video = new Video(options);
@@ -578,29 +636,11 @@ describe('wdio-video-recorder - ', () => {
       video.config.usingAllure = true;
       video.videos = videos;
 
-      video.onRunnerEnd();
-      await flushPromises();
+      video.onExit();
 
       expect(fsMocks.copySync.mock.calls.length).toBe(2);
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
-    });
-
-    it('should write error message if failing', async () => {
-      fsMocks.readFileSync = jest.fn().mockImplementation(() => {
-        throw new Error('Error message');
-      });
-
-      let video = new Video(options);
-      video.write = jest.fn();
-      video.config.allureOutputDir = 'outputDir/allureDir';
-      video.config.usingAllure = true;
-      video.videos = videos;
-
-      video.onRunnerEnd();
-      await flushPromises();
-
-      expect(video.write.mock.calls[2][0]).toBe('Error message');
     });
   });
 

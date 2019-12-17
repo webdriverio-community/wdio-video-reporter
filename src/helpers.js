@@ -1,12 +1,18 @@
 import allureReporter from '@wdio/allure-reporter';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
+import fs from 'fs-extra';
 import { spawn } from 'child_process';
 
 import config from './config.js';
 
 let writeLog;
 export default {
+  sleep(ms) {
+    const stop = new Date().getTime() + ms;
+    while(new Date().getTime() < stop);
+  },
+
   setLogger(obj) {
     writeLog = obj;
   },
@@ -84,4 +90,39 @@ export default {
 
     this.videoPromises.push(promise);
   },
+
+  waitForVideosToExist(videos, abortTime) {
+    let allExist = false;
+    let allGenerated = false;
+
+    do {
+      this.sleep(100);
+      allExist = videos
+        .map(v => fs.existsSync(v))
+        .reduce((acc, cur) => acc && cur, true);
+      if (allExist) {
+        allGenerated = videos
+          .map(v => fs.statSync(v).size)
+          .reduce((acc, cur) => acc && cur > 48, true);
+      }
+    } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
+  },
+
+  waitForVideosToBeWritten(videos, abortTime) {
+    let allSizes = [];
+    let allConstant = false;
+
+    do {
+      this.sleep(100);
+      let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
+      allSizes = [...allSizes, currentSizes].slice(-3);
+
+      allConstant = allSizes.length === 3 && currentSizes
+        .reduce((accOuter, curOuter) => accOuter && allSizes
+            .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
+            .map(v => v.size)
+            .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
+    } while(new Date().getTime() < abortTime && !allConstant);
+  },
+
 };

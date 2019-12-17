@@ -4,9 +4,12 @@
 
 import {allureMocks} from '@wdio/allure-reporter';
 import {cpMocks} from 'child_process';
+import {fsMocks, resetFsMocks} from 'fs-extra';
 
 import helpers from './helpers.js';
 import config from './config.js';
+
+const originalSleep = helpers.sleep;
 
 // Built in modules are not mocked by default
 jest.mock('path');
@@ -28,11 +31,50 @@ describe('Helpers - ', () => {
   }
 
   beforeEach(() => {
+    resetFsMocks();
     helpers.setLogger(logger);
     config.debugMode = false;
     config.videoRenderTimeout = 5;
+
+    helpers.sleep = jest.fn(() => {});
   });
 
+  describe('sleep - ', () => {
+    let originalDate;
+
+    beforeEach(() => {
+      let counter = 0;
+
+      originalDate = Date;
+
+      global.Date = class extends Date {
+        constructor() {
+          super();
+          return counter;
+        }
+
+        getTime() {
+          return counter++;
+        }
+
+        getCounter() {
+          return counter;
+        }
+      };
+
+      helpers.sleep = originalSleep;
+    });
+
+    afterEach(() => {
+      global.Date = originalDate;
+    });
+
+    it('should sleep until requested time has passed', () => {
+      helpers.sleep(100);
+
+      expect(new Date().getCounter()).toBe(100 + 1);
+    });
+  });
 
   describe('debugLog - ', () => {
     const msg = 'A log line';
@@ -155,6 +197,140 @@ describe('Helpers - ', () => {
       helpers.generateVideo.call(video);
 
       expect(videoPromiseResolved).toBeTruthy();
+    });
+  });
+
+
+  describe('waitForVideos - ', () => {
+    let videos = [
+      'file1.mp4',
+      'file2.mp4',
+      'file3.mp4',
+    ];
+
+    let originalDate = Date;
+    let currentTime = 0;
+
+    beforeEach(() => {
+      config.videoRenderTimeout = 5;
+
+      fsMocks.existsSync = jest.fn()
+        .mockImplementation(() => true);
+
+      fsMocks.statSync = jest.fn()
+        .mockImplementation(() => ({ size: 512 }));
+
+      global.Date = class extends Date {
+        constructor() {
+          super();
+          this.getTime = jest.fn().mockReturnValue(currentTime);
+        }
+      };
+      currentTime = 0;
+    });
+
+    afterEach(() => {
+      global.date = originalDate;
+    });
+
+    it('should wait for videos to exist', () => {
+      fsMocks.existsSync = jest.fn()
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementation(() => true);
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(3);
+    });
+
+    it('should wait for videos to be generated', () => {
+      fsMocks.statSync = jest.fn()
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementation(() => ({ size: 512 }));
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(3);
+    });
+
+    it('should wait for videos to be exist and be generated', () => {
+      fsMocks.existsSync = jest.fn()
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementation(() => true);
+      fsMocks.statSync = jest.fn()
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementation(() => ({ size: 512 }));
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(5);
+    });
+
+    it('should bail after abortTime even if not existing', () => {
+      fsMocks.existsSync = jest.fn()
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementationOnce(() => false)
+        .mockImplementation(() => true);
+      fsMocks.statSync = jest.fn()
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => {
+          currentTime = config.videoRenderTimeout*1000 + 1;
+          return { size: 48 };
+        })
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementationOnce(() => ({ size: 48 }))
+        .mockImplementation(() => ({ size: 512 }));
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(3);
+    });
+
+    it('should wait for videos to finish being written', () => {
+      fsMocks.statSync = jest.fn()
+        .mockImplementationOnce(() => ({ size: 50 }))
+        .mockImplementationOnce(() => ({ size: 61 }))
+        .mockImplementationOnce(() => ({ size: 72 }))
+        .mockImplementationOnce(() => ({ size: 51 }))
+        .mockImplementationOnce(() => ({ size: 62 }))
+        .mockImplementationOnce(() => ({ size: 73 }))
+        .mockImplementation(() => ({ size: 512 }));
+      helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(2+3); // Two during reading and three good in a row
+    });
+
+    it('should wait for videos to finish being written and bail if timeout is reached', () => {
+      fsMocks.statSync = jest.fn()
+        .mockImplementationOnce(() => ({ size: 50 }))
+        .mockImplementationOnce(() => ({ size: 61 }))
+        .mockImplementationOnce(() => ({ size: 72 }))
+        .mockImplementationOnce(() => {
+          currentTime = config.videoRenderTimeout*1000 + 1;
+          return { size: 51 };
+        })
+        .mockImplementationOnce(() => ({ size: 62 }))
+        .mockImplementationOnce(() => ({ size: 73 }))
+        .mockImplementation(() => ({ size: 512 }));
+      helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
+      expect(helpers.sleep.mock.calls.length).toBe(2);
     });
   });
 });
