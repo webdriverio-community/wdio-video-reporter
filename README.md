@@ -118,6 +118,30 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 
+Cucumber support
+----------------
+
+If you are using the Allure reporter, you need to ensure you do the following:
+
+- Use `chai` instead of using the built-in node assertions otherwise the failed tests gets reported as broken in your steps definitions
+- Add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
+```
+  reporters: [
+    [video, {
+      saveAllVideos: false,       // If true, also saves videos for successful test cases
+      videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
+    }],
+    ['allure', {
+      outputDir: './_results_/allure-raw',
+      disableWebdriverStepsReporting: true,
+      disableWebdriverScreenshotsReporting: true,
+      useCucumberStepReporter: true
+    }],
+  ],
+```
+For a complete example, checkout the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
+
+
 Appium setup
 ------------
 
@@ -142,10 +166,10 @@ Example appium configuration:
 
 And `wdio-config.json`:
 ```
-  capabilities: [
+  "capabilities": [
     {
       ...
-      'appium:deviceType': 'phone',
+      "appium:deviceType": "phone",
       "browserVersion": "73.0-phone-1",
       ...
     },
@@ -160,3 +184,8 @@ Fork, make changes, write some tests, lint, run tests, build, and verify in the 
 
 The demo folder works with the built version of the library, so make sure to build if you added new features and want to try them out.
 
+
+Thanks
+======
+
+Thanks to [Johnson E](https://github.com/jonn-set) for fixing Cucumber support which alot of users have asked for.

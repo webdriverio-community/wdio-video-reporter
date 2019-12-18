@@ -65,5 +65,6 @@ module.exports = {
 
     $: true,
     browser: true,
+    Promise: true,
   }
 }

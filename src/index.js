@@ -1,14 +1,14 @@
 import WdioReporter from '@wdio/reporter';
 import allureReporter from '@wdio/allure-reporter';
-import mkdirp from 'mkdirp';
 import fs from 'fs-extra';
 import path from 'path';
-import { spawn } from 'child_process';
-import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 
 import helpers from './helpers.js';
 import config from './config.js';
 import notAvailableImage from './assets/not-available.png';
+
+import defaultFramework from './frameworks/default.js';
+import cucumberFramework from './frameworks/cucumber.js';
 
 export default class Video extends WdioReporter {
   /**
@@ -19,6 +19,8 @@ export default class Video extends WdioReporter {
       options.logFile = undefined;
     }
     super(options);
+
+    this.isDone = false;
 
     // User options
     // Wdio doesn't pass outputDir, but logFile which includes outputDir
@@ -35,7 +37,7 @@ export default class Video extends WdioReporter {
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
     this.videos = [];
-    this.ffmpegCommands = [];
+    this.videoPromises = [];
     this.testnameStructure = [];
     this.testname = '';
     this.frameNr = 0;
@@ -43,6 +45,14 @@ export default class Video extends WdioReporter {
     this.config = config;
 
     helpers.setLogger(msg => this.write(msg));
+  }
+
+
+  /**
+   * overwrite isSynchronised method
+   */
+  get isSynchronised () {
+    return this.isDone;
   }
 
   /**
@@ -58,6 +68,14 @@ export default class Video extends WdioReporter {
     config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
     this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
     this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
+
+    // Jasmine and Mocha ought to behave the same regarding test-structure
+    this.framework = browser.config.framework === 'cucumber' ? cucumberFramework : defaultFramework;
+    this.framework.frameworkInit.call(this, browser);
+
+    if(config.usingAllure) {
+      process.on('exit', () => this.onExit.call(this));
+    }
   }
 
   /**
@@ -92,44 +110,33 @@ export default class Video extends WdioReporter {
    */
   onSuiteStart (suite) {
     helpers.debugLog(`\n\n\n--- New suite: ${suite.title} ---\n`);
-    this.testnameStructure.push(suite.title.replace(/ /g, '-'));
+    this.framework.onSuiteStart.call(this, suite);
   }
 
   /**
    * Cleare suite name from naming structure
    */
-  onSuiteEnd () {
+  onSuiteEnd (suite) {
     this.testnameStructure.pop();
+    this.framework.onSuiteEnd.call(this, suite);
   }
 
   /**
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (test) {
-    helpers.debugLog(`\n\n--- New test: ${test.title} ---\n`);
-    this.testnameStructure.push(test.title.replace(/ /g, '-'));
-    const fullname = this.testnameStructure.slice(1).reduce((cur,acc) => cur + '--' + acc, this.testnameStructure[0]);
-    let browserName = browser.capabilities.browserName.toUpperCase();
-    if (browser.capabilities.deviceType) {
-      browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
-    }
-    this.testname = helpers.generateFilename(browserName, fullname);
-    this.frameNr = 0;
-    this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
-    mkdirp.sync(this.recordingPath);
+    this.framework.onTestStart.call(this, test);
   }
 
   /**
    * Remove empty directories
    */
-  onTestSkip () {
-    if(this.recordingPath !== undefined) {
-      fs.removeSync(this.recordingPath);
-    }
+  onTestSkip (test) {
+    this.framework.onTestSkip.call(this, test);
   }
 
   /**
-   * Add attachment to Allue if applicable and start to generate the video
+   * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {
     this.testnameStructure.pop();
@@ -153,55 +160,66 @@ export default class Video extends WdioReporter {
         helpers.debugLog('- Screenshot not available...\n');
       }
 
-      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
-      this.videos.push(videoPath);
-
-      if (config.usingAllure) {
-        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-      }
-
-      const command = `"${ffmpegPath}" -y -r 10 -i "${this.recordingPath}/%04d.png" -vcodec libx264` +
-        ` -crf 32 -pix_fmt yuv420p -vf "scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"` +
-        ` "${path.resolve(config.outputDir, this.testname)}.mp4"`;
-
-      helpers.debugLog(`ffmpeg command: ${command}\n`);
-
-      this.ffmpegCommands.push(command);
+      helpers.generateVideo.call(this);
     }
   }
 
   /**
-   * Finalize report if using allure and clean up
+   * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    try {
-      helpers.debugLog(`\n\n--- Awaiting videos ---\n`);
-      this.ffmpegCommands.forEach((cmd) => spawn(cmd, { stdio: 'ignore', shell: true}));
-      this.videos = helpers.waitForVideos(this.videos);
-      helpers.debugLog(`\n--- Videos are done ---\n\n`);
+    let abortTimer;
+    let started = false;
+    const wrapItUp = () => {
+      if (!started) {
+        clearTimeout(abortTimer);
+        started = true;
+        helpers.debugLog(`\n--- FFMPEG is done ---\n\n`);
 
-      this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
+        this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
 
-      if (config.usingAllure) {
-        helpers.debugLog(`--- Patching allure report ---\n`);
-
-        fs
-        .readdirSync(config.allureOutputDir)
-        .filter(line => line.includes('.mp4'))
-        .map(filename => path.resolve(config.allureOutputDir, filename))
-        .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
-        .forEach((filepath) => {
-          const videoFilePath = fs.readFileSync(filepath).toString();// The contents of the placeholder file is the video path
-          fs.copySync(videoFilePath, filepath);
-        });
+        this.write(`\n\nVideo reporter Done!\n`);
+        this.isDone = true;
       }
+    };
 
-      this.write(`\n\nDone!\n`);
+    Promise.all(this.videoPromises)
+      .then(wrapItUp)
+      .catch(wrapItUp);
+
+
+    abortTimer = setTimeout(() => {
+      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up`);
+      wrapItUp();
+    }, config.videoRenderTimeout*1000);
+  }
+
+  /**
+   * Finalize allure report
+   */
+  onExit () {
+    const abortTime = new Date().getTime() + config.videoRenderTimeout*1000;
+
+    helpers.waitForVideosToExist(this.videos, abortTime);
+    helpers.waitForVideosToBeWritten(this.videos, abortTime);
+
+    if (new Date().getTime() > abortTime) {
+      console.log(`videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure`);
     }
-    catch(e) {
-      this.write('Error during onRunnerEnd:');
-      this.write(e.message);
-      this.write(e.stack);
-    }
+
+    fs
+      .readdirSync(config.allureOutputDir)
+      .filter(line => line.includes('.mp4'))
+      .map(filename => path.resolve(config.allureOutputDir, filename))
+      .filter(allureFile => fs.statSync(allureFile).size < 1024)
+      .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready
+      .forEach((filePath) => {
+        const videoFilePath = fs.readFileSync(filePath).toString(); // The contents of the placeholder file is the video path
+        if (fs.existsSync(videoFilePath)) {
+          fs.copySync(videoFilePath, filePath);
+        }
+      });
   }
 }
+
+

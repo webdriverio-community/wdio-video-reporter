@@ -26,7 +26,7 @@ const config = {
   reporters: [
     'spec',
     [video, {
-      saveAllVideos: true,       // If true, also saves videos for successful test cases
+      saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering
     }],
@@ -34,6 +34,7 @@ const config = {
       outputDir: './_results_/allure-raw',
       disableWebdriverStepsReporting: true,
       disableWebdriverScreenshotsReporting: true,
+      useCucumberStepReporter: true,
     }],
   ],
 
@@ -61,20 +62,38 @@ const config = {
   // ==================
   // Some nice defaults
   // ==================
-  specs: [
-    './specs/**/*.e2e.js',
-  ],
   deprecationWarnings: true,
   maxInstances: 10,
   sync: true,
   coloredLogs: true,
-  bail: 1,
+  bail: 0,
   waitforTimeout: 10000,
   connectionRetryTimeout: 90000,
   connectionRetryCount: 3,
-  framework: 'jasmine',
-  jasmineNodeOpts: {
-    defaultTimeoutInterval: 120000,
+
+  // =================
+  // Cucumber settings
+  // =================
+  specs: [
+    './cucumber-scenarios/**/*.feature',
+  ],
+  framework: 'cucumber',
+  cucumberOpts: {
+    requireModule: ['@babel/register'],
+    require: ['./cucumber-scenarios/**/*.steps.js'],
+    backtrace: false,
+    compiler: [],
+    dryRun: false,
+    failFast: false,
+    format: ['pretty'],
+    colors: true,
+    snippets: true,
+    source: true,
+    profile: [],
+    strict: false,
+    tagExpression: [],
+    timeout: 60000,
+    ignoreUndefinedDefinitions: false,
   },
 };
 

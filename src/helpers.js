@@ -1,12 +1,16 @@
+import allureReporter from '@wdio/allure-reporter';
+import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
+import path from 'path';
 import fs from 'fs-extra';
+import { spawn } from 'child_process';
 
 import config from './config.js';
 
 let writeLog;
 export default {
   sleep(ms) {
-    const stop = new Date().getTime();
-    while(new Date().getTime() < stop + ms);
+    const stop = new Date().getTime() + ms;
+    while(new Date().getTime() < stop);
   },
 
   setLogger(obj) {
@@ -48,47 +52,77 @@ export default {
     return filename;
   },
 
-  waitForVideos(videos) {
-    const existingVideos = [];
-    const maxWaiting = 10 * config.videoRenderTimeout;
+  generateVideo() {
+    const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+    this.videos.push(videoPath);
 
-    writeLog(`Max waiting time: ${config.videoRenderTimeout}s\n`);
-
-    for (let idx in videos) {
-      writeLog(`\n--- Video ${videos[idx]} ---\n`);
-      let waitForExistTimer = 0;
-      let waitForRenderTimer = 0;
-
-      do {
-        this.sleep(100);
-        if (waitForExistTimer % 10 === 0) {
-          writeLog('Waiting for video to exist: ' + waitForExistTimer/10 + 's\n');
-        }
-      } while (!fs.existsSync(videos[idx]) && waitForExistTimer++ < maxWaiting);
-
-      if (waitForExistTimer < maxWaiting) {
-        let fileStats = fs.statSync(videos[idx]);
-        let lastSize = 0;
-        let videoIsReady = false;
-
-        do {
-          fileStats = fs.statSync(videos[idx]);
-          videoIsReady = fileStats.size > 48 && lastSize === fileStats.size;
-          lastSize = fileStats.size > 48 ? fileStats.size : 0;
-
-          this.sleep(100);
-          if (waitForRenderTimer % 10 === 0) {
-            writeLog('Waiting for video to be ready: ' + waitForRenderTimer/10 + 's\n');
-          }
-        } while ((fileStats.size === 48 || !videoIsReady) && waitForRenderTimer++ < maxWaiting);
-
-        if (waitForRenderTimer < maxWaiting) {
-          existingVideos.push(videos[idx]);
-        }
-      }
+    if (config.usingAllure) {
+      allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
     }
 
-    return existingVideos;
+    const command = `"${ffmpegPath}"`;
+    const args = [
+      '-y',
+      '-r', '10',
+      '-i', `"${this.recordingPath}/%04d.png"`,
+      '-vcodec', 'libx264',
+      '-crf', '32',
+      '-pix_fmt', 'yuv420p',
+      '-vf', `"scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
+      `"${videoPath}"`,
+    ];
+
+    if (config.debugMode) {
+      writeLog(`ffmpeg command: ${command + ' ' + args}\n`);
+    }
+
+    const promise = new Promise((resolve) => {
+      const cp = spawn(command, args, {
+        stdio: 'ignore',
+        shell: true,
+        windowsHide: true,
+      });
+
+      cp.on('close', () => {
+        resolve();
+      });
+    });
+
+    this.videoPromises.push(promise);
+  },
+
+  waitForVideosToExist(videos, abortTime) {
+    let allExist = false;
+    let allGenerated = false;
+
+    do {
+      this.sleep(100);
+      allExist = videos
+        .map(v => fs.existsSync(v))
+        .reduce((acc, cur) => acc && cur, true);
+      if (allExist) {
+        allGenerated = videos
+          .map(v => fs.statSync(v).size)
+          .reduce((acc, cur) => acc && cur > 48, true);
+      }
+    } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
+  },
+
+  waitForVideosToBeWritten(videos, abortTime) {
+    let allSizes = [];
+    let allConstant = false;
+
+    do {
+      this.sleep(100);
+      let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
+      allSizes = [...allSizes, currentSizes].slice(-3);
+
+      allConstant = allSizes.length === 3 && currentSizes
+        .reduce((accOuter, curOuter) => accOuter && allSizes
+            .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
+            .map(v => v.size)
+            .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
+    } while(new Date().getTime() < abortTime && !allConstant);
   },
 
 };

@@ -1,4 +1,4 @@
-export let fsMocks; 
+export let fsMocks;
 
 export const resetFsMocks = () => {
   fsMocks = {
@@ -14,7 +14,7 @@ export const resetFsMocks = () => {
       .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.mp4')
       .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.mp4'),
     readdirSync: jest.fn().mockReturnValue(['MOCK-ALLURE-1.mp4', 'MOCK-ALLURE-2.mp4']),
-    statSync: jest.fn().mockReturnValue('MOCK'),
+    statSync: jest.fn().mockReturnValue(({ size: 128 })),
   };
 };
 
