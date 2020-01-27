@@ -61,7 +61,7 @@ At the top of the `wdio.conf.js`-file, require the library:
 const video = require('wdio-video-reporter');
 ```
 
-Then add the video reporter to the configuration in the reporters propertu:
+Then add the video reporter to the configuration in the reporters property:
 
 ```
  reporters: [
