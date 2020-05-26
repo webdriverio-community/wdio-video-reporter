@@ -321,7 +321,12 @@ var cucumberFramework = {
     this.testnameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
     if (suite.type === 'scenario') {
       const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-      let browserName = browser.capabilities.browserName.toUpperCase();
+      let browserName;
+      if(browser.capabilities.browserName){
+        browserName = browser.capabilities.browserName.toUpperCase();
+      }else if(browser.capabilities.deviceName){
+        browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
+      }
       if (browser.capabilities.deviceType) {
         browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
       }
