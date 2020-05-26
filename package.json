@@ -31,8 +31,9 @@
   "homepage": "https://github.com/presidenten/wdio-video-reporter#readme",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
-    "@wdio/allure-reporter": "^5.16.16",
-    "@wdio/reporter": "^5.15.2",
+    "@wdio/allure-reporter": "^6.1.12",
+    "@wdio/cli": "^6.1.12",
+    "@wdio/reporter": "^6.1.9",
     "fs-extra": "^6.0.1",
     "mkdirp": "^0.5.1"
   },
