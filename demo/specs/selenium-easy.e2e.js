@@ -1,12 +1,9 @@
 describe('User interactions', () => {
   beforeEach(() => {
     browser.url('http://www.seleniumeasy.com/test/');
-
-    const lightbox = '#at-cv-lightbox-close';
-    if ($(lightbox).isExisting()) {
-      $(lightbox).click();
-    }
-
+    let popup = $('#at-cv-lightbox-close');
+    if (popup.isExisting())
+      popup.click();
   });
 
   it ('should be able to edit input (should pass)', () => {
@@ -78,6 +75,9 @@ describe('User interactions', () => {
 describe('Reporter bug fixes (should pass)', () => {
   beforeEach(() => {
     browser.url('http://www.seleniumeasy.com/test/');
+    let popup = $('#at-cv-lightbox-close');
+    if (popup.isExisting())
+      popup.click();
   });
 
   it('should handle modals blocking screenshots', () => {
