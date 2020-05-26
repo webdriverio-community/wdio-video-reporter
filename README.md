@@ -117,6 +117,8 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
+To avoid extra logging all together and only get the video files, set `wdio.config.logLevel: 'silent'`.
+
 
 Cucumber support
 ----------------
