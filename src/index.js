@@ -66,9 +66,10 @@ export default class Video extends WdioReporter {
     config.usingAllure = !!allureConfig;
     const logLevel = browser.config.logLevel;
     config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
-    this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
-    this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
 
+    helpers.debugLog('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
+    helpers.debugLog('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');    
+    
     // Jasmine and Mocha ought to behave the same regarding test-structure
     this.framework = browser.config.framework === 'cucumber' ? cucumberFramework : defaultFramework;
     this.framework.frameworkInit.call(this, browser);
