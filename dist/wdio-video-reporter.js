@@ -251,7 +251,14 @@ var defaultFramework = {
     helpers.debugLog(`\n\n--- New test: ${test.title} ---\n`);
     this.testnameStructure.push(test.title.replace(/ /g, '-'));
     const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-    let browserName = browser.capabilities.browserName.toUpperCase();
+
+    let browserName = 'browser';
+    if(browser.capabilities.browserName) {
+      browserName = browser.capabilities.browserName.toUpperCase();
+    } else if(browser.capabilities.deviceName) {
+      browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
+    }
+
     if (browser.capabilities.deviceType) {
       browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
     }
@@ -321,12 +328,14 @@ var cucumberFramework = {
     this.testnameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
     if (suite.type === 'scenario') {
       const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-      let browserName;
-      if(browser.capabilities.browserName){
+
+      let browserName = 'browser';
+      if(browser.capabilities.browserName) {
         browserName = browser.capabilities.browserName.toUpperCase();
-      }else if(browser.capabilities.deviceName){
+      } else if(browser.capabilities.deviceName) {
         browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
       }
+
       if (browser.capabilities.deviceType) {
         browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
       }
@@ -457,8 +466,9 @@ class Video extends WdioReporter {
     config.usingAllure = !!allureConfig;
     const logLevel = browser.config.logLevel;
     config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
-    this.write('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
-    this.write('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
+
+    helpers.debugLog('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
+    helpers.debugLog('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
 
     // Jasmine and Mocha ought to behave the same regarding test-structure
     this.framework = browser.config.framework === 'cucumber' ? cucumberFramework : defaultFramework;

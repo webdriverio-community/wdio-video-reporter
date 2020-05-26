@@ -135,6 +135,21 @@ describe('wdio-video-recorder - default framework - ', () => {
       video.onTestStart({title: 'TEST'});
       expect(video.recordingPath).toEqual(configModule.default.outputDir + '/' + originalConfig.rawPath + '/' + 'TEST-NAME');
     });
+
+    it('should handle native appium tests', () => {
+      let video = new Video(options);
+      video.framework = {
+        onSuiteStart: jest.fn(),
+      };
+      global.browser.capabilities = {
+        deviceName: 'DEVICE',
+        platformName: 'PLATFORM',
+      };
+
+      helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => '');
+      video.onTestStart({title: 'TEST123'});
+      expect(helpers.default.generateFilename).toHaveBeenCalledWith('DEVICE-PLATFORM', 'TEST123');
+    });
   });
 
   describe('onTestSkip - ', () => {

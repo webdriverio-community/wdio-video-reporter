@@ -80,6 +80,19 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
       expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
     });
 
+    it('should add suite title to testnameStructure', () => {
+      let video = new Video(options);
+      video.framework = {
+        onSuiteStart: jest.fn(),
+      };
+      expect(video.testnameStructure).toEqual([]);
+      video.onSuiteStart({title: 'DESCRIBE1'});
+      expect(video.testnameStructure).toEqual(['DESCRIBE1']);
+
+      video.onSuiteStart({title: 'DESCRIBE2'});
+      expect(video.testnameStructure).toEqual(['DESCRIBE1', 'DESCRIBE2']);
+    });
+
     describe('scenario - ', () => {
       it('should add suite title to testnameStructure', () => {
         let video = new Video(options);
@@ -147,6 +160,21 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
         let video = new Video(options);
         video.onSuiteStart({title: 'TEST', type: 'scenario'});
         expect(mkdirpMock.sync).toHaveBeenCalled();
+      });
+
+      it('should handle native appium tests', () => {
+        let video = new Video(options);
+        video.framework = {
+          onSuiteStart: jest.fn(),
+        };
+        global.browser.capabilities = {
+          deviceName: 'DEVICE',
+          platformName: 'PLATFORM',
+        };
+
+        helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => '');
+        video.onSuiteStart({title: 'TEST123', type: 'scenario'});
+        expect(helpers.default.generateFilename).toHaveBeenCalledWith('DEVICE-PLATFORM', 'TEST123');
       });
     });
 
