@@ -8,8 +8,6 @@ services:
 
 before_script:
   - "export DISPLAY=:99.0"
-  - "node -v"
-  - "yarn -v"
   - "yarn"
 
 script: "npm run ci"
