@@ -2,6 +2,7 @@ Feature: User interactions - Failure
 
   Background:
     Given I navigate to base url
+    And I close close ad-popups
 
   Scenario: I should be able to edit sliders (failure at the last step)
     Given I open Advanced Examples tab

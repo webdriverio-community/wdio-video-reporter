@@ -5,6 +5,13 @@ Given(/^I navigate to base url$/, () => {
   browser.url('http://www.seleniumeasy.com/test/');
 });
 
+Given(/^I close close ad-popups$/, () => {
+  const lightbox = '#at-cv-lightbox-close';
+  if ($(lightbox).isExisting()) {
+    $(lightbox).click();
+  }
+});
+
 Given(/^I open Basic Examples tab$/, () => {
   $('#btn_basic_example').click();
   browser.pause(300); // avoid animation effect
