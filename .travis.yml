@@ -1,5 +1,5 @@
 node_js:
-  - '12.10.0'
+  - '12.18.0'
 
 services:
   - xvfb
