@@ -32,7 +32,7 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "@wdio/allure-reporter": "^6.1.12",
-    "@wdio/cli": "^6.1.12",
+    "@wdio/cli": "^6.1.16",
     "@wdio/reporter": "^6.1.9",
     "fs-extra": "^6.0.1",
     "mkdirp": "^0.5.5"
