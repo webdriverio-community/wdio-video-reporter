@@ -6,6 +6,7 @@ Given(/^I navigate to base url$/, () => {
 });
 
 Given(/^I close close ad-popups$/, () => {
+  browser.pause(300); // avoid animation effect
   const lightbox = '#at-cv-lightbox-close';
   if ($(lightbox).isExisting()) {
     $(lightbox).click();
