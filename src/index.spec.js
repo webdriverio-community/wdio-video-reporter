@@ -49,7 +49,7 @@ describe('wdio-video-recorder - ', () => {
     });
 
     global.browser = {
-      saveScreenshot: jest.fn(),
+      saveScreenshot: jest.fn(() => Promise.resolve()),
       capabilities: {
         browserName: 'BROWSER',
       },
@@ -307,6 +307,20 @@ describe('wdio-video-recorder - ', () => {
         video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
         expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0002.png', 'file-mock', 'base64');
       });
+
+      it('should log', (done) => {
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+
+        helpers.default.debugLog = jest.fn();
+        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
+        expect(helpers.default.debugLog).toHaveBeenCalledWith('Incoming command: /session/abcdef/url => [url]\n');
+        setImmediate(() => {
+          expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!!\n');
+          done();
+        });
+      });
     });
   });
 
@@ -431,12 +445,18 @@ describe('wdio-video-recorder - ', () => {
       expect(browser.saveScreenshot).not.toHaveBeenCalledWith('folder/0000.png');
     });
 
-    it('should take a last screenshot if test failed', () => {
+    it('should take a last screenshot if test failed', (done) => {
+      helpers.default.debugLog = jest.fn();
+
       let video = new Video(options);
       video.recordingPath = 'folder';
 
       video.onTestEnd({title: 'TEST', state: 'failed'});
       expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
+      setImmediate(() => {
+        expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!!\n');
+        done();
+      });
     });
 
     it('should take a last screenshot if test passed and config saveAllvideos', () => {

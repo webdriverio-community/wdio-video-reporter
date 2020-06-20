@@ -87,7 +87,7 @@ export default class Video extends WdioReporter {
     const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command ? command[0] : 'undefined';
 
-    helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
+    helpers.debugLog('Incoming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 
     // Filter out non-action commands and keep only last action command
     if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
