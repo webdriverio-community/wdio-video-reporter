@@ -187,14 +187,14 @@ describe('Helpers - ', () => {
       expect(logger.mock.calls[0][0].includes('ffmpeg command')).toBeTruthy();
     });
 
-    it('should spawn ffmpeg to generate the video', () => {
-      helpers.generateVideo.call(video);
+    it('should spawn ffmpeg to generate the video', async () => {
+      await helpers.generateVideo.call(video);
 
       expect(cpMocks.spawn).toHaveBeenCalled();
     });
 
-    it('should resolve when ffmpeg is done', () => {
-      helpers.generateVideo.call(video);
+    it('should resolve when ffmpeg is done', async () => {
+      await helpers.generateVideo.call(video);
 
       expect(videoPromiseResolved).toBeTruthy();
     });

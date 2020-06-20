@@ -76,19 +76,22 @@ export default {
       writeLog(`ffmpeg command: ${command + ' ' + args}\n`);
     }
 
-    const promise = new Promise((resolve) => {
-      const cp = spawn(command, args, {
-        stdio: 'ignore',
-        shell: true,
-        windowsHide: true,
-      });
+    const promise = Promise
+      .all(this.screenshotPromises || [])
+      .then(() => new Promise((resolve) => {
+        const cp = spawn(command, args, {
+          stdio: 'ignore',
+          shell: true,
+          windowsHide: true,
+        });
 
-      cp.on('close', () => {
-        resolve();
-      });
-    });
+        cp.on('close', () => {
+          resolve();
+        });
+      }));
 
     this.videoPromises.push(promise);
+    return promise;
   },
 
   waitForVideosToExist(videos, abortTime) {

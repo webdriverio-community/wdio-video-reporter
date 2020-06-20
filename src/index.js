@@ -36,6 +36,7 @@ export default class Video extends WdioReporter {
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
 
+    this.screenshotPromises = [];
     this.videos = [];
     this.videoPromises = [];
     this.testnameStructure = [];
@@ -97,8 +98,11 @@ export default class Video extends WdioReporter {
     const filePath = path.resolve(this.recordingPath, filename);
 
     try {
-      browser.saveScreenshot(filePath);
-      helpers.debugLog('- Screenshot!!\n');
+      this.screenshotPromises.push(
+        browser.saveScreenshot(filePath).then(() => {
+          helpers.debugLog('- Screenshot!!\n');
+        })
+      );
     } catch (e) {
       fs.writeFile(filePath, notAvailableImage, 'base64');
       helpers.debugLog('- Screenshot not available...\n');
@@ -154,8 +158,11 @@ export default class Video extends WdioReporter {
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
       const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
       try {
-        browser.saveScreenshot(filePath);
-        helpers.debugLog('- Screenshot!!\n');
+        this.screenshotPromises.push(
+          browser.saveScreenshot(filePath).then(() => {
+            helpers.debugLog('- Screenshot!!\n');
+          })
+        );
       } catch (e) {
         fs.writeFile(filePath, notAvailableImage, 'base64');
         helpers.debugLog('- Screenshot not available...\n');
