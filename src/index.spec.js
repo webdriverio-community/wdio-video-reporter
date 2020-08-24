@@ -321,6 +321,26 @@ describe('wdio-video-recorder - ', () => {
           done();
         });
       });
+
+      it('if the recordAllActions option is set', () => {
+        options.recordAllActions = true;
+
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        video.onAfterCommand({endpoint: '/session/abcdef/piripiri'});
+        expect(video.frameNr).toBe(1);
+      });
+    });
+
+    describe('specific bugs -  ', () => {
+      it('should handle when json-wire message is not present', () => {
+        options.recordAllActions = true;
+
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        video.onAfterCommand({endpoint: null});
+        expect(video.frameNr).toBe(1);
+      });
     });
   });
 
