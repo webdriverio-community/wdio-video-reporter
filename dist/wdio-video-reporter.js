@@ -35,6 +35,13 @@ var config = {
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 
+  // Max chars for test names, adjust according to current system
+  maxTestNameCharacters: 250,
+
+  //
+  // JSON Wire protocol
+  //
+
   // Which commands should be excluded from screenshots
   excludedActions: [
 
@@ -76,6 +83,10 @@ var config = {
     'flick',
     'location',
   ],
+
+  // If test speed is not an issue, this option can be enabled to do a screenshot on every json wire message
+  recordAllActions: false,
+
 };
 
 let writeLog;
@@ -116,8 +127,8 @@ var helpers = {
      .replace(/\./g, '-')
      .replace(/[/\\?%*:'|"<>()]/g, '');
 
-    if (filename.length > 250) {
-      const truncLength = (250 - 2)/2;
+    if (filename.length > config.maxTestNameCharacters) {
+      const truncLength = (config.maxTestNameCharacters - 2)/2;
       filename = filename.slice(0, truncLength) + '--' + filename.slice(-truncLength);
     }
 
@@ -148,19 +159,22 @@ var helpers = {
       writeLog(`ffmpeg command: ${command + ' ' + args}\n`);
     }
 
-    const promise = new Promise((resolve) => {
-      const cp = child_process.spawn(command, args, {
-        stdio: 'ignore',
-        shell: true,
-        windowsHide: true,
-      });
+    const promise = Promise
+      .all(this.screenshotPromises || [])
+      .then(() => new Promise((resolve) => {
+        const cp = child_process.spawn(command, args, {
+          stdio: 'ignore',
+          shell: true,
+          windowsHide: true,
+        });
 
-      cp.on('close', () => {
-        resolve();
-      });
-    });
+        cp.on('close', () => {
+          resolve();
+        });
+      }));
 
     this.videoPromises.push(promise);
+    return promise;
   },
 
   waitForVideosToExist(videos, abortTime) {
@@ -431,11 +445,12 @@ class Video extends WdioReporter {
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
-
-    // Debug
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
+    config.recordAllActions = options.recordAllActions || false;
+    config.maxTestNameCharacters = options.maxTestNameCharacters || config.maxTestNameCharacters;
 
+    this.screenshotPromises = [];
     this.videos = [];
     this.videoPromises = [];
     this.testnameStructure = [];
@@ -483,13 +498,14 @@ class Video extends WdioReporter {
    * Save screenshot or add not available image movie stills
    */
   onAfterCommand (jsonWireMsg) {
-    const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
+    const command = jsonWireMsg.endpoint && jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command ? command[0] : 'undefined';
 
-    helpers.debugLog('Incomming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
+    helpers.debugLog('Incoming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 
     // Filter out non-action commands and keep only last action command
-    if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
+    if ((!config.recordAllActions && (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName)))
+        || !this.recordingPath) {
       return;
     }
 
@@ -497,8 +513,11 @@ class Video extends WdioReporter {
     const filePath = path.resolve(this.recordingPath, filename);
 
     try {
-      browser.saveScreenshot(filePath);
-      helpers.debugLog('- Screenshot!!\n');
+      this.screenshotPromises.push(
+        browser.saveScreenshot(filePath).then(() => {
+          helpers.debugLog('- Screenshot!!\n');
+        })
+      );
     } catch (e) {
       fs.writeFile(filePath, notAvailableImage, 'base64');
       helpers.debugLog('- Screenshot not available...\n');
@@ -554,8 +573,11 @@ class Video extends WdioReporter {
     if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
       const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
       try {
-        browser.saveScreenshot(filePath);
-        helpers.debugLog('- Screenshot!!\n');
+        this.screenshotPromises.push(
+          browser.saveScreenshot(filePath).then(() => {
+            helpers.debugLog('- Screenshot!!\n');
+          })
+        );
       } catch (e) {
         fs.writeFile(filePath, notAvailableImage, 'base64');
         helpers.debugLog('- Screenshot not available...\n');
