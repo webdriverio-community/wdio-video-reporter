@@ -105,7 +105,8 @@ Most users may want to set these
 - `videoSlowdownMultiplier` Integer between [1-100]. Increase if videos are playing to quick. `Default: 3`
 - `videoRenderTimeout` Max seconds to wait for a video to render. `Default: 5`
 - `outputDir` If its not set, it uses wdio.config.outputDir. `Default: undefined`
-
+- `outputDir` If its not set, it uses wdio.config.outputDir. `Default: undefined`
+- `maxTestNameCharacters` Max length of test name. `Default: 250`
 
 Advanced configuration parameters
 ---------------------------------
@@ -114,11 +115,11 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 
 - `addExcludedActions` Add actions where screenshots are unnecessary. `Default: []`
 - `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
+- `recordAllActions` Skip filtering and screenshot everything. (Not recommended) `Default: false`
 
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 To avoid extra logging all together and only get the video files, set `wdio.config.logLevel: 'silent'`.
-
 
 Cucumber support
 ----------------
