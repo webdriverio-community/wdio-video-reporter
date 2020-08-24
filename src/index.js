@@ -31,8 +31,6 @@ export default class Video extends WdioReporter {
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
-
-    // Debug
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
     config.recordAllActions = options.recordAllActions || false;
@@ -92,7 +90,8 @@ export default class Video extends WdioReporter {
     helpers.debugLog('Incoming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 
     // Filter out non-action commands and keep only last action command
-    if ((!config.recordAllActions && (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName))) || !this.recordingPath) {
+    if ((!config.recordAllActions && (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName)))
+        || !this.recordingPath) {
       return;
     }
 
