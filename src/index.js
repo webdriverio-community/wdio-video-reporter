@@ -35,6 +35,7 @@ export default class Video extends WdioReporter {
     // Debug
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
+    config.recordAllActions = options.recordAllActions || false;
 
     this.screenshotPromises = [];
     this.videos = [];
@@ -84,13 +85,13 @@ export default class Video extends WdioReporter {
    * Save screenshot or add not available image movie stills
    */
   onAfterCommand (jsonWireMsg) {
-    const command = jsonWireMsg.endpoint.match(/[^\/]+$/);
+    const command = jsonWireMsg.endpoint && jsonWireMsg.endpoint.match(/[^\/]+$/);
     const commandName = command ? command[0] : 'undefined';
 
     helpers.debugLog('Incoming command: ' + jsonWireMsg.endpoint + ' => [' + commandName + ']\n');
 
     // Filter out non-action commands and keep only last action command
-    if (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName) || !this.recordingPath) {
+    if ((!config.recordAllActions && (config.excludedActions.includes(commandName) || !config.jsonWireActions.includes(commandName))) || !this.recordingPath) {
       return;
     }
 
