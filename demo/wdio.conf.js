@@ -49,6 +49,7 @@ const config = {
     {
       maxInstances: 1,
       browserName: 'chrome',
+      acceptInsecureCerts : true,
     },
     {
       maxInstances: 1,
