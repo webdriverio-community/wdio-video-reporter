@@ -23,6 +23,9 @@ export default {
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 
+  // Max chars for test names, adjust according to current system
+  maxTestNameCharacters: 250,
+
   //
   // JSON Wire protocol
   //

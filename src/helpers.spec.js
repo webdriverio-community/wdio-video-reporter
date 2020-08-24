@@ -7,9 +7,11 @@ import {cpMocks} from 'child_process';
 import {fsMocks, resetFsMocks} from 'fs-extra';
 
 import helpers from './helpers.js';
-import config from './config.js';
+import * as configModule from './config.js';
 
 const originalSleep = helpers.sleep;
+const originalConfig = JSON.parse(JSON.stringify(configModule.default));
+let config = configModule.default;
 
 // Built in modules are not mocked by default
 jest.mock('path');
@@ -33,6 +35,10 @@ describe('Helpers - ', () => {
   beforeEach(() => {
     resetFsMocks();
     helpers.setLogger(logger);
+    Object.keys(configModule.default).forEach((key) => {
+      configModule.default[key] = originalConfig[key];
+    });
+
     config.debugMode = false;
     config.videoRenderTimeout = 5;
 
@@ -136,15 +142,22 @@ describe('Helpers - ', () => {
       expect(helpers.generateFilename(browser, testname)).toBe(`${name}-comment--${browser}--${date}-000`);
     });
 
-    it('should keep filenames <= 250 chars', () => {
-      const sixyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
-      const testname256 = sixyFourChars + sixyFourChars + sixyFourChars + sixyFourChars;
-      expect(helpers.generateFilename(browser, testname256).length).toBe(250);
+    it('should keep filenames <= config.maxTestNameCharacters', () => {
+      const sixtyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
+      const testname256 = sixtyFourChars + sixtyFourChars + sixtyFourChars + sixtyFourChars;
+      expect(helpers.generateFilename(browser, testname256).length).toBe(config.maxTestNameCharacters);
+    });
+
+    it('should keep filenames <= config.maxTestNameCharacters with variable maxTestNameCharacters', () => {
+      const sixtyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
+      const testname256 = sixtyFourChars + sixtyFourChars + sixtyFourChars + sixtyFourChars;
+      config.maxTestNameCharacters = 16;
+      expect(helpers.generateFilename(browser, testname256).length).toBe(config.maxTestNameCharacters);
     });
 
     it('should keep truncated filenames unique', () => {
-      const sixyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
-      const testname256 = sixyFourChars + sixyFourChars + sixyFourChars + sixyFourChars;
+      const sixtyFourChars = '1234567890123456789012345678901234567890123456789012345678901234';
+      const testname256 = sixtyFourChars + sixtyFourChars + sixtyFourChars + sixtyFourChars;
       const name1 = helpers.generateFilename(browser, testname256);
       const name2 = helpers.generateFilename(browser, testname256);
       expect(name1).not.toBe(name2);

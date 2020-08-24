@@ -44,8 +44,8 @@ export default {
      .replace(/\./g, '-')
      .replace(/[/\\?%*:'|"<>()]/g, '');
 
-    if (filename.length > 250) {
-      const truncLength = (250 - 2)/2;
+    if (filename.length > config.maxTestNameCharacters) {
+      const truncLength = (config.maxTestNameCharacters - 2)/2;
       filename = filename.slice(0, truncLength) + '--' + filename.slice(-truncLength);
     }
 
