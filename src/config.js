@@ -23,6 +23,10 @@ export default {
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 
+  //
+  // JSON Wire protocol
+  //
+
   // Which commands should be excluded from screenshots
   excludedActions: [
 
@@ -64,4 +68,8 @@ export default {
     'flick',
     'location',
   ],
+
+  // If test speed is not an issue, this option can be enabled to do a screenshot on every json wire message
+  recordAllActions: false,
+
 };
