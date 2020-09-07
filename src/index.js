@@ -23,8 +23,12 @@ export default class Video extends WdioReporter {
     this.isDone = false;
 
     // User options
-    // Wdio doesn't pass outputDir, but logFile which includes outputDir
-    config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
+    if(options.outputDir) {
+      config.outputDir = options.outputDir;
+    } else {
+      // Wdio doesn't pass outputDir, but logFile which includes outputDir
+      config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
+    }
     if(config.outputDir.length > 1) {
       config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
     }

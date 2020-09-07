@@ -10,6 +10,8 @@ var ffmpeg = require('@ffmpeg-installer/ffmpeg');
 var child_process = require('child_process');
 var mkdirp = _interopDefault(require('mkdirp'));
 
+const defaultOutputDir = '_results_';
+
 var config = {
   debugMode: false,
 
@@ -17,7 +19,7 @@ var config = {
 
   videoRenderTimeout: 5,
 
-  outputDir: '_results_',
+  outputDir: defaultOutputDir,
   allureOutputDir: 'allure-results',
 
   // Where to save screenshots
@@ -437,11 +439,16 @@ class Video extends WdioReporter {
     this.isDone = false;
 
     // User options
-    // Wdio doesn't pass outputDir, but logFile which includes outputDir
-    config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
-    if(config.outputDir.length > 1) {
-      config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
+    if(options.outputDir) {
+      config.outputDir = options.outputDir;
+    } else {
+      // Wdio doesn't pass outputDir, but logFile which includes outputDir
+      config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
     }
+    if(config.outputDir.length > 1) {
+      config.outputDir  = config.outputDir.replace(/[\/|\\]$/, '');
+    }
+
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;

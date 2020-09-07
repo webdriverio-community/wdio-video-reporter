@@ -104,6 +104,67 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.jsonWireActions).toContain(':unitTestingAction1234567890:');
     });
 
+    it('should use reporter outputDir if specified', () => {
+      const reporterOutputDir = 'reporter-dir';
+
+      const options = {
+        outputDir: reporterOutputDir,
+        saveAllVideos: 'test',
+        videoSlowdownMultiplier: 'test',
+        videoRenderTimeout: 'test',
+        addExcludedActions: [':unitTestingAction1234567890:'],
+        addJsonWireActions: [':unitTestingAction1234567890:'],
+      };
+
+      const video = new Video(options);
+      expect(video.config).not.toEqual(originalConfig);
+      expect(video.config.outputDir).toBe(reporterOutputDir);
+    });
+
+    it('should use reporter outputDir if specified, even if wdio outputDir is specified', () => {
+      const reporterOutputDir = 'reporter-dir';
+
+      const options = {
+        logFile,
+        outputDir: reporterOutputDir,
+        saveAllVideos: 'test',
+        videoSlowdownMultiplier: 'test',
+        videoRenderTimeout: 'test',
+        addExcludedActions: [':unitTestingAction1234567890:'],
+        addJsonWireActions: [':unitTestingAction1234567890:'],
+      };
+
+      const video = new Video(options);
+      expect(video.config.outputDir).toBe(reporterOutputDir);
+    });
+
+    it('should use wdio outputdir if reporter outputDir is not specified', () => {
+      const options = {
+        logFile,
+        saveAllVideos: 'test',
+        videoSlowdownMultiplier: 'test',
+        videoRenderTimeout: 'test',
+        addExcludedActions: [':unitTestingAction1234567890:'],
+        addJsonWireActions: [':unitTestingAction1234567890:'],
+      };
+
+      const video = new Video(options);
+      expect(video.config.outputDir).toBe(outputDir);
+    });
+
+    it('should use default _results_ output dir if no outputDir is specified', () => {
+      const options = {
+        saveAllVideos: 'test',
+        videoSlowdownMultiplier: 'test',
+        videoRenderTimeout: 'test',
+        addExcludedActions: [':unitTestingAction1234567890:'],
+        addJsonWireActions: [':unitTestingAction1234567890:'],
+      };
+
+      const video = new Video(options);
+      expect(video.config.outputDir).toBe(configModule.defaultOutputDir);
+    });
+
     it('should remove trailing / in outputDir', () => {
       options = {logFile: 'test/' + logFileFilename};
 

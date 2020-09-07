@@ -1,3 +1,5 @@
+export const defaultOutputDir = '_results_';
+
 export default {
   debugMode: false,
 
@@ -5,7 +7,7 @@ export default {
 
   videoRenderTimeout: 5,
 
-  outputDir: '_results_',
+  outputDir: defaultOutputDir,
   allureOutputDir: 'allure-results',
 
   // Where to save screenshots
