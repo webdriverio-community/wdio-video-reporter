@@ -1,5 +1,3 @@
-import mkdirp from 'mkdirp';
-import path from 'path';
 import fs from 'fs-extra';
 
 import helpers from '../helpers.js';
@@ -39,6 +37,9 @@ export default {
    */
   onSuiteStart (suite) {
     this.testnameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
+    if (config.oneVideoForEntireSuite) {
+      this.setRecordingPath();
+    }
   },
 
   /**
@@ -54,22 +55,9 @@ export default {
   onTestStart (test) {
     helpers.debugLog(`\n\n--- New test: ${test.title} ---\n`);
     this.testnameStructure.push(test.title.replace(/ /g, '-'));
-    const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
-
-    let browserName = 'browser';
-    if(browser.capabilities.browserName) {
-      browserName = browser.capabilities.browserName.toUpperCase();
-    } else if(browser.capabilities.deviceName) {
-      browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
+    if (! config.oneVideoForEntireSuite) {
+      this.setRecordingPath();
     }
-
-    if (browser.capabilities.deviceType) {
-      browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
-    }
-    this.testname = helpers.generateFilename(browserName, fullname);
-    this.frameNr = 0;
-    this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
-    mkdirp.sync(this.recordingPath);
   },
 
   /**

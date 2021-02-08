@@ -2,6 +2,7 @@ import WdioReporter from '@wdio/reporter';
 import allureReporter from '@wdio/allure-reporter';
 import fs from 'fs-extra';
 import path from 'path';
+import mkdirp from 'mkdirp';
 
 import helpers from './helpers.js';
 import config from './config.js';
@@ -33,6 +34,7 @@ export default class Video extends WdioReporter {
       config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
     }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
+    config.oneVideoForEntireSuite = options.oneVideoForEntireSuite || config.oneVideoForEntireSuite;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
     config.excludedActions.push(...(options.addExcludedActions || []));
@@ -127,6 +129,9 @@ export default class Video extends WdioReporter {
    * Cleare suite name from naming structure
    */
   onSuiteEnd (suite) {
+    if (config.oneVideoForEntireSuite) {
+      this.endRecording(suite.state == 'passed');
+    }
     this.testnameStructure.pop();
     this.framework.onSuiteEnd.call(this, suite);
   }
@@ -150,30 +155,8 @@ export default class Video extends WdioReporter {
    */
   onTestEnd (test) {
     this.testnameStructure.pop();
-
-    if(config.usingAllure) {
-      if (browser.capabilities.deviceType) {
-        allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
-      }
-      if (browser.capabilities.browserVersion) {
-        allureReporter.addArgument('browserVersion', browser.capabilities.browserVersion);
-      }
-    }
-
-    if (test.state === 'failed' || (test.state === 'passed' && config.saveAllVideos)) {
-      const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
-      try {
-        this.screenshotPromises.push(
-          browser.saveScreenshot(filePath).then(() => {
-            helpers.debugLog('- Screenshot!!\n');
-          })
-        );
-      } catch (e) {
-        fs.writeFile(filePath, notAvailableImage, 'base64');
-        helpers.debugLog('- Screenshot not available...\n');
-      }
-
-      helpers.generateVideo.call(this);
+    if (! config.oneVideoForEntireSuite) {
+      this.endRecording(test.state == 'passed');
     }
   }
 
@@ -232,6 +215,53 @@ export default class Video extends WdioReporter {
           fs.copySync(videoFilePath, filePath);
         }
       });
+  }
+
+  endRecording(test_passed) {
+    if(config.usingAllure) {
+      if (browser.capabilities.deviceType) {
+        allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+      }
+      if (browser.capabilities.browserVersion) {
+        allureReporter.addArgument('browserVersion', browser.capabilities.browserVersion);
+      }
+    }
+
+    if (!test_passed || (test_passed && config.saveAllVideos)) {
+      const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
+      try {
+        this.screenshotPromises.push(
+          browser.saveScreenshot(filePath).then(() => {
+            helpers.debugLog('- Screenshot!!\n');
+          })
+        );
+      } catch (e) {
+        fs.writeFile(filePath, notAvailableImage, 'base64');
+        helpers.debugLog('- Screenshot not available...\n');
+      }
+
+      helpers.generateVideo.call(this);
+    }
+  }
+
+  setRecordingPath() {
+    const fullname = config.oneVideoForEntireSuite ? this.testnameStructure[0] : this.testnameStructure.join('--');
+    let browserName = 'browser';
+    if(browser.capabilities.browserName) {
+      browserName = browser.capabilities.browserName.toUpperCase();
+    } else if(browser.capabilities.deviceName) {
+      browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
+    }
+
+    if (browser.capabilities.deviceType) {
+      browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
+    }
+    this.testname = helpers.generateFilename(browserName, fullname);
+    if (! config.oneVideoForEntireSuite) {
+      this.frameNr = 0;
+    }
+    this.recordingPath = path.resolve(config.outputDir, config.rawPath, this.testname);
+    mkdirp.sync(this.recordingPath);
   }
 }
 

@@ -22,6 +22,9 @@ export default {
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,
 
+  // Whether should save a video for the entire suite, or a video for each test
+  oneVideoForEntireSuite: false,
+
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 

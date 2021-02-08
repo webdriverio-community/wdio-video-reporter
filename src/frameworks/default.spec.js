@@ -7,6 +7,7 @@ import {fsMocks, resetFsMocks} from 'fs-extra';
 import * as configModule from '../config.js';
 import * as helpers from '../helpers.js';
 import defaultFramework from './default.js';
+import VideoClass from '../index.js';
 
 // Built in modules are not mocked by default
 jest.mock('path');
@@ -36,6 +37,10 @@ describe('wdio-video-recorder - default framework - ', () => {
     }
     onTestSkip(test) {
       defaultFramework.onTestSkip.call(this, test);
+    }
+
+    setRecordingPath() {
+      VideoClass.prototype.setRecordingPath.call(this);
     }
   }
 
