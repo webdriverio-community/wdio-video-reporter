@@ -24,7 +24,7 @@ import defaultFrameworkMock from 'frameworks/default.js';
 import cucumberFrameworkMock from 'frameworks/cucumber.js';
 
 const outputDir = 'outputDir';
-const logFileFilename = 'wdio-0-0-Video-reporter.log';
+const logFileFilename = 'wdio-video-reporter-0-0.log';
 const logFile = outputDir + '/' + logFileFilename;
 const originalConfig = JSON.parse(JSON.stringify(configModule.default));
 const allureDefaultOutputDir = 'allure-results';
