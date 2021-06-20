@@ -1,4 +1,4 @@
-import { Given, When, Then } from 'cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import {assert} from 'chai';
 
 Given(/^I navigate to base url$/, () => {
@@ -6,10 +6,16 @@ Given(/^I navigate to base url$/, () => {
 });
 
 Given(/^I close close ad-popups$/, () => {
-  browser.pause(300); // avoid animation effect
   const lightbox = '#at-cv-lightbox-close';
-  if ($(lightbox).isExisting()) {
-    $(lightbox).click();
+  try {
+    browser.pause(500); // avoid animation effect
+    $(lightbox).waitForExist({ timeout: 2000 });
+    browser.pause(500); // avoid animation effect
+    if ($(lightbox).isExisting()) {
+      $(lightbox).click();
+    }
+  } catch(_) {
+    // Didnt get random interupting popup
   }
 });
 

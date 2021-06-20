@@ -446,9 +446,8 @@ class Video extends WdioReporter {
       config.outputDir = options.logFile ? path.dirname(options.logFile) : config.outputDir;
     }
     if(config.outputDir.length > 1) {
-      config.outputDir  = config.outputDir.replace(/[\/|\\]$/, '');
+      config.outputDir = config.outputDir.replace(/[\/|\\]$/, '');
     }
-
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;

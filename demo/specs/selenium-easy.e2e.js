@@ -2,8 +2,15 @@ describe('User interactions', () => {
   beforeEach(() => {
     browser.url('http://www.seleniumeasy.com/test/');
     const lightbox = '#at-cv-lightbox-close';
-    if ($(lightbox).isExisting()) {
-      $(lightbox).click();
+    try {
+      browser.pause(500); // avoid animation effect
+      $(lightbox).waitForExist({ timeout: 2000 });
+      browser.pause(500); // avoid animation effect
+      if ($(lightbox).isExisting()) {
+        $(lightbox).click();
+      }
+    } catch(_) {
+      // Didnt get random interupting popup
     }
   });
 
@@ -21,7 +28,6 @@ describe('User interactions', () => {
 
     expect(name).toBe('Presidenten');
   });
-
 
   it('should be able to move slider (fails by design to gen video)', () => {
     $('#advanced_example').click();
@@ -75,19 +81,21 @@ describe('User interactions', () => {
 
 describe('Reporter bug fixes (should pass)', () => {
   beforeEach(() => {
-    browser.url('http://www.seleniumeasy.com/test/');
+    browser.url('https://www.seleniumeasy.com/test/javascript-alert-box-demo.html');
     const lightbox = '#at-cv-lightbox-close';
-    if ($(lightbox).isExisting()) {
+    try {
+      $(lightbox).waitForExist({ timeout: 500 });
+      browser.pause(500); // avoid animation effect
       $(lightbox).click();
+    } catch(_) {
+      // Didnt get random interupting popup
     }
   });
 
   it('should handle modals blocking screenshots', () => {
-    browser.url('https://www.seleniumeasy.com/test/javascript-alert-box-demo.html');
-
     $('button.btn.btn-default').click();
-    browser.acceptAlert();
+    browser.pause(300);
     $('button.btn.btn-default.btn-lg').click();
-    browser.acceptAlert();
+    browser.pause(300);
    });
 });
