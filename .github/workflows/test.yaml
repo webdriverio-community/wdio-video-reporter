@@ -1,4 +1,4 @@
-name: wdio-cucumberjs-json-reporter
+name: test
 
 on:
   push:
