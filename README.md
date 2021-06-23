@@ -1,5 +1,4 @@
-wdio-video-reporter [![Build Status](https://travis-ci.org/presidenten/wdio-video-reporter.svg?branch=master)](https://travis-ci.org/presidenten/wdio-video-reporter) ![example workflow](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)
-[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+wdio-video-reporter [![Build Status](https://travis-ci.org/presidenten/wdio-video-reporter.svg?branch=master)](https://travis-ci.org/presidenten/wdio-video-reporter) [![test](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 ===================
 
 ![Logo](https://raw.githubusercontent.com/presidenten/wdio-video-reporter-example-report/master/wdio-video-reporter.png)
