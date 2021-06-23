@@ -1,0 +1,26 @@
+name: wdio-cucumberjs-json-reporter
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+            node-version: v12.18.0
+      - name: Install dependencies
+        run: npm install
+      - name: Setup
+        run: yarn
+      - name: Run headless test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run ci

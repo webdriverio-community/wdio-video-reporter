@@ -6,12 +6,16 @@
   "scripts": {
     "prebuild": "npm run lint && npm run testcov",
     "build": "rollup -c rollup.config.js",
-    "ci": "npm run build && npm run codecov",
+    "ci": "npm run build",
     "dev": "rollup -c -w rollup.config.js",
     "lint": "eslint --ext .js --ignore-path .gitignore src",
+    "release": "release-it --github.release",
+    "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
+    "release:patch": "npm run release -- patch",
+    "release:minor": "npm run release -- minor",
+    "release:major": "npm run release -- major",
     "test": "jest --config=.jestrc.json",
     "testcov": "jest --coverage --config=.jestrc.json",
-    "codecov": "codecov",
     "testdev": "jest --watch --config=.jestrc.json"
   },
   "repository": {
@@ -43,9 +47,9 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^24.9.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "codecov": "^3.8.2",
     "eslint": "^5.16.0",
     "jest": "^24.9.0",
+    "release-it": "^14.10.0",
     "rollup": "^1.32.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-pluginutils": "^2.8.2"
