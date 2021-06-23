@@ -9,6 +9,11 @@
     "ci": "npm run build",
     "dev": "rollup -c -w rollup.config.js",
     "lint": "eslint --ext .js --ignore-path .gitignore src",
+    "release": "release-it --github.release",
+    "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
+    "release:patch": "npm run release -- patch",
+    "release:minor": "npm run release -- minor",
+    "release:major": "npm run release -- major",
     "test": "jest --config=.jestrc.json",
     "testcov": "jest --coverage --config=.jestrc.json",
     "testdev": "jest --watch --config=.jestrc.json"
@@ -44,6 +49,7 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "eslint": "^5.16.0",
     "jest": "^24.9.0",
+    "release-it": "^14.10.0",
     "rollup": "^1.32.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-pluginutils": "^2.8.2"
