@@ -18,6 +18,14 @@
     "node_modules",
     "src"
   ],
+  "coverageThreshold": {
+    "global": {
+      "branches": 98,
+      "functions": 76,
+      "lines": 100,
+      "statements": 99
+    }
+  },
   "setupFiles": ["<rootDir>/node_modules/regenerator-runtime/runtime"],
   "clearMocks": true,
   "resetMocks": true,
