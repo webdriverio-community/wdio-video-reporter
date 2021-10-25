@@ -21,9 +21,9 @@
   "coverageThreshold": {
     "global": {
       "branches": 98,
-      "functions": 76,
-      "lines": 99,
-      "statements": 99
+      "functions": 74,
+      "lines": 98,
+      "statements": 98
     }
   },
   "setupFiles": ["<rootDir>/node_modules/regenerator-runtime/runtime"],
