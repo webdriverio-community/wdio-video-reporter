@@ -103,8 +103,8 @@ export default class Video extends WdioReporter {
     const filePath = path.resolve(this.recordingPath, filename);
 
     // Create the report directory, if it does not exists
-    if (!fs.existsSync(filePath)) {
-      fs.mkdirSync(filePath);
+    if (!fs.existsSync(this.recordingPath)) {
+      fs.mkdirSync(this.recordingPath);
     }
     
     try {
