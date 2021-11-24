@@ -329,6 +329,31 @@ describe('wdio-video-recorder - ', () => {
         video.onAfterCommand({endpoint: '/nothing-to-see-here/'});
         expect(video.frameNr).toBe(0);
       });
+
+      it('should not create recordingPath if exists', (done) => {
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        helpers.default.debugLog = jest.fn();
+        fsMocks.existsSync = jest.fn().mockReturnValue(true);
+        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        setImmediate(() => {
+          expect(fsMocks.mkdirsSync).toBeCalledTimes(0);
+          done();
+        });
+      });
+
+      it('should create recordingPath if not exists', (done) => {
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        helpers.default.debugLog = jest.fn();
+        fsMocks.existsSync = jest.fn().mockReturnValue(false);
+        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        setImmediate(() => {
+          expect(fsMocks.mkdirsSync).toBeCalledTimes(1);
+          done();
+        });
+      });
+
     });
 
     describe('should create video frame when -', () => {
