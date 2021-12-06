@@ -6,6 +6,7 @@ export const resetFsMocks = () => {
     removeSync: jest.fn(),
     writeFile: jest.fn(),
     existsSync: jest.fn().mockReturnValue('MOCK'),
+    mkdirsSync: jest.fn(),
     readFileSync: jest.fn()
       .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.mp4')
       .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.mp4')
@@ -24,6 +25,7 @@ export default {
   copySync(...args) { fsMocks.copySync(...args); },
   removeSync(...args) { fsMocks.removeSync(...args); },
   existsSync(...args) { return fsMocks.existsSync(...args); },
+  mkdirsSync(...args) { fsMocks.mkdirsSync(...args); },
   readFileSync(...args) { return fsMocks.readFileSync(...args); },
   readdirSync(...args) { return fsMocks.readdirSync(...args); },
   statSync(...args) { return fsMocks.statSync(...args); },
