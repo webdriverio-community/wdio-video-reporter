@@ -518,6 +518,12 @@ class Video extends WdioReporter {
     const filename = this.frameNr.toString().padStart(4, '0') + '.png';
     const filePath = path.resolve(this.recordingPath, filename);
 
+    // Create the report directory, if it does not exists
+    if (!fs.existsSync(this.recordingPath)) {
+      helpers.debugLog(`Creating: ${this.recordingPath}, as it not exists...\n`);
+      fs.mkdirsSync(this.recordingPath);
+    }
+
     try {
       this.screenshotPromises.push(
         browser.saveScreenshot(filePath).then(() => {

@@ -1,6 +1,6 @@
 {
   "name": "wdio-video-reporter",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.js",
   "scripts": {
