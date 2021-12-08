@@ -141,6 +141,9 @@ var helpers = {
     const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
     this.videos.push(videoPath);
 
+    //send event to nice-html-reporter
+    process.emit('test:video-capture', videoPath);
+
     if (config.usingAllure) {
       allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
     }
