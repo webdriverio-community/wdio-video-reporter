@@ -92,6 +92,31 @@ Adding the Allure reporter as well, automatically updates the reports with video
   ],
 ```
 
+Using with wdio-html-nice-reporter (https://github.com/rpii/wdio-html-reporter)
+-----------------
+
+Adding the html nice reporter automatically updates the reports with videos without any need to configure anything :-)
+
+```
+ reporters: [
+    [video, {
+      saveAllVideos: false,       // If true, also saves videos for successful test cases
+      videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
+      outputDir: './reports/html-reports/',
+    }],
+    ['html-nice', {
+          outputDir: './reports/html-reports/',
+          filename: 'report.html',
+          reportTitle: 'Test Report Title',
+          linkScreenshots: true,
+          //to show the report in a browser when done
+          showInBrowser: true,
+          collapseTests: false,
+          //to turn on screenshots after every test must be false to use video
+          useOnAfterCommandForScreenshot: false,
+    }],
+  ],
+```
 
 Configuration
 =============
