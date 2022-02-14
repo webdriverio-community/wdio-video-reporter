@@ -61,6 +61,64 @@ describe('wdio-video-recorder - ', () => {
           'video',
         ],
       },
+      sessionId: 'd7504eefa17d45ad7859fe4437e8643f',
+      isMultiremote : false,
+      instanceOptions: {
+        d7504eefa17d45ad7859fe4437e8643f: {
+          capabilities: {
+            browserName: 'chrome',
+          },
+          logLevel: 'info',
+          framework: 'mocha',
+          reporters: [
+            'video',
+          ],
+        },
+      },
+    };
+
+    global.multiBrowser = {
+      saveScreenshot: jest.fn(() => Promise.resolve()),
+      capabilities: {
+        browserA: {
+          browserName: 'BROWSER',
+          sessionId: 'd7504eefa17d45ad7859fe4437e8643f',
+        },
+        browserB: {
+          browserName: 'BROWSER',
+          sessionId: 'de9260ad2b82b14c9db019f5f275e9e9',
+        },
+      },
+      config: {
+        logLevel: 'info',
+        framework: 'jasmine',
+        outputDir: 'test/allure',
+        reporters: [
+          'video',
+        ],
+      },
+      sessionId: undefined,
+      isMultiremote : true,
+      instanceOptions: {
+        d7504eefa17d45ad7859fe4437e8643f: {
+          capabilities: {
+            browserName: 'chrome',
+          },
+          logLevel: 'info',
+          reporters: [
+            'video',
+          ],
+        },
+        de9260ad2b82b14c9db019f5f275e9e9 : {
+          capabilities: {
+            browserName: 'chrome',
+          },
+          logLevel: 'info',
+          reporters: [
+            'video',
+          ],
+        },
+      },
     };
   });
 
@@ -200,98 +258,241 @@ describe('wdio-video-recorder - ', () => {
       process.on.mockRestore();
     });
 
-    it('should user Allure default outputDir if not set in wdio config', () => {
-      const video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.allureOutputDir).toBe(allureDefaultOutputDir);
+    describe('onRunnerStart - Non multi remote ', () => {
+      it('should user Allure default outputDir if not set in wdio config', () => {
+        const video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.allureOutputDir).toBe(allureDefaultOutputDir);
+      });
+
+      it('should use custom allure outputDir if set in config', () => {
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters.push(['allure', {outputDir: 'customDir'}]);
+
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.allureOutputDir).toBe('customDir');
+      });
+
+      it('should figure out if allure is being used', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.usingAllure).toBeFalsy();
+
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = ['allure'];
+        video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.usingAllure).toBeTruthy();
+
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = [['allure', {config: {}}]];
+        video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.usingAllure).toBeTruthy();
+      });
+
+      it('should sync config.debugMode to logLevel', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.debugMode).toBeFalsy();
+
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.logLevel = 'debug';
+        video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.config.debugMode).toBeTruthy();
+      });
+
+      it('should import code for the correct framework - default', () => {
+        jest.mock('frameworks/default.js', () => ({
+          frameworkInit: jest.fn().mockImplementation(),
+        }));
+
+        let video = new Video(options);
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = undefined;
+        video.onRunnerStart(browser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'jasmine';
+        video.onRunnerStart(browser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'mocha';
+        video.onRunnerStart(browser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = '123456789';
+        video.onRunnerStart(browser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+      });
+
+      it('should import code for the correct framework - cucumber', () => {
+        let video = new Video(options);
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'cucumber';
+        video.onRunnerStart(browser);
+        expect(cucumberFrameworkMock.frameworkInit).toHaveBeenCalled();
+      });
+
+      it('should only register exit handler if using allure', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+
+        expect(process.on).not.toHaveBeenCalled();
+
+        global.browser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = [['allure', {config: {}}]];
+        video = new Video(options);
+        video.onRunnerStart(browser);
+
+        expect(process.on).toHaveBeenCalled();
+      });
+
+      it('should figure out if multi remote is not being used', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.isMultiremote).toBeFalsy();
+      });
+
+      it('should get sessionId in non multiremote', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.sessionId).toBeDefined();
+      });
+
+      it('should get runnerInstance in non multiremote', () => {
+        let video = new Video(options);
+        video.onRunnerStart(browser);
+        expect(video.runnerInstance).toBeDefined();
+      });
     });
 
-    it('should use custom allure outputDir if set in config', () => {
-      global.browser.config.reporters.push(['allure', {outputDir: 'customDir'}]);
+    describe('onRunnerStart - Multi remote ', () => {
+      it('should user Allure default outputDir if not set in wdio config', () => {
+        console.log('**options***' + JSON.stringify(options));
 
-      let video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.allureOutputDir).toBe('customDir');
+        const video = new Video(options);
+
+        console.log('***browser**' + JSON.stringify(browser));
+
+
+        video.onRunnerStart(global.multiBrowser);
+        console.log('*****' + JSON.stringify(video));
+        console.log('*****' + JSON.stringify(video.config));
+        expect(video.config.allureOutputDir).toBe(allureDefaultOutputDir);
+      });
+
+      it('should use custom allure outputDir if set in config', () => {
+        // global.browser.config.reporters.push(['allure', {outputDir: 'customDir'}]);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters.push(['allure', {outputDir: 'customDir'}]);
+
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.allureOutputDir).toBe('customDir');
+      });
+
+      it('should figure out if allure is being used', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.usingAllure).toBeFalsy();
+
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = ['allure'];
+        video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.usingAllure).toBeTruthy();
+
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = [['allure', {config: {}}]];
+        video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.usingAllure).toBeTruthy();
+      });
+
+      it('should sync config.debugMode to logLevel', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.debugMode).toBeFalsy();
+
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.logLevel = 'debug';
+        video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.config.debugMode).toBeTruthy();
+      });
+
+      it('should import code for the correct framework - default', () => {
+        jest.mock('frameworks/default.js', () => ({
+          frameworkInit: jest.fn().mockImplementation(),
+        }));
+
+        let video = new Video(options);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = undefined;
+        video.onRunnerStart(global.multiBrowser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'jasmine';
+        video.onRunnerStart(global.multiBrowser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'mocha';
+        video.onRunnerStart(global.multiBrowser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+
+        defaultFrameworkMock.frameworkInit.mockReset();
+
+        video = new Video(options);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = '123456789';
+        video.onRunnerStart(global.multiBrowser);
+        expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
+      });
+
+      it('should import code for the correct framework - cucumber', () => {
+        let video = new Video(options);
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.framework = 'cucumber';
+        video.onRunnerStart(global.multiBrowser);
+        expect(cucumberFrameworkMock.frameworkInit).toHaveBeenCalled();
+      });
+
+      it('should only register exit handler if using allure', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+
+        expect(process.on).not.toHaveBeenCalled();
+
+        global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters = [['allure', {config: {}}]];
+        video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+
+        expect(process.on).toHaveBeenCalled();
+      });
+
+      it('should figure out if multi remote is being used', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.isMultiremote).toBeTruthy();
+      });
+
+      it('should get sessionId in multiremote', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.sessionId).toBeDefined();
+      });
+
+      it('should get runnerInstance in multiremote', () => {
+        let video = new Video(options);
+        video.onRunnerStart(global.multiBrowser);
+        expect(video.runnerInstance).toBeDefined();
+      });
     });
 
-    it('should figure out if allure is being used', () => {
-      let video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.usingAllure).toBeFalsy();
-
-      browser.config.reporters = ['allure'];
-      video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.usingAllure).toBeTruthy();
-
-      browser.config.reporters = [['allure', {config: {}}]];
-      video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.usingAllure).toBeTruthy();
-    });
-
-    it('should sync config.debugMode to logLevel', () => {
-      let video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.debugMode).toBeFalsy();
-
-      browser.config.logLevel = 'debug';
-      video = new Video(options);
-      video.onRunnerStart(browser);
-      expect(video.config.debugMode).toBeTruthy();
-    });
-
-    it('should import code for the correct framework - default', () => {
-      jest.mock('frameworks/default.js', () => ({
-        frameworkInit: jest.fn().mockImplementation(),
-      }));
-
-      let video = new Video(options);
-      browser.config.framework = undefined;
-      video.onRunnerStart(browser);
-      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
-
-      defaultFrameworkMock.frameworkInit.mockReset();
-
-      video = new Video(options);
-      browser.config.framework = 'jasmine';
-      video.onRunnerStart(browser);
-      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
-
-      defaultFrameworkMock.frameworkInit.mockReset();
-
-      video = new Video(options);
-      browser.config.framework = 'mocha';
-      video.onRunnerStart(browser);
-      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
-
-      defaultFrameworkMock.frameworkInit.mockReset();
-
-      video = new Video(options);
-      browser.config.framework = '123456789';
-      video.onRunnerStart(browser);
-      expect(defaultFrameworkMock.frameworkInit).toHaveBeenCalled();
-    });
-
-    it('should import code for the correct framework - cucumber', () => {
-      let video = new Video(options);
-      browser.config.framework = 'cucumber';
-      video.onRunnerStart(browser);
-      expect(cucumberFrameworkMock.frameworkInit).toHaveBeenCalled();
-    });
-
-    it('should only register exit handler if using allure', () => {
-      let video = new Video(options);
-      video.onRunnerStart(browser);
-
-      expect(process.on).not.toHaveBeenCalled();
-
-      browser.config.reporters = [['allure', {config: {}}]];
-      video = new Video(options);
-      video.onRunnerStart(browser);
-
-      expect(process.on).toHaveBeenCalled();
-    });
   });
 
   describe('onAfterCommand - ', () => {
@@ -520,6 +721,7 @@ describe('wdio-video-recorder - ', () => {
       configModule.default.usingAllure = true;
       allureMocks.addArgument = jest.fn();
       video = new Video(options);
+      video.capabilities = global.browser.capabilities;
       video.testname = undefined;
       video.onTestEnd({title: 'TEST', state: 'passed'});
       expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
@@ -538,6 +740,7 @@ describe('wdio-video-recorder - ', () => {
       configModule.default.usingAllure = true;
       allureMocks.addArgument = jest.fn();
       video = new Video(options);
+      video.capabilities = global.browser.capabilities;
       video.testname = undefined;
       video.onTestEnd({title: 'TEST', state: 'passed'});
       expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');

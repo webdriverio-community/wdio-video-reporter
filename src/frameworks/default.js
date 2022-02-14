@@ -57,14 +57,18 @@ export default {
     const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
 
     let browserName = 'browser';
-    if(browser.capabilities.browserName) {
-      browserName = browser.capabilities.browserName.toUpperCase();
-    } else if(browser.capabilities.deviceName) {
-      browserName = `${browser.capabilities.deviceName.toUpperCase()}-${browser.capabilities.platformName.toUpperCase()}`;
+    const capabilities = this.isMultiremote
+      ? this.capabilities[Object.keys(this.capabilities)[0]]
+      : this.capabilities;
+
+    if(capabilities.browserName) {
+    browserName = capabilities.browserName.toUpperCase();
+    } else if(capabilities.deviceName) {
+      browserName = `${capabilities.deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`;
     }
 
-    if (browser.capabilities.deviceType) {
-      browserName += `-${browser.capabilities.deviceType.replace(/ /g, '-')}`;
+    if (capabilities.deviceType) {
+      browserName += `-${capabilities.deviceType.replace(/ /g, '-')}`;
     }
     this.testname = helpers.generateFilename(browserName, fullname);
     this.frameNr = 0;

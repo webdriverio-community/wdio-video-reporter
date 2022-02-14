@@ -30,6 +30,10 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
       this.frameNr = 0;
       this.videos = [];
       this.config = configModule.default;
+      this.capabilities = {
+        browserName: 'BROWSER',
+      },
+      this.isMultiremote = false;
     }
     onSuiteStart (suite) {
       cucumber.onSuiteStart.call(this, suite);
@@ -129,8 +133,8 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
         expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
 
         helpers.default.generateFilename = jest.fn();
-        global.browser.capabilities.deviceType = 'myDevice';
         video = new Video(options);
+        video.capabilities.deviceType = 'myDevice';
         video.testname = undefined;
         video.onSuiteStart({title: 'TEST', type: 'scenario'});
         expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
@@ -164,12 +168,12 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
 
       it('should handle native appium tests', () => {
         let video = new Video(options);
-        video.framework = {
-          onSuiteStart: jest.fn(),
-        };
-        global.browser.capabilities = {
+        video.capabilities = {
           deviceName: 'DEVICE',
           platformName: 'PLATFORM',
+        };
+        video.framework = {
+          onSuiteStart: jest.fn(),
         };
 
         helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => '');
@@ -232,11 +236,11 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
       };
 
       it('should add deviceType as argument to allure', () => {
-        global.browser.capabilities.deviceType = 'myDevice';
 
         configModule.default.usingAllure = false;
         allureMocks.addArgument = jest.fn();
         let video = new Video(options);
+        video.capabilities.deviceType = 'myDevice';
         video.testname = undefined;
         video.onSuiteEnd(passedScenario);
         expect(allureMocks.addArgument).not.toHaveBeenCalled();
@@ -244,17 +248,18 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
         configModule.default.usingAllure = true;
         allureMocks.addArgument = jest.fn();
         video = new Video(options);
+        video.capabilities.deviceType = 'myDevice';
         video.testname = undefined;
         video.onSuiteEnd(passedScenario);
         expect(allureMocks.addArgument).toHaveBeenCalledWith('deviceType', 'myDevice');
       });
 
       it('should add browserVersion as argument to allure', () => {
-        global.browser.capabilities.browserVersion = '1.2.3';
 
         configModule.default.usingAllure = false;
         allureMocks.addArgument = jest.fn();
         let video = new Video(options);
+        video.capabilities.browserVersion = '1.2.3';
         video.testname = undefined;
         video.onSuiteEnd(passedScenario);
         expect(allureMocks.addArgument).not.toHaveBeenCalled();
@@ -262,6 +267,7 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
         configModule.default.usingAllure = true;
         allureMocks.addArgument = jest.fn();
         video = new Video(options);
+        video.capabilities.browserVersion = '1.2.3';
         video.testname = undefined;
         video.onSuiteEnd(passedScenario);
         expect(allureMocks.addArgument).toHaveBeenCalledWith('browserVersion', '1.2.3');
