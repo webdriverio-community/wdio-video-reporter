@@ -373,23 +373,13 @@ describe('wdio-video-recorder - ', () => {
 
     describe('onRunnerStart - Multi remote ', () => {
       it('should user Allure default outputDir if not set in wdio config', () => {
-        console.log('**options***' + JSON.stringify(options));
-
         const video = new Video(options);
-
-        console.log('***browser**' + JSON.stringify(browser));
-
-
         video.onRunnerStart(global.multiBrowser);
-        console.log('*****' + JSON.stringify(video));
-        console.log('*****' + JSON.stringify(video.config));
         expect(video.config.allureOutputDir).toBe(allureDefaultOutputDir);
       });
 
       it('should use custom allure outputDir if set in config', () => {
-        // global.browser.config.reporters.push(['allure', {outputDir: 'customDir'}]);
         global.multiBrowser.instanceOptions.d7504eefa17d45ad7859fe4437e8643f.reporters.push(['allure', {outputDir: 'customDir'}]);
-
         let video = new Video(options);
         video.onRunnerStart(global.multiBrowser);
         expect(video.config.allureOutputDir).toBe('customDir');
