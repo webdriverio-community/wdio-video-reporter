@@ -180,6 +180,28 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
         video.onSuiteStart({title: 'TEST123', type: 'scenario'});
         expect(helpers.default.generateFilename).toHaveBeenCalledWith('DEVICE-PLATFORM', 'TEST123');
       });
+
+      it('should figure out if multi remote is not being used', () => {
+        let video = new Video(options);
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.isMultiremote).toBeFalsy();
+
+        video = new Video(options);
+        video.isMultiremote = true;
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.isMultiremote).toBeTruthy();
+      });
+
+      it('should set capabilities in  both non-multiremote and multi remote', () => {
+        let video = new Video(options);
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.capabilities).toBeDefined();
+
+        video = new Video(options);
+        video.isMultiremote = true;
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.capabilities).toBeDefined();
+      });
     });
 
     describe('feature - ', () => {
@@ -333,6 +355,28 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
 
         video.onSuiteEnd(passedScenario);
         expect(helpers.default.generateVideo).toHaveBeenCalled();
+      });
+
+      it('should figure out if multi remote is not being used', () => {
+        let video = new Video(options);
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.isMultiremote).toBeFalsy();
+
+        video = new Video(options);
+        video.isMultiremote = true;
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.isMultiremote).toBeTruthy();
+      });
+
+      it('should set capabilities in  both non-multiremote and multi remote', () => {
+        let video = new Video(options);
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.capabilities).toBeDefined();
+
+        video = new Video(options);
+        video.isMultiremote = true;
+        video.onSuiteStart({title: 'TEST', type: 'scenario'});
+        expect(video.capabilities).toBeDefined();
       });
     });
 
