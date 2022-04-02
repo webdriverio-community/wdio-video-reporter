@@ -45,9 +45,7 @@ export default {
 
       let browserName = 'browser';
 
-      const capabilities = this.isMultiremote
-      ? this.capabilities[Object.keys(this.capabilities)[0]]
-      : this.capabilities;
+      const capabilities = helpers.getCurrentCapabilities(this);
 
       if(capabilities.browserName) {
         browserName = capabilities.browserName.toUpperCase();
@@ -72,9 +70,7 @@ export default {
    */
   onSuiteEnd (suite) {
     if (config.usingAllure) {
-      const capabilities = this.isMultiremote
-      ? this.capabilities[Object.keys(this.capabilities)[0]]
-      : this.capabilities;
+      const capabilities = helpers.getCurrentCapabilities(this);
 
       if (capabilities.deviceType) {
         allureReporter.addArgument('deviceType', capabilities.deviceType);

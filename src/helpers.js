@@ -131,4 +131,10 @@ export default {
     } while(new Date().getTime() < abortTime && !allConstant);
   },
 
+  getCurrentCapabilities (videoReporterObject) {
+    const currentCapabilities = videoReporterObject.isMultiremote
+      ? videoReporterObject.capabilities[Object.keys(videoReporterObject.capabilities)[0]]
+      : videoReporterObject.capabilities;
+    return currentCapabilities;
+  },
 };

@@ -57,9 +57,8 @@ export default {
     const fullname = this.testnameStructure.slice(1).reduce((cur, acc) => cur + '--' + acc, this.testnameStructure[0]);
 
     let browserName = 'browser';
-    const capabilities = this.isMultiremote
-      ? this.capabilities[Object.keys(this.capabilities)[0]]
-      : this.capabilities;
+    const capabilities = helpers.getCurrentCapabilities(this);
+
 
     if(capabilities.browserName) {
     browserName = capabilities.browserName.toUpperCase();

@@ -77,9 +77,9 @@ export default class Video extends WdioReporter {
       : runner.sessionId;
     this.sessionId = sessionId;
 
-    const runnerInstance = runner.isMultiremote ?
-      runner.instanceOptions[sessionId[0]]
-    : runner.instanceOptions[sessionId];
+    const runnerInstance = runner.isMultiremote
+      ? runner.instanceOptions[sessionId[0]]
+      : runner.instanceOptions[sessionId];
     this.runnerInstance = runnerInstance;
 
     const allureConfig = runnerInstance.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
@@ -179,9 +179,7 @@ export default class Video extends WdioReporter {
 
     if(config.usingAllure) {
 
-      const capabilities = this.isMultiremote
-      ? this.capabilities[Object.keys(this.capabilities)[0]]
-      : this.capabilities;
+      const capabilities = helpers.getCurrentCapabilities(this);
 
       if (capabilities.deviceType) {
         allureReporter.addArgument('deviceType', capabilities.deviceType);
