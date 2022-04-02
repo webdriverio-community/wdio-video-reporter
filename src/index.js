@@ -72,8 +72,8 @@ export default class Video extends WdioReporter {
     this.capabilities = runner.capabilities;
     this.isMultiremote = runner.isMultiremote || false;
 
-    const sessionId = runner.isMultiremote ?
-      Object.entries(runner.capabilities).map(([, capabilities]) => capabilities.sessionId)
+    const sessionId = runner.isMultiremote
+      ? Object.entries(runner.capabilities).map(([, capabilities]) => capabilities.sessionId)
       : runner.sessionId;
     this.sessionId = sessionId;
 
