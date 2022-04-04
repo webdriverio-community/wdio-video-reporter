@@ -48,6 +48,11 @@ export default class Video extends WdioReporter {
     this.frameNr = 0;
     this.videos = [];
     this.config = config;
+    this.isMultiremote = false;
+    this.capabilities = {};
+    this.sessionId;
+    this.runnerInstance;
+
 
     helpers.setLogger(msg => this.write(msg));
   }
@@ -63,20 +68,35 @@ export default class Video extends WdioReporter {
   /**
    * Set wdio config options
    */
-  onRunnerStart (browser) {
-    const allureConfig = browser.config.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
+  onRunnerStart (runner) {
+    this.capabilities = runner.capabilities;
+    this.isMultiremote = runner.isMultiremote || false;
+
+    const sessionId = runner.isMultiremote
+      ? Object.entries(runner.capabilities).map(([, capabilities]) => capabilities.sessionId)
+      : runner.sessionId;
+    this.sessionId = sessionId;
+
+    const runnerInstance = runner.isMultiremote
+      ? runner.instanceOptions[sessionId[0]]
+      : runner.instanceOptions[sessionId];
+    this.runnerInstance = runnerInstance;
+
+    const allureConfig = runnerInstance.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
+
     if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
       config.allureOutputDir = path.resolve(allureConfig[1].outputDir);
     }
     config.usingAllure = !!allureConfig;
-    const logLevel = browser.config.logLevel;
+    const logLevel = runnerInstance.logLevel;
+
     config.debugMode = logLevel.toLowerCase() === 'trace' || logLevel.toLowerCase() === 'debug';
 
-    helpers.debugLog('Using reporter config:' + JSON.stringify(browser.config.reporters, undefined, 2) + '\n\n');
+    helpers.debugLog('Using reporter config:' + JSON.stringify(runnerInstance.reporters, undefined, 2) + '\n\n');
     helpers.debugLog('Using config:' + JSON.stringify(config, undefined, 2) + '\n\n\n');
 
     // Jasmine and Mocha ought to behave the same regarding test-structure
-    this.framework = browser.config.framework === 'cucumber' ? cucumberFramework : defaultFramework;
+    this.framework = runnerInstance.framework === 'cucumber' ? cucumberFramework : defaultFramework;
     this.framework.frameworkInit.call(this, browser);
 
     if(config.usingAllure) {
@@ -158,11 +178,14 @@ export default class Video extends WdioReporter {
     this.testnameStructure.pop();
 
     if(config.usingAllure) {
-      if (browser.capabilities.deviceType) {
-        allureReporter.addArgument('deviceType', browser.capabilities.deviceType);
+
+      const capabilities = helpers.getCurrentCapabilities(this);
+
+      if (capabilities.deviceType) {
+        allureReporter.addArgument('deviceType', capabilities.deviceType);
       }
-      if (browser.capabilities.browserVersion) {
-        allureReporter.addArgument('browserVersion', browser.capabilities.browserVersion);
+      if (capabilities.browserVersion) {
+        allureReporter.addArgument('browserVersion', capabilities.browserVersion);
       }
     }
 

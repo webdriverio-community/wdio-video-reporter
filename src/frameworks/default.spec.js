@@ -27,6 +27,10 @@ describe('wdio-video-recorder - default framework - ', () => {
       this.testname = '';
       this.frameNr = 0;
       this.videos = [];
+      this.capabilities = {
+        browserName: 'BROWSER',
+      },
+      this.isMultiremote = false;
     }
     onTestStart (test) {
       defaultFramework.onTestStart.call(this, test);
@@ -113,11 +117,28 @@ describe('wdio-video-recorder - default framework - ', () => {
       expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
 
       helpers.default.generateFilename = jest.fn();
-      global.browser.capabilities.deviceType = 'myDevice';
       video = new Video(options);
+      video.capabilities.deviceType = 'myDevice';
       video.testname = undefined;
       video.onTestStart({title: 'TEST'});
       expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER-myDevice', 'TEST');
+    });
+
+    it('should append deviceName to platformName', () => {
+      helpers.default.generateFilename = jest.fn();
+      let video = new Video(options);
+      video.testname = undefined;
+      video.onTestStart({title: 'TEST'});
+      expect(helpers.default.generateFilename).toHaveBeenCalledWith('BROWSER', 'TEST');
+
+      helpers.default.generateFilename = jest.fn();
+      video = new Video(options);
+      video.capabilities.browserName = undefined;
+      video.capabilities.deviceName = 'myDevice';
+      video.capabilities.platformName = 'myPlatform';
+      video.testname = undefined;
+      video.onTestStart({title: 'TEST'});
+      expect(helpers.default.generateFilename).toHaveBeenCalledWith('MYDEVICE-MYPLATFORM', 'TEST');
     });
 
     it('should set recordingpath', () => {
@@ -138,17 +159,39 @@ describe('wdio-video-recorder - default framework - ', () => {
 
     it('should handle native appium tests', () => {
       let video = new Video(options);
-      video.framework = {
-        onSuiteStart: jest.fn(),
-      };
-      global.browser.capabilities = {
+      video.capabilities = {
         deviceName: 'DEVICE',
         platformName: 'PLATFORM',
       };
-
+      video.framework = {
+        onSuiteStart: jest.fn(),
+      };
       helpers.default.generateFilename = jest.fn().mockImplementationOnce(() => '');
       video.onTestStart({title: 'TEST123'});
       expect(helpers.default.generateFilename).toHaveBeenCalledWith('DEVICE-PLATFORM', 'TEST123');
+    });
+
+    it('should figure out if multi remote is not being used', () => {
+      let video = new Video(options);
+      video.onTestStart({title: 'TEST'});
+      expect(video.isMultiremote).toBeFalsy();
+
+      video = new Video(options);
+      video.isMultiremote = true;
+      video.onTestStart({title: 'TEST'});
+      expect(video.isMultiremote).toBeTruthy();
+    });
+
+    it('should set capabilities in  both non-multiremote and multi remote', () => {
+      let video = new Video(options);
+      video.onTestStart({title: 'TEST'});
+      expect(video.capabilities).toBeDefined();
+
+      video = new Video(options);
+      video.isMultiremote = true;
+      video.onTestStart({title: 'TEST'});
+      expect(video.capabilities).toBeDefined();
+
     });
   });
 
