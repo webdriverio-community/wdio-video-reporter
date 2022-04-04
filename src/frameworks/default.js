@@ -61,7 +61,7 @@ export default {
 
 
     if(capabilities.browserName) {
-    browserName = capabilities.browserName.toUpperCase();
+      browserName = capabilities.browserName.toUpperCase();
     } else if(capabilities.deviceName) {
       browserName = `${capabilities.deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`;
     }
