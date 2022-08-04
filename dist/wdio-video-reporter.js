@@ -651,7 +651,7 @@ class Video extends WdioReporter {
         started = true;
         helpers.debugLog(`\n--- FFMPEG is done ---\n\n`);
 
-        if (config.logLevel === 'silent') ; else {
+        if (config.logLevel !== 'silent') {
           this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n');
           this.write(`\n\nVideo reporter Done!\n`);
         }
