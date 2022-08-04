@@ -39,6 +39,7 @@ export default class Video extends WdioReporter {
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
     config.recordAllActions = options.recordAllActions || false;
     config.maxTestNameCharacters = options.maxTestNameCharacters || config.maxTestNameCharacters;
+    config.logLevel = options.logLevel || config.logLevel;
 
     this.screenshotPromises = [];
     this.videos = [];
