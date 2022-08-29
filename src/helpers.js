@@ -71,7 +71,7 @@ export default {
       '-vcodec', 'libx264',
       '-crf', '32',
       '-pix_fmt', 'yuv420p',
-      '-vf', `"scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
+      '-vf', `"scale=${config.videoScale}","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
       `"${videoPath}"`,
     ];
 

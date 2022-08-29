@@ -25,6 +25,9 @@ export default {
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 
+  // Video scale, see https://trac.ffmpeg.org/wiki/Scaling
+  videoScale: '1200:trunc(ow/a/2)*2',
+
   // Max chars for test names, adjust according to current system
   maxTestNameCharacters: 250,
 

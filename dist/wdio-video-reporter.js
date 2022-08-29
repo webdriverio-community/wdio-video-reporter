@@ -37,6 +37,9 @@ var config = {
   // Video slowdown multiplier
   videoSlowdownMultiplier: 3,
 
+  // Video scale, see https://trac.ffmpeg.org/wiki/Scaling
+  videoScale: '1200:trunc(ow/a/2)*2',
+
   // Max chars for test names, adjust according to current system
   maxTestNameCharacters: 250,
 
@@ -156,7 +159,7 @@ var helpers = {
       '-vcodec', 'libx264',
       '-crf', '32',
       '-pix_fmt', 'yuv420p',
-      '-vf', `"scale=1200:trunc(ow/a/2)*2","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
+      '-vf', `"scale=${config.videoScale}","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
       `"${videoPath}"`,
     ];
 
@@ -467,6 +470,7 @@ class Video extends WdioReporter {
     }
     config.saveAllVideos = options.saveAllVideos || config.saveAllVideos;
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
+    config.videoScale = options.videoScale || config.videoScale;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
