@@ -147,6 +147,7 @@ describe('wdio-video-recorder - ', () => {
         logFile,
         saveAllVideos: 'test',
         videoSlowdownMultiplier: 'test',
+        videoScale: '1600:trunc(ow/a/2)*2',
         videoRenderTimeout: 'test',
         addExcludedActions: [':unitTestingAction1234567890:'],
         addJsonWireActions: [':unitTestingAction1234567890:'],
@@ -157,6 +158,7 @@ describe('wdio-video-recorder - ', () => {
       expect(video.config.outputDir).toBe(outputDir);
       expect(video.config.saveAllVideos).toBe(options.saveAllVideos);
       expect(video.config.videoSlowdownMultiplier).toBe(options.videoSlowdownMultiplier);
+      expect(video.config.videoScale).toBe(options.videoScale);
       expect(video.config.videoRenderTimeout).toBe(options.videoRenderTimeout);
       expect(video.config.excludedActions).toContain(':unitTestingAction1234567890:');
       expect(video.config.jsonWireActions).toContain(':unitTestingAction1234567890:');

@@ -128,6 +128,7 @@ Most users may want to set these
 
 - `saveAllVideos` Set to true to save videos for passing tests. `Default: false`
 - `videoSlowdownMultiplier` Integer between [1-100]. Increase if videos are playing to quick. `Default: 3`
+- `videoScale` Scaling of video. See https://trac.ffmpeg.org/wiki/Scaling. `Default: '1200:trunc(ow/a/2)*2'`
 - `videoRenderTimeout` Max seconds to wait for a video to render. `Default: 5`
 - `outputDir` If its not set, it uses wdio.config.outputDir. `Default: undefined`
 - `maxTestNameCharacters` Max length of test name. `Default: 250`
