@@ -870,6 +870,40 @@ describe('wdio-video-recorder - ', () => {
 
       expect(global.clearTimeout.mock.calls.length).toBe(1);
     });
+
+    it('should log video reporter actions if logLevel is not silent', async () => {
+      configModule.default.logLevel = 'info';
+      let video = new Video(options);
+      video.videos = videos;
+      video.write = jest.fn();
+
+      let resolve;
+      const videoDonePromise = new Promise((res) => { resolve = res; });
+      video.videoPromises.push(videoDonePromise);
+
+      video.onRunnerEnd();
+      resolve();
+      await flushPromises();
+
+      expect(video.write).toHaveBeenCalled();
+    });
+
+    it('should respect logLevel if it is silent', async () => {
+      configModule.default.logLevel = 'silent';
+      let video = new Video(options);
+      video.videos = videos;
+      video.write = jest.fn();
+
+      let resolve;
+      const videoDonePromise = new Promise((res) => { resolve = res; });
+      video.videoPromises.push(videoDonePromise);
+
+      video.onRunnerEnd();
+      resolve();
+      await flushPromises();
+
+      expect(video.write).not.toHaveBeenCalled();
+    });
   });
 
   describe('onExit - ', () => {
