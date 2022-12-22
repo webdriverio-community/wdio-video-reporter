@@ -358,6 +358,7 @@ describe('wdio-video-recorder - ', () => {
 
       it('should only register exit handler if using allure', () => {
         let video = new Video(options);
+        video.onExit = jest.fn();
         video.onRunnerStart(browser);
 
         expect(process.on).not.toHaveBeenCalled();
@@ -367,6 +368,11 @@ describe('wdio-video-recorder - ', () => {
         video.onRunnerStart(browser);
 
         expect(process.on).toHaveBeenCalled();
+        const callback = process.on.mock.calls[0][1];
+        jest.spyOn(video, 'onExit');
+        expect(video.onExit).not.toHaveBeenCalled();
+        callback(video);
+        expect(video.onExit).toHaveBeenCalled();
       });
 
       it('should figure out if multi remote is not being used', () => {
@@ -611,7 +617,7 @@ describe('wdio-video-recorder - ', () => {
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
         expect(helpers.default.debugLog).toHaveBeenCalledWith('Incoming command: /session/abcdef/url => [url]\n');
         setImmediate(() => {
-          expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!!\n');
+          expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!! (frame: 0)\n');
           done();
         });
       });
@@ -676,6 +682,9 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onTestStart - ', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
     it('should call frameworks onTestStart', () => {
       let video = new Video(options);
       video.framework = {
@@ -683,6 +692,61 @@ describe('wdio-video-recorder - ', () => {
       };
       video.onTestStart({title: 'TEST'});
       expect(video.framework.onTestStart).toHaveBeenCalled();
+    });
+
+    it('should not initiate interval screenshots if not configured to do so', () => {
+      global.setInterval = jest.fn();
+
+      let video = new Video(options);
+      video.framework = {
+        onTestStart: jest.fn(),
+      };
+      video.onTestStart({title: 'TEST'});
+      expect(global.setInterval).not.toHaveBeenCalled();
+    });
+
+    it('should initiate interval screenshots if configured to do so', () => {
+      configModule.default.screenshotIntervalSecs = 2.5;
+      global.setInterval = jest.fn();
+      let video = new Video(options);
+      video.intervalScreenshot = undefined;
+      video.framework = {
+        onTestStart: jest.fn(),
+      };
+      video.onTestStart({title: 'TEST'});
+      expect(global.setInterval).toHaveBeenCalledWith(expect.any(Function), 2500);
+    });
+
+    it('should enforce a minimum 0.5 second screenshot interval', () => {
+      configModule.default.screenshotIntervalSecs = 0.1;
+      global.setInterval = jest.fn();
+
+      let video = new Video(options);
+      video.intervalScreenshot = undefined;
+      video.framework = {
+        onTestStart: jest.fn(),
+      };
+      video.onTestStart({title: 'TEST'});
+      expect(global.setInterval).toHaveBeenCalledWith(expect.any(Function), 500);
+    });
+
+    it('should take screenshots at regular intervals if configured to do so', () => {
+      configModule.default.screenshotIntervalSecs = 3;
+      global.setInterval = jest.fn();
+      let video = new Video(options);
+      video.intervalScreenshot = undefined;
+      video.framework = {
+        onTestStart: jest.fn(),
+      };
+      jest.useFakeTimers();
+      jest.spyOn(video, 'addFrame');
+      expect(video.addFrame).not.toHaveBeenCalled();
+      video.onTestStart({title: 'TEST'});
+      expect(video.addFrame).not.toHaveBeenCalled();
+      jest.runOnlyPendingTimers();
+      expect(video.addFrame).toHaveBeenCalledTimes(1);
+      jest.runOnlyPendingTimers();
+      expect(video.addFrame).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -694,6 +758,18 @@ describe('wdio-video-recorder - ', () => {
       };
       video.onTestSkip({title: 'TEST'});
       expect(video.framework.onTestSkip).toHaveBeenCalled();
+    });
+
+    it('should stop interval screenshots if running', () => {
+      global.clearInterval = jest.fn();
+      const interval = jest.fn();
+      let video = new Video(options);
+      video.intervalScreenshot = interval;
+      video.framework = {
+        onTestSkip: jest.fn(),
+      };
+      video.onTestSkip({title: 'TEST'});
+      expect(global.clearInterval).toHaveBeenCalledWith(interval);
     });
   });
 
@@ -770,7 +846,7 @@ describe('wdio-video-recorder - ', () => {
       video.onTestEnd({title: 'TEST', state: 'failed'});
       expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
       setImmediate(() => {
-        expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!!\n');
+        expect(helpers.default.debugLog).toHaveBeenCalledWith('- Screenshot!! (frame: 0)\n');
         done();
       });
     });
@@ -816,6 +892,18 @@ describe('wdio-video-recorder - ', () => {
       video.recordingPath = 'folder';
       video.onTestEnd({title: 'TEST', state: 'passed'});
       expect(helpers.default.generateVideo).toHaveBeenCalled();
+    });
+
+    it('should stop interval screenshots if running', () => {
+      global.clearInterval = jest.fn();
+      const interval = jest.fn();
+      let video = new Video(options);
+      video.intervalScreenshot = interval;
+      video.framework = {
+        onTestEnd: jest.fn(),
+      };
+      video.onTestEnd({title: 'TEST'});
+      expect(global.clearInterval).toHaveBeenCalledWith(interval);
     });
   });
 
