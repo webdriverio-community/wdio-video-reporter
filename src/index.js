@@ -70,7 +70,7 @@ export default class Video extends WdioReporter {
   /**
    * Set wdio config options
    */
-  onRunnerStart (runner) {
+  async onRunnerStart (runner) {
     this.capabilities = runner.capabilities;
     this.isMultiremote = runner.isMultiremote || false;
 
@@ -102,7 +102,7 @@ export default class Video extends WdioReporter {
     this.framework.frameworkInit.call(this, browser);
 
     if(config.usingAllure) {
-      process.on('exit', () => this.onExit.call(this));
+      process.on('exit', async () => this.onExit.call(this));
     }
   }
 
@@ -243,11 +243,11 @@ export default class Video extends WdioReporter {
   /**
    * Finalize allure report
    */
-  onExit () {
+  async onExit () {
     const abortTime = new Date().getTime() + config.videoRenderTimeout*1000;
 
-    helpers.waitForVideosToExist(this.videos, abortTime);
-    helpers.waitForVideosToBeWritten(this.videos, abortTime);
+    await helpers.waitForVideosToExist(this.videos, abortTime);
+    await helpers.waitForVideosToBeWritten(this.videos, abortTime);
 
     if (new Date().getTime() > abortTime) {
       console.log(`videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure`);
