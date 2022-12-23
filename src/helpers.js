@@ -8,9 +8,8 @@ import config from './config.js';
 
 let writeLog;
 export default {
-  sleep(ms) {
-    const stop = new Date().getTime() + ms;
-    while(new Date().getTime() < stop);
+  async sleep(ms) {
+    await new Promise(resolve => setTimeout(resolve, ms));
   },
 
   setLogger(obj) {
@@ -97,12 +96,12 @@ export default {
     return promise;
   },
 
-  waitForVideosToExist(videos, abortTime) {
+  async waitForVideosToExist(videos, abortTime) {
     let allExist = false;
     let allGenerated = false;
 
     do {
-      this.sleep(100);
+      await this.sleep(100);
       allExist = videos
         .map(v => fs.existsSync(v))
         .reduce((acc, cur) => acc && cur, true);
@@ -114,12 +113,12 @@ export default {
     } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
   },
 
-  waitForVideosToBeWritten(videos, abortTime) {
+  async waitForVideosToBeWritten(videos, abortTime) {
     let allSizes = [];
     let allConstant = false;
 
     do {
-      this.sleep(100);
+      await this.sleep(100);
       let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
       allSizes = [...allSizes, currentSizes].slice(-3);
 
