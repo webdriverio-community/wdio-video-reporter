@@ -77,12 +77,19 @@ export default class Video extends WdioReporter {
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, capabilities]) => capabilities.sessionId)
       : runner.sessionId;
+
+    // May not be present in the case were a spawned worker has no tests when running a subset of the test suite.
+    if (!sessionId) return;
     this.sessionId = sessionId;
+
 
     const runnerInstance = runner.isMultiremote
       ? runner.instanceOptions[sessionId[0]]
       : runner.instanceOptions[sessionId];
+
+    if (!runnerInstance) return;
     this.runnerInstance = runnerInstance;
+
 
     const allureConfig = runnerInstance.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
 
