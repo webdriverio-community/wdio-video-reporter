@@ -89,7 +89,6 @@ export default class Video extends WdioReporter {
     if (!runnerInstance) return;
     this.runnerInstance = runnerInstance;
 
-
     const allureConfig = runnerInstance.reporters.filter(r => r === 'allure' || r[0] === 'allure').pop();
 
     if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
