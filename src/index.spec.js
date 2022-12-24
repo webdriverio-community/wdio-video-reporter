@@ -261,6 +261,21 @@ describe('wdio-video-recorder - ', () => {
     });
 
     describe('onRunnerStart - Non multi remote ', () => {
+      it('should bail early if there is no sessionId', () => {
+        const video = new Video(options);
+        video.onRunnerStart({...browser, sessionId: undefined });
+        expect(video.sessionId).toBe(undefined);
+        expect(video.runnerInstance).toBe(undefined);
+      });
+
+      it('should bail early if there is no found runnerInstance', () => {
+        const mockSessionId = 'not-in-instance-options';
+        const video = new Video(options);
+        video.onRunnerStart({...browser, sessionId: mockSessionId });
+        expect(video.sessionId).toBe(mockSessionId);
+        expect(video.runnerInstance).toBe(undefined);
+      });
+
       it('should user Allure default outputDir if not set in wdio config', () => {
         const video = new Video(options);
         video.onRunnerStart(browser);
