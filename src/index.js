@@ -82,7 +82,6 @@ export default class Video extends WdioReporter {
     if (!sessionId) return;
     this.sessionId = sessionId;
 
-
     const runnerInstance = runner.isMultiremote
       ? runner.instanceOptions[sessionId[0]]
       : runner.instanceOptions[sessionId];
