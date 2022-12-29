@@ -47,15 +47,26 @@ describe('Helpers - ', () => {
   });
 
   describe('sleep - ', () => {
+    const realPerformanceNow = performance.now;
+
     beforeEach(() => {
       helpers.sleep = originalSleep;
+      performance.now = jest.fn()
+        .mockReturnValueOnce(2200)  // called once to configure the stop time
+        .mockReturnValueOnce(2200)  // then in a loop until ms has elapsed
+        .mockReturnValueOnce(2240)
+        .mockReturnValueOnce(2280)
+        .mockReturnValueOnce(2320)
+        .mockReturnValueOnce(2360)
+        .mockReturnValueOnce(2400);
     });
+    afterEach(() => {
+      performance.now = realPerformanceNow;
+    })
 
-    it('should sleep until requested time has passed', async () => {
-      const start = performance.now();
-      await helpers.sleep(100);
-      const end = performance.now();
-      expect(end - start).toBeGreaterThanOrEqual(100);
+    it('should sleep until requested time has passed', () => {
+      helpers.sleep(100);
+      expect(performance.now).toHaveBeenCalledTimes(5);
     });
   });
 
@@ -232,7 +243,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => false)
         .mockImplementationOnce(() => false)
         .mockImplementation(() => true);
-      await helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(3);
     });
 
@@ -245,7 +256,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementation(() => ({ size: 512 }));
-      await helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(3);
     });
 
@@ -266,7 +277,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementation(() => ({ size: 512 }));
-      await helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(5);
     });
 
@@ -290,7 +301,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementationOnce(() => ({ size: 48 }))
         .mockImplementation(() => ({ size: 512 }));
-      await helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToExist(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(3);
     });
 
@@ -303,7 +314,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => ({ size: 62 }))
         .mockImplementationOnce(() => ({ size: 73 }))
         .mockImplementation(() => ({ size: 512 }));
-      await helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(2+3); // Two during reading and three good in a row
     });
 
@@ -319,7 +330,7 @@ describe('Helpers - ', () => {
         .mockImplementationOnce(() => ({ size: 62 }))
         .mockImplementationOnce(() => ({ size: 73 }))
         .mockImplementation(() => ({ size: 512 }));
-      await helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
+      helpers.waitForVideosToBeWritten(videos, config.videoRenderTimeout*1000);
       expect(helpers.sleep.mock.calls.length).toBe(2);
     });
   });

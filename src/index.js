@@ -107,7 +107,7 @@ export default class Video extends WdioReporter {
     this.framework.frameworkInit.call(this, browser);
 
     if(config.usingAllure) {
-      process.on('exit', async () => this.onExit.call(this));
+      process.on('exit', () => this.onExit.call(this));
     }
   }
 
@@ -251,8 +251,8 @@ export default class Video extends WdioReporter {
   async onExit () {
     const abortTime = new Date().getTime() + config.videoRenderTimeout*1000;
 
-    await helpers.waitForVideosToExist(this.videos, abortTime);
-    await helpers.waitForVideosToBeWritten(this.videos, abortTime);
+    helpers.waitForVideosToExist(this.videos, abortTime);
+    helpers.waitForVideosToBeWritten(this.videos, abortTime);
 
     if (new Date().getTime() > abortTime) {
       console.log(`videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure`);

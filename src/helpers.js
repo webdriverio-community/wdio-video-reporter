@@ -2,14 +2,17 @@ import allureReporter from '@wdio/allure-reporter';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs-extra';
+import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 
 import config from './config.js';
 
 let writeLog;
+
 export default {
-  async sleep(ms) {
-    await new Promise(resolve => setTimeout(resolve, ms));
+  sleep(ms) {
+    const stop = performance.now() + ms;
+    while(performance.now() < stop);
   },
 
   setLogger(obj) {
@@ -96,12 +99,12 @@ export default {
     return promise;
   },
 
-  async waitForVideosToExist(videos, abortTime) {
+  waitForVideosToExist(videos, abortTime) {
     let allExist = false;
     let allGenerated = false;
 
     do {
-      await this.sleep(100);
+      this.sleep(100);
       allExist = videos
         .map(v => fs.existsSync(v))
         .reduce((acc, cur) => acc && cur, true);
@@ -113,12 +116,12 @@ export default {
     } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
   },
 
-  async waitForVideosToBeWritten(videos, abortTime) {
+  waitForVideosToBeWritten(videos, abortTime) {
     let allSizes = [];
     let allConstant = false;
 
     do {
-      await this.sleep(100);
+      this.sleep(100);
       let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
       allSizes = [...allSizes, currentSizes].slice(-3);
 
