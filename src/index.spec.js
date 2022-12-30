@@ -952,7 +952,7 @@ describe('wdio-video-recorder - ', () => {
       video.config.usingAllure = true;
       video.videos = videos;
 
-      await video.onExit();
+      video.onExit();
 
       expect(helpers.default.waitForVideosToExist).toHaveBeenCalled();
       expect(helpers.default.waitForVideosToBeWritten).toHaveBeenCalled();
@@ -963,12 +963,11 @@ describe('wdio-video-recorder - ', () => {
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
       video.videos = videos;
-
       helpers.default.waitForVideosToBeWritten = jest.fn().mockImplementation(() => {
         currentTime = configModule.default.videoRenderTimeout*1000 + 1;
       });
 
-      await video.onExit();
+      video.onExit();
 
       expect(global.console.log.mock.calls[0][0].includes('videoRenderTimeout triggered')).toBeTruthy();
     });
@@ -979,7 +978,7 @@ describe('wdio-video-recorder - ', () => {
       video.config.usingAllure = true;
       video.videos = videos;
 
-      await video.onExit();
+      video.onExit();
 
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
@@ -990,10 +989,9 @@ describe('wdio-video-recorder - ', () => {
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
       video.videos = [videos[0]];
-
       fsMocks.existsSync = jest.fn().mockReturnValue(false);
 
-      await video.onExit();
+      video.onExit();
 
       expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
     });
@@ -1006,7 +1004,7 @@ describe('wdio-video-recorder - ', () => {
       video.config.usingAllure = true;
       video.videos = videos;
 
-      await video.onExit();
+      video.onExit();
 
       expect(fsMocks.copySync.mock.calls.length).toBe(2);
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
