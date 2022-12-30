@@ -54,7 +54,7 @@ export default {
     return filename;
   },
 
-  generateVideo() {
+  async generateVideo() {
     const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
     this.videos.push(videoPath);
 

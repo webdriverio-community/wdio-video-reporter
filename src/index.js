@@ -237,7 +237,7 @@ export default class Video extends WdioReporter {
   /**
    * Finalize allure report
    */
-  async onExit () {
+  onExit () {
     const abortTime = new Date().getTime() + config.videoRenderTimeout*1000;
 
     helpers.waitForVideosToExist(this.videos, abortTime);

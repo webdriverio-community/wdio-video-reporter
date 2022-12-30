@@ -1034,7 +1034,7 @@ describe('wdio-video-recorder - ', () => {
       global.date = originalDate;
     });
 
-    it('should wait for videos to done', async () => {
+    it('should wait for videos to done when called synchronously', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1046,7 +1046,7 @@ describe('wdio-video-recorder - ', () => {
       expect(helpers.default.waitForVideosToBeWritten).toHaveBeenCalled();
     });
 
-    it('should print warning if videoRenderTimeout is triggered', async () => {
+    it('should print warning if videoRenderTimeout is triggered', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1060,7 +1060,7 @@ describe('wdio-video-recorder - ', () => {
       expect(global.console.log.mock.calls[0][0].includes('videoRenderTimeout triggered')).toBeTruthy();
     });
 
-    it('should update Allure report if Allure is present', async () => {
+    it('should update Allure report if Allure is present', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1072,7 +1072,7 @@ describe('wdio-video-recorder - ', () => {
       expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
     });
 
-    it('should not try to copy missing files to Allure', async () => {
+    it('should not try to copy missing files to Allure', () => {
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1084,7 +1084,7 @@ describe('wdio-video-recorder - ', () => {
       expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
     });
 
-    it('should update Allure report if Allure is present with correct browser videos', async () => {
+    it('should update Allure report if Allure is present with correct browser videos', () => {
       const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4',
         'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
       let video = new Video(options);
