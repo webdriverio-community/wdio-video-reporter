@@ -80,4 +80,6 @@ export default {
   // If test speed is not an issue, this option can be enabled to do a screenshot on every json wire message
   recordAllActions: false,
 
+  // Add a screenshot at a regular interval
+  screenshotIntervalSecs: undefined,
 };

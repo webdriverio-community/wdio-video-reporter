@@ -141,6 +141,7 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 - `addExcludedActions` Add actions where screenshots are unnecessary. `Default: []`
 - `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
 - `recordAllActions` Skip filtering and screenshot everything. (Not recommended) `Default: false`
+- `screenshotIntervalSecs` Force a screenshot at this interval (minumum 0.5s) `Default: undefined`
 
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 

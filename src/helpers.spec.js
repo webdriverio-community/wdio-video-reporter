@@ -62,7 +62,7 @@ describe('Helpers - ', () => {
     });
     afterEach(() => {
       performance.now = realPerformanceNow;
-    })
+    });
 
     it('should sleep until requested time has passed', () => {
       helpers.sleep(100);
