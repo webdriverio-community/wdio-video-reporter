@@ -5,6 +5,7 @@
 import {allureMocks} from '@wdio/allure-reporter';
 import {cpMocks} from 'child_process';
 import {fsMocks, resetFsMocks} from 'fs-extra';
+import glob from 'glob';
 
 import helpers from './helpers.js';
 import * as configModule from './config.js';
@@ -154,8 +155,10 @@ describe('Helpers - ', () => {
 
 
   describe('generateVideo - ', () => {
+    const originalGlobSync = glob.sync;
     let video;
     let videoPromiseResolved;
+
     beforeEach(() => {
       video = new Video();
       video.testname = 'TEST';
@@ -168,7 +171,13 @@ describe('Helpers - ', () => {
           cb();
         }
       }});
+      fsMocks.copySync = jest.fn();
+      glob.sync = jest.fn(() => []);
     });
+
+    afterEach(() => {
+      glob.sync = originalGlobSync;
+    })
 
     it('should not add video attachment placeholder to Allure, if not using Allure', () => {
       helpers.generateVideo.call(video);
@@ -198,6 +207,77 @@ describe('Helpers - ', () => {
       await helpers.generateVideo.call(video);
 
       expect(videoPromiseResolved).toBeTruthy();
+    });
+
+    it('should not insert frames if all are present', async () => {
+      video.recordingPath = '/path/to/output';
+      glob.sync.mockReturnValue([
+        '/path/to/output/0000.png',
+        '/path/to/output/0001.png',
+        '/path/to/output/0002.png',
+        '/path/to/output/0003.png',
+        '/path/to/output/0004.png',
+        '/path/to/output/0005.png',
+        '/path/to/output/0006.png',
+      ]);
+
+      await helpers.generateVideo.call(video);
+
+      expect(fsMocks.copySync).not.toHaveBeenCalled();
+    });
+
+    it('should insert missing frames before calling ffmpeg', async () => {
+      // should non-destructively copy 0003.png to replace the missing 0004.png
+      video.recordingPath = '/path/to/output';
+      glob.sync.mockReturnValue([
+        '/path/to/output/0000.png',
+        '/path/to/output/0001.png',
+        '/path/to/output/0002.png',
+        '/path/to/output/0003.png',
+        '/path/to/output/0005.png',
+        '/path/to/output/0006.png',
+      ]);
+
+      await helpers.generateVideo.call(video);
+
+      expect(fsMocks.copySync).toHaveBeenCalledTimes(1);
+      expect(fsMocks.copySync.mock.calls[0][0]).toBe('/path/to/output/0003.png');
+      expect(fsMocks.copySync.mock.calls[0][1]).toBe('/path/to/output/0004.png');
+    });
+
+    it('should compensate for multiple missing frames before calling ffmpeg', async () => {
+      // should non-destructively copy 0003.png to replace the missing 0004.png
+      video.recordingPath = '/path/to/output';
+      glob.sync.mockReturnValue([
+        '/path/to/output/0000.png',
+        '/path/to/output/0001.png',
+        '/path/to/output/0005.png',
+        '/path/to/output/0006.png',
+      ]);
+
+      await helpers.generateVideo.call(video);
+
+      expect(fsMocks.copySync).toHaveBeenCalledTimes(3);
+      expect(fsMocks.copySync.mock.calls[0][0]).toBe('/path/to/output/0001.png');
+      expect(fsMocks.copySync.mock.calls[0][1]).toBe('/path/to/output/0002.png');
+      expect(fsMocks.copySync.mock.calls[1][0]).toBe('/path/to/output/0001.png');
+      expect(fsMocks.copySync.mock.calls[1][1]).toBe('/path/to/output/0003.png');
+      expect(fsMocks.copySync.mock.calls[2][0]).toBe('/path/to/output/0001.png');
+      expect(fsMocks.copySync.mock.calls[2][1]).toBe('/path/to/output/0004.png');
+    });
+
+    it('should disregard a missing first frame', async () => {
+      // missing first frame doesn't affect ffmpeg
+      video.recordingPath = '/path/to/output';
+      glob.sync.mockReturnValue([
+        '/path/to/output/0001.png',
+        '/path/to/output/0002.png',
+        '/path/to/output/0003.png',
+      ]);
+
+      await helpers.generateVideo.call(video);
+
+      expect(fsMocks.copySync).not.toHaveBeenCalled();
     });
   });
 

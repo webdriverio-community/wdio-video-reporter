@@ -2,6 +2,7 @@ import allureReporter from '@wdio/allure-reporter';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs-extra';
+import glob from 'glob';
 import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 
@@ -64,6 +65,24 @@ export default {
     if (config.usingAllure) {
       allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
     }
+
+    const frames = glob.sync(`${this.recordingPath}/*.png`);
+    const frameRegex = /^.*\/([^\/]+)\.png$/;
+
+    let nextExpectedFrame;
+    let previousFrame;
+    frames.forEach(path => {
+      const thisFrame = path.replace(frameRegex, '$1');
+      if (nextExpectedFrame && nextExpectedFrame !== thisFrame) {
+        console.log('didnt find expected frame and one was expected', nextExpectedFrame, thisFrame);
+        const src = `${this.recordingPath}/${previousFrame}.png`;
+        const dest = `${this.recordingPath}/${nextExpectedFrame}.png`;
+        const options = {overwrite: false};
+        fs.copySync(src, dest, options);
+      }
+      previousFrame = thisFrame.toString().padStart(4, '0');
+      nextExpectedFrame = (+thisFrame + 1).toString().padStart(4, '0');
+    });
 
     const command = `"${ffmpegPath}"`;
     const args = [
