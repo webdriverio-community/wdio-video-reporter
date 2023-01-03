@@ -9,6 +9,7 @@ import { spawn } from 'child_process';
 import config from './config.js';
 
 let writeLog;
+const frameRegex = /^.*\/(\d{4})\.png$/;
 
 export default {
   sleep(ms) {
@@ -69,13 +70,13 @@ export default {
     const frames = glob.sync(`${this.recordingPath}/*.png`);
 
     if (frames.length) {
-      const frameRegex = /^.*\/(\d{4})\.png$/;
       const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
       const pad = (frameNumber) => frameNumber.toString().padStart(4, '0');
       const insertMissing = (sourceFrame, targetFrame) => {
         const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
         const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
         const options = {overwrite: false};
+        writeLog(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...\n`);
         fs.copySync(src, dest, options);
       };
 

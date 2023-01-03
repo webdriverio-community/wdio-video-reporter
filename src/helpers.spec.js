@@ -224,6 +224,7 @@ describe('Helpers - ', () => {
       await helpers.generateVideo.call(video);
 
       expect(fsMocks.copySync).not.toHaveBeenCalled();
+      expect(logger.mock.calls.length).toBe(0);
     });
 
     it('should insert missing frames before calling ffmpeg', async () => {
@@ -243,6 +244,7 @@ describe('Helpers - ', () => {
       expect(fsMocks.copySync).toHaveBeenCalledTimes(1);
       expect(fsMocks.copySync.mock.calls[0][0]).toBe('/path/to/output/0003.png');
       expect(fsMocks.copySync.mock.calls[0][1]).toBe('/path/to/output/0004.png');
+      expect(logger.mock.calls.length).toBe(1);
     });
 
     it('should compensate for multiple missing frames before calling ffmpeg', async () => {
@@ -264,6 +266,7 @@ describe('Helpers - ', () => {
       expect(fsMocks.copySync.mock.calls[1][1]).toBe('/path/to/output/0003.png');
       expect(fsMocks.copySync.mock.calls[2][0]).toBe('/path/to/output/0001.png');
       expect(fsMocks.copySync.mock.calls[2][1]).toBe('/path/to/output/0004.png');
+      expect(logger.mock.calls.length).toBe(3);
     });
 
     it('should disregard missing initial frames', async () => {
@@ -278,6 +281,7 @@ describe('Helpers - ', () => {
       await helpers.generateVideo.call(video);
 
       expect(fsMocks.copySync).not.toHaveBeenCalled();
+      expect(logger.mock.calls.length).toBe(0);
     });
 
     it('should still fill gaps even when initial frames are missing', async () => {
@@ -296,6 +300,7 @@ describe('Helpers - ', () => {
       expect(fsMocks.copySync.mock.calls[0][1]).toBe('/path/to/output/0005.png');
       expect(fsMocks.copySync.mock.calls[1][0]).toBe('/path/to/output/0004.png');
       expect(fsMocks.copySync.mock.calls[1][1]).toBe('/path/to/output/0006.png');
+      expect(logger.mock.calls.length).toBe(2);
     });
 });
 
