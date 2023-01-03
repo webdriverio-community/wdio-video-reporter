@@ -10,6 +10,8 @@ export default {
   outputDir: defaultOutputDir,
   allureOutputDir: 'allure-results',
 
+  screenshotPaddingWidth: 4,
+
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',
 

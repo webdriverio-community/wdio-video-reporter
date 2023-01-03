@@ -155,6 +155,12 @@ export default class Video extends WdioReporter {
   onTestStart (test) {
     this.framework.onTestStart.call(this, test);
 
+    // Create the report directory, if it does not exists
+    if (!fs.existsSync(this.recordingPath)) {
+      helpers.debugLog(`Creating: ${this.recordingPath}, as it not exists...\n`);
+      fs.mkdirsSync(this.recordingPath);
+    }
+
     if (config.screenshotIntervalSecs) {
       const instance = this;
       this.intervalScreenshot = setInterval(() => instance.addFrame(), config.screenshotIntervalSecs * 1000);
@@ -263,13 +269,7 @@ export default class Video extends WdioReporter {
 
   addFrame () {
     const frame = this.frameNr++;
-    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(4, '0') + '.png');
-
-    // Create the report directory, if it does not exists
-    if (!fs.existsSync(this.recordingPath)) {
-      helpers.debugLog(`Creating: ${this.recordingPath}, as it not exists...\n`);
-      fs.mkdirsSync(this.recordingPath);
-    }
+    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(config.screenshotPaddingWidth, '0') + '.png');
 
     try {
       this.screenshotPromises.push(

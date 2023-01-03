@@ -85,7 +85,10 @@ export default {
       const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0;
 
       if (hasFailedTests || (allTestsPassed && config.saveAllVideos)) {
-        const filePath = path.resolve(this.recordingPath, this.frameNr.toString().padStart(4, '0') + '.png');
+        const filePath = path.resolve(
+          this.recordingPath,
+          this.frameNr.toString().padStart(config.screenshotPaddingWidth, '0') + '.png'
+        );
         try {
           browser.saveScreenshot(filePath);
           helpers.debugLog('- Screenshot!!\n');
