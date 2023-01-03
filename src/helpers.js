@@ -67,22 +67,32 @@ export default {
     }
 
     const frames = glob.sync(`${this.recordingPath}/*.png`);
-    const frameRegex = /^.*\/([^\/]+)\.png$/;
 
-    let nextExpectedFrame;
-    let previousFrame;
-    frames.forEach(path => {
-      const thisFrame = path.replace(frameRegex, '$1');
-      if (nextExpectedFrame && nextExpectedFrame !== thisFrame) {
-        console.log('didnt find expected frame and one was expected', nextExpectedFrame, thisFrame);
-        const src = `${this.recordingPath}/${previousFrame}.png`;
-        const dest = `${this.recordingPath}/${nextExpectedFrame}.png`;
+    if (frames.length) {
+      const frameRegex = /^.*\/(\d{4})\.png$/;
+      const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
+      const pad = (frameNumber) => frameNumber.toString().padStart(4, '0');
+      const insertMissing = (sourceFrame, targetFrame) => {
+        const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
+        const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
         const options = {overwrite: false};
         fs.copySync(src, dest, options);
+      };
+
+      if (frameNumbers.length !== frameNumbers[frameNumbers.length - 1] - frameNumbers[0] + 1) {
+        // fill in any blanks
+        let nextFrame;
+        let lastFrame;
+        for (let i = frameNumbers[0]; i < frameNumbers[frameNumbers.length - 1]; ++i) {
+          if (nextFrame && !frameNumbers.includes(i)) {
+            insertMissing(lastFrame, i);
+          } else {
+            lastFrame = i;
+          }
+          nextFrame = i + 1;
+        }
       }
-      previousFrame = thisFrame.toString().padStart(4, '0');
-      nextExpectedFrame = (+thisFrame + 1).toString().padStart(4, '0');
-    });
+    }
 
     const command = `"${ffmpegPath}"`;
     const args = [
