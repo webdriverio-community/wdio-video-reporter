@@ -13,8 +13,9 @@ const frameRegex = /^.*\/(\d{4})\.png$/;
 
 export default {
   sleep(ms) {
-    const stop = performance.now() + ms;
-    while(performance.now() < stop);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(1024)), 0, 0, ms);
+//    const stop = performance.now() + ms;
+//    while(performance.now() < stop);
   },
 
   setLogger(obj) {
@@ -144,6 +145,9 @@ export default {
           .reduce((acc, cur) => acc && cur > 48, true);
       }
     } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
+    if (new Date().getTime() >= abortTime && !(allExist && allGenerated)) {
+      writeLog(`abortTime exceeded while waiting for videos to exist.\n`);
+    }
   },
 
   waitForVideosToBeWritten(videos, abortTime) {
@@ -155,6 +159,7 @@ export default {
       try {
         let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
         allSizes = [...allSizes, currentSizes].slice(-3);
+        console.log('allSizes: ', allSizes);
 
         allConstant = allSizes.length === 3 && currentSizes
           .reduce((accOuter, curOuter) => accOuter && allSizes
@@ -162,7 +167,7 @@ export default {
               .map(v => v.size)
               .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
       } catch (e) {
-        writeLog(`Failed to process video ${JSON.stringify(e)}`);
+        writeLog(`Failed to process video ${JSON.stringify(e)}\n`);
       }
     } while(new Date().getTime() < abortTime && !allConstant);
   },

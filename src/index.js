@@ -212,6 +212,7 @@ export default class Video extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
+    helpers.debugLog(`starting onRunnerEnd\n`);
     let abortTimer;
     let started = false;
     const wrapItUp = () => {

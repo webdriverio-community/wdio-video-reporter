@@ -66,5 +66,8 @@ module.exports = {
     $: true,
     browser: true,
     Promise: true,
+    Atomics: true,
+    Int32Array: true,
+    SharedArrayBuffer: true,
   }
 }
