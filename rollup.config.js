@@ -13,7 +13,7 @@ const png = (options = {}) => {
     load(id) {
       if (filter(id) && extname(id) === '.png') {
         return `export default '${readFileSync(id, 'base64')}'`;
-      } 
+      }
     },
   };
 };
@@ -41,6 +41,7 @@ module.exports = {
     'system-sleep',
     'path',
     'child_process',
+    'glob',
   ],
 };
 

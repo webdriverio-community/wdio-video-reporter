@@ -59,6 +59,7 @@ export default class Video extends WdioReporter {
     this.sessionId;
     this.runnerInstance;
     this.intervalScreenshot = undefined;
+    this.allureVideos = [];
 
     helpers.setLogger(msg => this.write(msg));
   }
@@ -112,6 +113,18 @@ export default class Video extends WdioReporter {
 
     if(config.usingAllure) {
       process.on('exit', () => this.onExit.call(this));
+    }
+  }
+
+  onBeforeCommand () {
+    if (config.usingAllure) {
+      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+
+      if (!this.allureVideos.includes(videoPath)) {
+        this.allureVideos.push(videoPath);
+        helpers.debugLog(`Adding execution video attachment as ${videoPath}\n`);
+        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
+      }
     }
   }
 
@@ -212,7 +225,6 @@ export default class Video extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    helpers.debugLog(`starting onRunnerEnd\n`);
     let abortTimer;
     let started = false;
     const wrapItUp = () => {
@@ -232,11 +244,11 @@ export default class Video extends WdioReporter {
 
     Promise.all(this.videoPromises)
       .then(wrapItUp)
-      .catch(wrapItUp);
+      .catch((error) => {this.write(`onRunnerEnd promise resolution caught ${error}\n`); wrapItUp();});
 
 
     abortTimer = setTimeout(() => {
-      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up`);
+      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n`);
       wrapItUp();
     }, config.videoRenderTimeout*1000);
   }
@@ -272,16 +284,14 @@ export default class Video extends WdioReporter {
     const frame = this.frameNr++;
     const filePath = path.resolve(this.recordingPath, frame.toString().padStart(config.screenshotPaddingWidth, '0') + '.png');
 
-    try {
-      this.screenshotPromises.push(
-        browser.saveScreenshot(filePath).then(() => {
-          helpers.debugLog(`- Screenshot!! (frame: ${frame})\n`);
+    this.screenshotPromises.push(
+      browser.saveScreenshot(filePath)
+        .then(() => helpers.debugLog(`- Screenshot!! (frame: ${frame})\n`))
+        .catch((error) => {
+          fs.writeFile(filePath, notAvailableImage, 'base64');
+          helpers.debugLog(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`);
         })
-      );
-    } catch (e) {
-      fs.writeFile(filePath, notAvailableImage, 'base64');
-      helpers.debugLog('- Screenshot not available (frame: ${frame})...\n');
-    }
+    );
   }
 }
 

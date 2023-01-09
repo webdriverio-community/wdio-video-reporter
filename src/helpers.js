@@ -1,9 +1,7 @@
-import allureReporter from '@wdio/allure-reporter';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs-extra';
 import glob from 'glob';
-import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 
 import config from './config.js';
@@ -14,8 +12,6 @@ const frameRegex = /^.*\/(\d{4})\.png$/;
 export default {
   sleep(ms) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(1024)), 0, 0, ms);
-//    const stop = performance.now() + ms;
-//    while(performance.now() < stop);
   },
 
   setLogger(obj) {
@@ -64,37 +60,41 @@ export default {
     //send event to nice-html-reporter
     process.emit('test:video-capture', videoPath);
 
-    if (config.usingAllure) {
-      allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-    }
+    const globPromise = (pattern, options) => new Promise((resolve, reject) =>
+      glob(pattern, options, (err, files) => err === null ? resolve(files) : reject(err))
+    );
 
-    const frames = glob.sync(`${this.recordingPath}/*.png`);
+    const frameCheckPromise = globPromise(`${this.recordingPath}/*.png`)
+      .then(frames => {
+        const insertionPromises = [];
 
-    if (frames.length) {
-      const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
-      const pad = (frameNumber) => frameNumber.toString().padStart(4, '0');
-      const insertMissing = (sourceFrame, targetFrame) => {
-        const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
-        const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
-        const options = {overwrite: false};
-        writeLog(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...\n`);
-        fs.copySync(src, dest, options);
-      };
+        if (frames.length) {
+          const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
+          const pad = (frameNumber) => frameNumber.toString().padStart(4, '0');
+          const insertMissing = (sourceFrame, targetFrame) => {
+            const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
+            const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
+            const options = {overwrite: false};
+            writeLog(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...\n`);
+            insertionPromises.push(fs.copy(src, dest, options));
+          };
 
-      if (frameNumbers.length !== frameNumbers[frameNumbers.length - 1] - frameNumbers[0] + 1) {
-        // fill in any blanks
-        let nextFrame;
-        let lastFrame;
-        for (let i = frameNumbers[0]; i < frameNumbers[frameNumbers.length - 1]; ++i) {
-          if (nextFrame && !frameNumbers.includes(i)) {
-            insertMissing(lastFrame, i);
-          } else {
-            lastFrame = i;
+          if (frameNumbers.length !== frameNumbers[frameNumbers.length - 1] - frameNumbers[0] + 1) {
+            // fill in any blanks
+            let nextFrame;
+            let lastFrame;
+            for (let i = frameNumbers[0]; i < frameNumbers[frameNumbers.length - 1]; ++i) {
+              if (nextFrame && !frameNumbers.includes(i)) {
+                insertMissing(lastFrame, i);
+              } else {
+                lastFrame = i;
+              }
+              nextFrame = i + 1;
+            }
           }
-          nextFrame = i + 1;
         }
-      }
-    }
+        return Promise.all(insertionPromises);
+      });
 
     const command = `"${ffmpegPath}"`;
     const args = [
@@ -114,6 +114,7 @@ export default {
 
     const promise = Promise
       .all(this.screenshotPromises || [])
+      .then(() => frameCheckPromise)
       .then(() => new Promise((resolve) => {
         const cp = spawn(command, args, {
           stdio: 'ignore',
@@ -156,19 +157,14 @@ export default {
 
     do {
       this.sleep(100);
-      try {
         let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
         allSizes = [...allSizes, currentSizes].slice(-3);
-        console.log('allSizes: ', allSizes);
 
         allConstant = allSizes.length === 3 && currentSizes
           .reduce((accOuter, curOuter) => accOuter && allSizes
-              .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
-              .map(v => v.size)
-              .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
-      } catch (e) {
-        writeLog(`Failed to process video ${JSON.stringify(e)}\n`);
-      }
+            .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
+            .map(v => v.size)
+            .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
     } while(new Date().getTime() < abortTime && !allConstant);
   },
 
