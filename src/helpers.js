@@ -70,7 +70,7 @@ export default {
 
         if (frames.length) {
           const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
-          const pad = (frameNumber) => frameNumber.toString().padStart(4, '0');
+          const pad = (frameNumber) => frameNumber.toString().padStart(config.screenshotPaddingWidth, '0');
           const insertMissing = (sourceFrame, targetFrame) => {
             const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
             const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
