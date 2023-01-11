@@ -7,7 +7,7 @@ import { spawn } from 'child_process';
 import config from './config.js';
 
 let writeLog;
-const frameRegex = /^.*\/(\d{4})\.png$/;
+const frameRegex = new RegExp('^.*\\/(\\d\{' + config.screenshotPaddingWidth + '\})\\.png');
 
 export default {
   sleep(ms) {
