@@ -179,7 +179,7 @@ describe('Helpers - ', () => {
     });
 
     it('should skip calling ffmpeg if the frame search promise is rejected', async () => {
-      globMocks.glob = jest.fn((pattern, options, cb) => cb(new Error('failed to find frames')));
+      globMocks.glob = jest.fn((pattern, cb) => cb(new Error('failed to find frames')));
 
       await expect(helpers.generateVideo.call(video)).rejects.toThrow(Error);
       expect(videoPromiseResolved).toBeFalsy();
@@ -189,7 +189,7 @@ describe('Helpers - ', () => {
     describe('missing frame mitigation - ', () => {
       it('should not insert frames if all are present', async () => {
         video.recordingPath = '/path/to/output';
-        globMocks.glob = jest.fn((pattern, options, cb) => cb(null, [
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
           '/path/to/output/0000.png',
           '/path/to/output/0001.png',
           '/path/to/output/0002.png',
@@ -208,7 +208,7 @@ describe('Helpers - ', () => {
       it('should insert missing frames before calling ffmpeg', async () => {
         // should non-destructively copy 0003.png to replace the missing 0004.png
         video.recordingPath = '/path/to/output';
-        globMocks.glob = jest.fn((pattern, options, cb) => cb(null, [
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
           '/path/to/output/0000.png',
           '/path/to/output/0001.png',
           '/path/to/output/0002.png',
@@ -228,7 +228,7 @@ describe('Helpers - ', () => {
       it('should compensate for multiple missing frames before calling ffmpeg', async () => {
         // should non-destructively copy 0003.png to replace the missing 0004.png
         video.recordingPath = '/path/to/output';
-        globMocks.glob = jest.fn((pattern, options, cb) => cb(null, [
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
           '/path/to/output/0000.png',
           '/path/to/output/0001.png',
           '/path/to/output/0005.png',
@@ -250,7 +250,7 @@ describe('Helpers - ', () => {
       it('should disregard missing initial frames', async () => {
         // missing first frame doesn't affect ffmpeg
         video.recordingPath = '/path/to/output';
-        globMocks.glob = jest.fn((pattern, options, cb) => cb(null, [
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
           '/path/to/output/0003.png',
           '/path/to/output/0004.png',
           '/path/to/output/0005.png',
@@ -265,7 +265,7 @@ describe('Helpers - ', () => {
       it('should still fill gaps even when initial frames are missing', async () => {
         // missing first frame doesn't affect ffmpeg
         video.recordingPath = '/path/to/output';
-        globMocks.glob = jest.fn((pattern, options, cb) => cb(null, [
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
           '/path/to/output/0003.png',
           '/path/to/output/0004.png',
           '/path/to/output/0007.png',

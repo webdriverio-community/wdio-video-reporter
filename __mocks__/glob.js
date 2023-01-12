@@ -2,7 +2,7 @@ export let globMocks;
 
 export const resetGlobMocks = () => {
   globMocks = {
-    glob: jest.fn((pattern, options, cb) => cb(null, [])),
+    glob: jest.fn((pattern, cb) => cb(null, [])),
   }
 }
 

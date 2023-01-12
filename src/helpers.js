@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import glob from 'glob';
 import { spawn } from 'child_process';
+import util from 'util';
 
 import config from './config.js';
 
@@ -60,9 +61,7 @@ export default {
     //send event to nice-html-reporter
     process.emit('test:video-capture', videoPath);
 
-    const globPromise = (pattern, options) => new Promise((resolve, reject) =>
-      glob(pattern, options, (err, files) => err === null ? resolve(files) : reject(err))
-    );
+    const globPromise = util.promisify(glob);
 
     const frameCheckPromise = globPromise(`${this.recordingPath}/*.png`)
       .then(frames => {
