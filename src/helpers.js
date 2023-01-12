@@ -157,14 +157,14 @@ export default {
 
     do {
       this.sleep(100);
-        let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
-        allSizes = [...allSizes, currentSizes].slice(-3);
+      let currentSizes = videos.map(filename => ({filename, size: fs.statSync(filename).size}));
+      allSizes = [...allSizes, currentSizes].slice(-3);
 
-        allConstant = allSizes.length === 3 && currentSizes
-          .reduce((accOuter, curOuter) => accOuter && allSizes
-            .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
-            .map(v => v.size)
-            .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
+      allConstant = allSizes.length === 3 && currentSizes
+        .reduce((accOuter, curOuter) => accOuter && allSizes
+          .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
+          .map(v => v.size)
+          .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
     } while(new Date().getTime() < abortTime && !allConstant);
   },
 
