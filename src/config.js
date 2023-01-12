@@ -10,6 +10,8 @@ export default {
   outputDir: defaultOutputDir,
   allureOutputDir: 'allure-results',
 
+  // How many digits to zero-pad the screenshot file names by
+  // - 0001.png for the second frame by default
   screenshotPaddingWidth: 4,
 
   // Where to save screenshots
