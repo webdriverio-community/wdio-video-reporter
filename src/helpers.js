@@ -62,8 +62,6 @@ export default {
     //send event to nice-html-reporter
     process.emit('test:video-capture', videoPath);
 
-    const globPromise = util.promisify(glob);
-
     const frameCheckPromise = globPromise(`${this.recordingPath}/*.png`)
       .then(frames => {
         const insertionPromises = [];
