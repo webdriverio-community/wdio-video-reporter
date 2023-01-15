@@ -9,6 +9,7 @@ import config from './config.js';
 
 let writeLog;
 const frameRegex = new RegExp('^.*\\/(\\d\{' + config.screenshotPaddingWidth + '\})\\.png');
+const globPromise = util.promisify(glob);
 
 export default {
   sleep(ms) {
