@@ -1,18 +1,19 @@
-import allureReporter from '@wdio/allure-reporter';
 import { path as ffmpegPath} from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import fs from 'fs-extra';
-import { performance } from 'perf_hooks';
+import glob from 'glob';
 import { spawn } from 'child_process';
+import util from 'util';
 
 import config from './config.js';
 
 let writeLog;
+const frameRegex = new RegExp('^.*\\/(\\d\{' + config.screenshotPaddingWidth + '\})\\.png');
+const globPromise = util.promisify(glob);
 
 export default {
   sleep(ms) {
-    const stop = performance.now() + ms;
-    while(performance.now() < stop);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(1024)), 0, 0, ms);
   },
 
   setLogger(obj) {
@@ -61,9 +62,37 @@ export default {
     //send event to nice-html-reporter
     process.emit('test:video-capture', videoPath);
 
-    if (config.usingAllure) {
-      allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
-    }
+    const frameCheckPromise = globPromise(`${this.recordingPath}/*.png`)
+      .then(frames => {
+        const insertionPromises = [];
+
+        if (frames.length) {
+          const frameNumbers = frames.map((path) => +path.replace(frameRegex, '$1'));
+          const pad = (frameNumber) => frameNumber.toString().padStart(config.screenshotPaddingWidth, '0');
+          const insertMissing = (sourceFrame, targetFrame) => {
+            const src = `${this.recordingPath}/${pad(sourceFrame)}.png`;
+            const dest = `${this.recordingPath}/${pad(targetFrame)}.png`;
+            const options = {overwrite: false};
+            writeLog(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...\n`);
+            insertionPromises.push(fs.copy(src, dest, options));
+          };
+
+          if (frameNumbers.length !== frameNumbers[frameNumbers.length - 1] - frameNumbers[0] + 1) {
+            // fill in any blanks
+            let nextFrame;
+            let lastFrame;
+            for (let i = frameNumbers[0]; i < frameNumbers[frameNumbers.length - 1]; ++i) {
+              if (nextFrame && !frameNumbers.includes(i)) {
+                insertMissing(lastFrame, i);
+              } else {
+                lastFrame = i;
+              }
+              nextFrame = i + 1;
+            }
+          }
+        }
+        return Promise.all(insertionPromises);
+      });
 
     const command = `"${ffmpegPath}"`;
     const args = [
@@ -83,6 +112,7 @@ export default {
 
     const promise = Promise
       .all(this.screenshotPromises || [])
+      .then(() => frameCheckPromise)
       .then(() => new Promise((resolve) => {
         const cp = spawn(command, args, {
           stdio: 'ignore',
@@ -114,6 +144,9 @@ export default {
           .reduce((acc, cur) => acc && cur > 48, true);
       }
     } while (new Date().getTime() < abortTime && !(allExist && allGenerated));
+    if (new Date().getTime() >= abortTime && !(allExist && allGenerated)) {
+      writeLog(`abortTime exceeded while waiting for videos to exist.\n`);
+    }
   },
 
   waitForVideosToBeWritten(videos, abortTime) {
@@ -127,9 +160,9 @@ export default {
 
       allConstant = allSizes.length === 3 && currentSizes
         .reduce((accOuter, curOuter) => accOuter && allSizes
-            .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
-            .map(v => v.size)
-            .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
+          .reduce((accFilter, curFilter) => [...accFilter, curFilter.filter(v => v.filename === curOuter.filename).pop()], [])
+          .map(v => v.size)
+          .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true);
     } while(new Date().getTime() < abortTime && !allConstant);
   },
 

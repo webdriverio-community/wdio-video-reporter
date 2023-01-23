@@ -59,6 +59,7 @@ export default class Video extends WdioReporter {
     this.sessionId;
     this.runnerInstance;
     this.intervalScreenshot = undefined;
+    this.allureVideos = [];
 
     helpers.setLogger(msg => this.write(msg));
   }
@@ -115,6 +116,18 @@ export default class Video extends WdioReporter {
     }
   }
 
+  onBeforeCommand () {
+    if (config.usingAllure) {
+      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+
+      if (!this.allureVideos.includes(videoPath)) {
+        this.allureVideos.push(videoPath);
+        helpers.debugLog(`Adding execution video attachment as ${videoPath}\n`);
+        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
+      }
+    }
+  }
+
   /**
    * Save screenshot or add not available image movie stills
    */
@@ -154,6 +167,12 @@ export default class Video extends WdioReporter {
    */
   onTestStart (test) {
     this.framework.onTestStart.call(this, test);
+
+    // Create the report directory, if it does not exists
+    if (!fs.existsSync(this.recordingPath)) {
+      helpers.debugLog(`Creating: ${this.recordingPath}, as it not exists...\n`);
+      fs.mkdirsSync(this.recordingPath);
+    }
 
     if (config.screenshotIntervalSecs) {
       const instance = this;
@@ -225,11 +244,11 @@ export default class Video extends WdioReporter {
 
     Promise.all(this.videoPromises)
       .then(wrapItUp)
-      .catch(wrapItUp);
+      .catch((error) => {this.write(`onRunnerEnd promise resolution caught ${error}\n`); wrapItUp();});
 
 
     abortTimer = setTimeout(() => {
-      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up`);
+      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n`);
       wrapItUp();
     }, config.videoRenderTimeout*1000);
   }
@@ -263,24 +282,16 @@ export default class Video extends WdioReporter {
 
   addFrame () {
     const frame = this.frameNr++;
-    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(4, '0') + '.png');
+    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(config.screenshotPaddingWidth, '0') + '.png');
 
-    // Create the report directory, if it does not exists
-    if (!fs.existsSync(this.recordingPath)) {
-      helpers.debugLog(`Creating: ${this.recordingPath}, as it not exists...\n`);
-      fs.mkdirsSync(this.recordingPath);
-    }
-
-    try {
-      this.screenshotPromises.push(
-        browser.saveScreenshot(filePath).then(() => {
-          helpers.debugLog(`- Screenshot!! (frame: ${frame})\n`);
+    this.screenshotPromises.push(
+      browser.saveScreenshot(filePath)
+        .then(() => helpers.debugLog(`- Screenshot!! (frame: ${frame})\n`))
+        .catch((error) => {
+          fs.writeFile(filePath, notAvailableImage, 'base64');
+          helpers.debugLog(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`);
         })
-      );
-    } catch (e) {
-      fs.writeFile(filePath, notAvailableImage, 'base64');
-      helpers.debugLog('- Screenshot not available (frame: ${frame})...\n');
-    }
+    );
   }
 }
 

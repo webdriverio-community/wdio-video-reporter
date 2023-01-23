@@ -2,6 +2,7 @@ export let fsMocks;
 
 export const resetFsMocks = () => {
   fsMocks = {
+    copy: jest.fn(),
     copySync: jest.fn(),
     removeSync: jest.fn(),
     writeFile: jest.fn(),
@@ -22,6 +23,7 @@ export const resetFsMocks = () => {
 resetFsMocks();
 
 export default {
+  copy(...args) { fsMocks.copy(...args); },
   copySync(...args) { fsMocks.copySync(...args); },
   removeSync(...args) { fsMocks.removeSync(...args); },
   existsSync(...args) { return fsMocks.existsSync(...args); },

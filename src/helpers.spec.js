@@ -2,13 +2,12 @@
  * All externals have basic mocks in folder `./__mocks__`
  */
 
-import {allureMocks} from '@wdio/allure-reporter';
 import {cpMocks} from 'child_process';
 import {fsMocks, resetFsMocks} from 'fs-extra';
+import {globMocks, resetGlobMocks} from 'glob';
 
 import helpers from './helpers.js';
 import * as configModule from './config.js';
-import { performance } from 'perf_hooks';
 
 const originalSleep = helpers.sleep;
 const originalConfig = JSON.parse(JSON.stringify(configModule.default));
@@ -35,6 +34,7 @@ describe('Helpers - ', () => {
 
   beforeEach(() => {
     resetFsMocks();
+    resetGlobMocks();
     helpers.setLogger(logger);
     Object.keys(configModule.default).forEach((key) => {
       configModule.default[key] = originalConfig[key];
@@ -47,26 +47,14 @@ describe('Helpers - ', () => {
   });
 
   describe('sleep - ', () => {
-    const realPerformanceNow = performance.now;
-
-    beforeEach(() => {
-      helpers.sleep = originalSleep;
-      performance.now = jest.fn()
-        .mockReturnValueOnce(2200)  // called once to configure the stop time
-        .mockReturnValueOnce(2200)  // then in a loop until ms has elapsed
-        .mockReturnValueOnce(2240)
-        .mockReturnValueOnce(2280)
-        .mockReturnValueOnce(2320)
-        .mockReturnValueOnce(2360)
-        .mockReturnValueOnce(2400);
-    });
-    afterEach(() => {
-      performance.now = realPerformanceNow;
-    });
-
     it('should sleep until requested time has passed', () => {
-      helpers.sleep(100);
-      expect(performance.now).toHaveBeenCalledTimes(5);
+      helpers.sleep = originalSleep;
+      jest.spyOn(Atomics, 'wait').mockReturnValue('timed-out');
+
+      helpers.sleep(501);
+
+      expect(Atomics.wait).toHaveBeenCalledTimes(1);
+      expect(Atomics.wait.mock.calls[0][3]).toBe(501);
     });
   });
 
@@ -156,6 +144,7 @@ describe('Helpers - ', () => {
   describe('generateVideo - ', () => {
     let video;
     let videoPromiseResolved;
+
     beforeEach(() => {
       video = new Video();
       video.testname = 'TEST';
@@ -168,23 +157,12 @@ describe('Helpers - ', () => {
           cb();
         }
       }});
+      fsMocks.copy = jest.fn();
     });
 
-    it('should not add video attachment placeholder to Allure, if not using Allure', () => {
-      helpers.generateVideo.call(video);
-      expect(allureMocks.addAttachment).not.toHaveBeenCalled();
-    });
-
-    it('should add video attachment placeholder to Allure, if using Allure', () => {
-      allureMocks.addAttachment = jest.fn();
-      config.usingAllure = true;
-      helpers.generateVideo.call(video);
-      expect(allureMocks.addAttachment).toHaveBeenCalled();
-    });
-
-    it('should type ffmpeg command to log', () => {
+    it('should type ffmpeg command to log', async () => {
       config.debugMode = true;
-      helpers.generateVideo.call(video);
+      await helpers.generateVideo.call(video);
       expect(logger.mock.calls[0][0].includes('ffmpeg command')).toBeTruthy();
     });
 
@@ -199,8 +177,111 @@ describe('Helpers - ', () => {
 
       expect(videoPromiseResolved).toBeTruthy();
     });
-  });
 
+    it('should skip calling ffmpeg if the frame search promise is rejected', async () => {
+      globMocks.glob = jest.fn((pattern, cb) => cb(new Error('failed to find frames')));
+
+      await expect(helpers.generateVideo.call(video)).rejects.toThrow(Error);
+      expect(videoPromiseResolved).toBeFalsy();
+      expect(cpMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    describe('missing frame mitigation - ', () => {
+      it('should not insert frames if all are present', async () => {
+        video.recordingPath = '/path/to/output';
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
+          '/path/to/output/0000.png',
+          '/path/to/output/0001.png',
+          '/path/to/output/0002.png',
+          '/path/to/output/0003.png',
+          '/path/to/output/0004.png',
+          '/path/to/output/0005.png',
+          '/path/to/output/0006.png',
+        ]));
+
+        await helpers.generateVideo.call(video);
+
+        expect(fsMocks.copy).not.toHaveBeenCalled();
+        expect(logger.mock.calls.length).toBe(0);
+      });
+
+      it('should insert missing frames before calling ffmpeg', async () => {
+        // should non-destructively copy 0003.png to replace the missing 0004.png
+        video.recordingPath = '/path/to/output';
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
+          '/path/to/output/0000.png',
+          '/path/to/output/0001.png',
+          '/path/to/output/0002.png',
+          '/path/to/output/0003.png',
+          '/path/to/output/0005.png',
+          '/path/to/output/0006.png',
+        ]));
+
+        await helpers.generateVideo.call(video);
+
+        expect(fsMocks.copy).toHaveBeenCalledTimes(1);
+        expect(fsMocks.copy.mock.calls[0][0]).toBe('/path/to/output/0003.png');
+        expect(fsMocks.copy.mock.calls[0][1]).toBe('/path/to/output/0004.png');
+        expect(logger.mock.calls.length).toBe(1);
+      });
+
+      it('should compensate for multiple missing frames before calling ffmpeg', async () => {
+        // should non-destructively copy 0003.png to replace the missing 0004.png
+        video.recordingPath = '/path/to/output';
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
+          '/path/to/output/0000.png',
+          '/path/to/output/0001.png',
+          '/path/to/output/0005.png',
+          '/path/to/output/0006.png',
+        ]));
+
+        await helpers.generateVideo.call(video);
+
+        expect(fsMocks.copy).toHaveBeenCalledTimes(3);
+        expect(fsMocks.copy.mock.calls[0][0]).toBe('/path/to/output/0001.png');
+        expect(fsMocks.copy.mock.calls[0][1]).toBe('/path/to/output/0002.png');
+        expect(fsMocks.copy.mock.calls[1][0]).toBe('/path/to/output/0001.png');
+        expect(fsMocks.copy.mock.calls[1][1]).toBe('/path/to/output/0003.png');
+        expect(fsMocks.copy.mock.calls[2][0]).toBe('/path/to/output/0001.png');
+        expect(fsMocks.copy.mock.calls[2][1]).toBe('/path/to/output/0004.png');
+        expect(logger.mock.calls.length).toBe(3);
+      });
+
+      it('should disregard missing initial frames', async () => {
+        // missing first frame doesn't affect ffmpeg
+        video.recordingPath = '/path/to/output';
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
+          '/path/to/output/0003.png',
+          '/path/to/output/0004.png',
+          '/path/to/output/0005.png',
+        ]));
+
+        await helpers.generateVideo.call(video);
+
+        expect(fsMocks.copy).not.toHaveBeenCalled();
+        expect(logger.mock.calls.length).toBe(0);
+      });
+
+      it('should still fill gaps even when initial frames are missing', async () => {
+        // missing first frame doesn't affect ffmpeg
+        video.recordingPath = '/path/to/output';
+        globMocks.glob = jest.fn((pattern, cb) => cb(null, [
+          '/path/to/output/0003.png',
+          '/path/to/output/0004.png',
+          '/path/to/output/0007.png',
+        ]));
+
+        await helpers.generateVideo.call(video);
+
+        expect(fsMocks.copy).toHaveBeenCalledTimes(2);
+        expect(fsMocks.copy.mock.calls[0][0]).toBe('/path/to/output/0004.png');
+        expect(fsMocks.copy.mock.calls[0][1]).toBe('/path/to/output/0005.png');
+        expect(fsMocks.copy.mock.calls[1][0]).toBe('/path/to/output/0004.png');
+        expect(fsMocks.copy.mock.calls[1][1]).toBe('/path/to/output/0006.png');
+        expect(logger.mock.calls.length).toBe(2);
+      });
+    });
+  });
 
   describe('waitForVideos - ', () => {
     let videos = [
