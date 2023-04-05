@@ -118,12 +118,12 @@ export default class Video extends WdioReporter {
 
   onBeforeCommand () {
     if (config.usingAllure) {
-      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+      const videoPath = helpers.getVideoPath(this.testname);
 
       if (!this.allureVideos.includes(videoPath)) {
         this.allureVideos.push(videoPath);
         helpers.debugLog(`Adding execution video attachment as ${videoPath}\n`);
-        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
+        allureReporter.addAttachment('Execution video', videoPath, helpers.getVideoFileContentType());
       }
     }
   }
@@ -193,7 +193,7 @@ export default class Video extends WdioReporter {
   }
 
   /**
-   * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
+   * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {
     if (this.intervalScreenshot) {

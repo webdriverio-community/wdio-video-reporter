@@ -11,7 +11,7 @@ let writeLog;
 const frameRegex = new RegExp('^.*\\/(\\d\{' + config.screenshotPaddingWidth + '\})\\.png');
 const globPromise = util.promisify(glob);
 
-export default {
+const helpers = {
   sleep(ms) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(1024)), 0, 0, ms);
   },
@@ -55,8 +55,42 @@ export default {
     return filename;
   },
 
+
+  getVideoFileExtension() {
+      return this.getVideoFormatSettings().fileExtension;
+  },
+
+  getVideoFileContentType() {
+      return this.getVideoFormatSettings().contentType;
+  },
+
+  getVideoPath(testname) {
+      return path.resolve(config.outputDir, testname + this.getVideoFileExtension());
+  },
+  getVideoFormatSettings() {
+    return this.supportedVideoFormats[config.videoFormat] || this.supportedVideoFormats.default;
+  },
+
+  supportedVideoFormats: {
+      mp4: {
+        fileExtension: '.mp4',
+        contentType: 'video/mp4',
+        vcodec: 'libx264',
+      },
+      webm: {
+        fileExtension: '.webm',
+        contentType: 'video/webm',
+        vcodec: 'libvpx-vp9',
+      },
+      default: {
+        fileExtension: '.mp4',
+        contentType: 'video/mp4',
+        vcodec: 'libx264',
+      },
+  },
+
   async generateVideo() {
-    const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+    const videoPath = helpers.getVideoPath(this.testname);
     this.videos.push(videoPath);
 
     //send event to nice-html-reporter
@@ -99,7 +133,7 @@ export default {
       '-y',
       '-r', '10',
       '-i', `"${this.recordingPath}/%04d.png"`,
-      '-vcodec', 'libx264',
+      '-vcodec', helpers.getVideoFormatSettings().vcodec,
       '-crf', '32',
       '-pix_fmt', 'yuv420p',
       '-vf', `"scale=${config.videoScale}","setpts=${config.videoSlowdownMultiplier}.0*PTS"`,
@@ -173,3 +207,6 @@ export default {
     return currentCapabilities;
   },
 };
+
+
+export default helpers;
