@@ -1,8 +1,9 @@
 {
-  "name": "wdio-video-reporter",
-  "version": "3.5.0",
+  "name": "@mbikola/wdio-video-reporter",
+  "version": "3.6.0",
   "description": "Makes videos of failed tests and has optional allure integration",
-  "main": "dist/wdio-video-reporter.js",
+  "main": "dist/wdio-video-reporter.cjs",
+  "module": "dist/wdio-video-reporter.mjs",
   "scripts": {
     "prebuild": "npm run lint && npm run testcov",
     "build": "rollup -c rollup.config.js",

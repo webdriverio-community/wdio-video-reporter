@@ -20,16 +20,25 @@ const png = (options = {}) => {
 
 module.exports = {
   input: 'src/index.js',
-  output: {
-    name: 'VideoRecorder',
-    file: 'dist/wdio-video-reporter.js',
-    format: 'cjs',
-    sourcemap: true,
-  },
+  output: [
+    {
+      name: 'VideoRecorder',
+      file: 'dist/wdio-video-reporter.cjs',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    {
+      name: 'VideoRecorder',
+      file: 'dist/wdio-video-reporter.mjs',
+      format: 'es',
+      sourcemap: true,
+    },
+  ],
   plugins: [
     png(),
     resolve({
       modulesOnly: true,
+      preferBuiltins: true,
     }),
   ],
   external: [
@@ -42,6 +51,7 @@ module.exports = {
     'path',
     'child_process',
     'glob',
+    'util',
   ],
 };
 
