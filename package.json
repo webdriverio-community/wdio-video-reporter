@@ -1,6 +1,6 @@
 {
   "name": "@mbikola/wdio-video-reporter",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.cjs",
   "module": "dist/wdio-video-reporter.mjs",
