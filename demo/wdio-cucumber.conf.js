@@ -1,15 +1,4 @@
-require('@babel/register')({
-  presets: [[
-    '@babel/preset-env',
-    { targets: { node: 8 } },
-  ]],
-  babelrc: false,
-});
-
-// Import like this:
-// const video = require('wdio-video-reporter');
-// But for this demo:
-const video = require('../dist/wdio-video-reporter.js');
+import video from'../dist/wdio-video-reporter.mjs';
 
 const config = {
   // Setup the browser window
@@ -99,7 +88,5 @@ const config = {
   },
 };
 
-module.exports = {
-  config,
-};
+export{config};
 

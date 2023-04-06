@@ -36,6 +36,7 @@ export default class Video extends WdioReporter {
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoScale = options.videoScale || config.videoScale;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
+    config.videoFormat = options.videoFormat || config.videoFormat;
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
     config.recordAllActions = options.recordAllActions || false;

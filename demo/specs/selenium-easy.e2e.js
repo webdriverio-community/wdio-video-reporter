@@ -1,51 +1,49 @@
 describe('User interactions', () => {
-  beforeEach(() => {
-    browser.url('http://www.seleniumeasy.com/test/');
-    const lightbox = '#at-cv-lightbox-close';
+  beforeEach(async() => {
+    await browser.url('https://demo.seleniumeasy.com');
+    const basicExampleButton = await $('#btn_basic_example');
     try {
-      browser.pause(500); // avoid animation effect
-      $(lightbox).waitForExist({ timeout: 2000 });
-      browser.pause(500); // avoid animation effect
-      if ($(lightbox).isExisting()) {
-        $(lightbox).click();
+      await browser.pause(500); // avoid animation effect
+      await $(basicExampleButton).waitForExist({ timeout: 2000 });
+      await browser.pause(500); // avoid animation effect
+      if (await $(basicExampleButton).isExisting()) {
+        await $(basicExampleButton).click();
       }
     } catch(_) {
-      // Didnt get random interupting popup
+      // Didnt get random interrupting popup
     }
   });
 
-  it ('should be able to edit input (should pass)', () => {
-    $('#btn_basic_example').click();
-    browser.pause(300); // avoid animation effect
+  it ('should be able to edit input (should pass)', async() => {
+    await browser.pause(300); // avoid animation effect
+    await $('.list-group-item[href*="basic-first-form-demo"]').click();
 
-    $('.list-group-item[href*="basic-first-form-demo"]').click();
+    await $('form #user-message').setValue('Presidenten');
+    await $('form .btn').click();
+    //$('#get-input button').click();
 
-    $('#get-input input').setValue('Presidenten');
-    $('#get-input button').click();
-    $('#get-input button').click();
-
-    const name = $('#user-message #display').getText();
+    const name = await $('#user-message #display').getText();
 
     expect(name).toBe('Presidenten');
   });
 
-  it('should be able to move slider (fails by design to gen video)', () => {
-    $('#advanced_example').click();
-    browser.pause(300); // avoid animation effect
-    $('.list-group-item[href*="drag-drop-range"]').click();
+  it('should be able to move slider (fails by design to gen video)', async() => {
+    await $('#advanced_example').click();
+    await browser.pause(300); // avoid animation effect
+    await $('.list-group-item[href*="drag-drop-range"]').click();
 
-    $('#slider1 input').click();
+    await $('#slider1 input').click();
 
-    const range = $('#slider1 #range').getText();
+    const range = await $('#slider1 #range').getText();
     expect(range).toBe(30);
   });
 
-  it('should be able to multi-select in dropdown (fails by design to gen video)', () => {
-    $('#btn_basic_example').click();
-    browser.pause(300); // avoid animation effect
+  it('should be able to multi-select in dropdown (fails by design to gen video)', async() => {
+    //await $('#btn_basic_example').click();
+    await browser.pause(300); // avoid animation effect
 
-    $('.list-group-item[href^="./basic-select-dropdown"]').click();
-    browser.execute(function() { document.querySelector('#multi-select').scrollIntoView(true); });
+    await $('.list-group-item[href^="./basic-select-dropdown"]').click();
+    await browser.execute(function() { document.querySelector('#multi-select').scrollIntoView(true); });
 
     const isDevice = browser.capabilities.deviceType;
     let modifierKey = 'Control';
@@ -55,21 +53,21 @@ describe('User interactions', () => {
         modifierKey = 'Meta';
       }
 
-      browser.keys(modifierKey);
+      await browser.keys(modifierKey);
     }
 
-    browser.execute(function() { document.querySelector('#multi-select').scrollIntoView(true); });
-    $('select#multi-select option[value="Florida"]').click();
-    $('select#multi-select option[value="Ohio"]').click();
-    $('select#multi-select option[value="Texas"]').click();
+    await browser.execute(function() { document.querySelector('#multi-select').scrollIntoView(true); });
+    await $('select#multi-select option[value="Florida"]').click();
+    await $('select#multi-select option[value="Ohio"]').click();
+    await $('select#multi-select option[value="Texas"]').click();
 
     if (!isDevice) {
-      browser.keys(modifierKey);
+      await browser.keys(modifierKey);
     }
 
-    $('button#printAll').click();
-    browser.pause(300);
-    const values = $('.getall-selected').getText();
+    await $('button#printAll').click();
+    await browser.pause(300);
+    const values = await $('.getall-selected').getText();
     expect(values.includes('Florida')).toBe(true);
     expect(values.includes('Ohio')).toBe(true);
     expect(values.includes('Texas')).toBe(true);
@@ -80,22 +78,22 @@ describe('User interactions', () => {
 
 
 describe('Reporter bug fixes (should pass)', () => {
-  beforeEach(() => {
-    browser.url('https://www.seleniumeasy.com/test/javascript-alert-box-demo.html');
+  beforeEach(async() => {
+    await browser.url('https://demo.seleniumeasy.com/javascript-alert-box-demo.html');
     const lightbox = '#at-cv-lightbox-close';
     try {
-      $(lightbox).waitForExist({ timeout: 500 });
-      browser.pause(500); // avoid animation effect
-      $(lightbox).click();
+      await $(lightbox).waitForExist({ timeout: 500 });
+      await browser.pause(500); // avoid animation effect
+      await $(lightbox).click();
     } catch(_) {
-      // Didnt get random interupting popup
+      // Didnt get random interrupting popup
     }
   });
 
-  it('should handle modals blocking screenshots', () => {
-    $('button.btn.btn-default').click();
-    browser.pause(300);
-    $('button.btn.btn-default.btn-lg').click();
-    browser.pause(300);
+  it('should handle modals blocking screenshots', async() => {
+    await $('button.btn.btn-default').click();
+    await browser.pause(300);
+    await $('button.btn.btn-default.btn-lg').click();
+    await browser.pause(300);
    });
 });

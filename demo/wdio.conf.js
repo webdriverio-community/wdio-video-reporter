@@ -1,15 +1,5 @@
-require('@babel/register')({
-  presets: [[
-    '@babel/preset-env',
-    { targets: { node: 8 } },
-  ]],
-  babelrc: false,
-});
-
-// Import like this:
-// const video = require('wdio-video-reporter');
-// But for this demo:
-const video = require('../dist/wdio-video-reporter.js');
+import video from '../dist/wdio-video-reporter.mjs';
+import path from 'path'
 
 const config = {
   // Setup the browser window
@@ -22,7 +12,7 @@ const config = {
   // Custom settings
   // ===============
   logLevel: 'info', // trace | debug | info | warn | error | silent
-  outputDir: './_results_',
+  outputDir: path.join(process.cwd(), `./_results_`),
   reporters: [
     'spec',
     [video, {
@@ -51,11 +41,11 @@ const config = {
       browserName: 'chrome',
       acceptInsecureCerts : true,
     },
-    {
+/*    {
       maxInstances: 1,
       browserName: 'firefox',
       acceptInsecureCerts : true,
-    },
+    },*/
   ],
 
 
@@ -68,7 +58,6 @@ const config = {
   ],
   deprecationWarnings: true,
   maxInstances: 10,
-  sync: true,
   coloredLogs: true,
   bail: 1,
   waitforTimeout: 10000,
@@ -80,7 +69,5 @@ const config = {
   },
 };
 
-module.exports = {
-  config,
-};
+export {config};
 

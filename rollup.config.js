@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { extname } from 'path';
 import { createFilter } from 'rollup-pluginutils';
 import resolve from 'rollup-plugin-node-resolve';
+import del from 'rollup-plugin-delete';
 
 /**
  * Transform imports of pngs to base64
@@ -41,6 +42,7 @@ module.exports = {
     },
   ],
   plugins: [
+    del({targets: "dist/*"}),
     png(),
     resolve({
       modulesOnly: true,
