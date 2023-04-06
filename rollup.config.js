@@ -29,6 +29,12 @@ module.exports = {
     },
     {
       name: 'VideoRecorder',
+      file: 'dist/wdio-video-reporter.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+    {
+      name: 'VideoRecorder',
       file: 'dist/wdio-video-reporter.mjs',
       format: 'es',
       sourcemap: true,
