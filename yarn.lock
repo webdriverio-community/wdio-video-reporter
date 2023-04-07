@@ -1476,7 +1476,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@wdio/allure-reporter@^8":
+"@wdio/allure-reporter@^8.7.0":
   version "8.7.0"
   resolved "https://registry.yarnpkg.com/@wdio/allure-reporter/-/allure-reporter-8.7.0.tgz#675467a07ad1edee66adb5b8e7dfb36e9a5045b2"
   integrity sha512-v1XPuF+3mR3c7dQ6Wfu/o0WvzZij14sc0xenZw59hc5ERZkVxlYtKNbXpdt0gAt7HIrXf74pZPxexBwN4X52Rg==
@@ -1498,7 +1498,7 @@
     loglevel-plugin-prefix "^0.8.4"
     strip-ansi "^6.0.0"
 
-"@wdio/reporter@8.7.0", "@wdio/reporter@^8":
+"@wdio/reporter@8.7.0", "@wdio/reporter@^8.7.0":
   version "8.7.0"
   resolved "https://registry.yarnpkg.com/@wdio/reporter/-/reporter-8.7.0.tgz#6e2461d425d7d7647524517ab73276862bb7aa69"
   integrity sha512-jvmWKBUpcoO/6t8/OphqH0OSHaTIF2GgpFOOoQmFKoWImAyrE4Gtx6Yanq+Hj9+8ny3KHLOoswqCfKr1j5oYkQ==
@@ -2798,7 +2798,7 @@ eslint-visitor-keys@^3.3.0, eslint-visitor-keys@^3.4.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-3.4.0.tgz#c7f0f956124ce677047ddbc192a68f999454dedc"
   integrity sha512-HPpKPUBQcAsZOsHAFwTtIKcYlCje62XB7SEAcxjtmW6TD1WVpkS6i6/hOVtTZIl4zGj/mBqpFVGvaDneik+VoQ==
 
-eslint@^8:
+eslint@^8.37.0:
   version "8.37.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.37.0.tgz#1f660ef2ce49a0bfdec0b0d698e0b8b627287412"
   integrity sha512-NU3Ps9nI05GUoVMxcZx1J8CNR6xOvUT4jAUMH5+z8lpp3aEdPVCImKw6PWG4PY+Vfkpr+jvMpxs/qoE7wq0sPw==
