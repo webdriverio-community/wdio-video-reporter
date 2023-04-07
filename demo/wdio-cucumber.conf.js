@@ -1,3 +1,6 @@
+// Import like this:
+// import video from 'wdio-video-reporter';
+// But for this demo:
 import video from'../dist/wdio-video-reporter.mjs';
 
 export const config = {
