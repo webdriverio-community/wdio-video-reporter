@@ -14,7 +14,7 @@
   "author": "",
   "license": "MIT",
   "type": "module",
-"dependencies": {
+  "dependencies": {
     "@wdio/cucumber-framework": "^8.6.2",
     "chai": "^4.3.4",
     "cucumber": "^6.0.5"
