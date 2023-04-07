@@ -516,18 +516,6 @@ describe('wdio-video-recorder - ', () => {
 
       video.onBeforeCommand();
       expect(allureMocks.addAttachment).toHaveBeenCalledTimes(1);
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
-    });
-
-    it('should add a video(webm) attachment placeholder to Allure, if using Allure', async () => {
-      allureMocks.addAttachment = jest.fn();
-      configModule.default.usingAllure = true;
-      let video = new Video(options);
-      video.config.videoFormat = 'webm'
-      video.testname = 'first-test';
-
-      video.onBeforeCommand();
-      expect(allureMocks.addAttachment).toHaveBeenCalledTimes(1);
       expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.webm', 'video/webm');
     });
 
@@ -535,32 +523,6 @@ describe('wdio-video-recorder - ', () => {
       allureMocks.addAttachment = jest.fn();
       configModule.default.usingAllure = true;
       let video = new Video(options);
-      video.testname = 'first-test';
-
-      video.onBeforeCommand();
-      video.onBeforeCommand();
-      video.onBeforeCommand();
-
-      video.testname = 'second-test';
-      video.onBeforeCommand();
-      video.onBeforeCommand();
-
-      video.testname = 'third-test';
-      video.onBeforeCommand();
-      video.onBeforeCommand();
-      video.onBeforeCommand();
-
-      expect(allureMocks.addAttachment).toHaveBeenCalledTimes(3);
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/second-test.mp4', 'video/mp4');
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/third-test.mp4', 'video/mp4');
-    });
-
-    it('should only add a video(webm) attachment once for each test', async () => {
-      allureMocks.addAttachment = jest.fn();
-      configModule.default.usingAllure = true;
-      let video = new Video(options);
-      video.config.videoFormat = 'webm'
       video.testname = 'first-test';
 
       video.onBeforeCommand();
@@ -1013,8 +975,7 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onRunnerEnd - ', () => {
-    const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
-    const webmVideos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
+    const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
 
     beforeEach(() => {
       resetFsMocks();
@@ -1039,49 +1000,9 @@ describe('wdio-video-recorder - ', () => {
       expect(video.isDone).toBeTruthy();
     });
 
-    it('should wait for videos(webm) to render', async () => {
-      let video = new Video(options);
-      video.videos = webmVideos;
-      let resolve;
-      const videoDonePromise = new Promise((res) => {
-        resolve = res;
-      });
-      video.videoPromises.push(videoDonePromise);
-      video.onRunnerEnd();
-
-      expect(video.isDone).toBeFalsy();
-
-      resolve();
-      await flushPromises();
-
-      expect(video.isDone).toBeTruthy();
-    });
-
     it('should abort wait after configured videoRenderTimeout seconds', async () => {
       let video = new Video(options);
       video.videos = videos;
-
-      const videoDonePromiseThatNeverResolves = new Promise(() => {
-      });
-      video.videoPromises.push(videoDonePromiseThatNeverResolves);
-      video.onRunnerEnd();
-
-      expect(video.isDone).toBeFalsy();
-
-      jest.advanceTimersByTime(video.config.videoRenderTimeout * 1000 - 1);
-      await flushPromises();
-
-      expect(video.isDone).toBeFalsy();
-
-      jest.advanceTimersByTime(1);
-      await flushPromises();
-
-      expect(video.isDone).toBeTruthy();
-    });
-
-    it('should abort wait after configured videoRenderTimeout seconds(webm)', async () => {
-      let video = new Video(options);
-      video.videos = webmVideos;
 
       const videoDonePromiseThatNeverResolves = new Promise(() => {
       });
@@ -1188,7 +1109,7 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onExit - ', () => {
-    const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
+    const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
     let originalDate = Date;
     let currentTime = 0;
 
@@ -1246,8 +1167,8 @@ describe('wdio-video-recorder - ', () => {
 
       video.onExit();
 
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.webm', 'outputDir/allureDir/MOCK-ALLURE-2.webm');
     });
 
     it('should not try to copy missing files to Allure', () => {
@@ -1259,12 +1180,12 @@ describe('wdio-video-recorder - ', () => {
 
       video.onExit();
 
-      expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
+      expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
     });
 
     it('should update Allure report if Allure is present with correct browser videos', () => {
-      const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4',
-        'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
+      const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm',
+        'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.webm', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.webm'];
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1273,8 +1194,8 @@ describe('wdio-video-recorder - ', () => {
       video.onExit();
 
       expect(fsMocks.copySync.mock.calls.length).toBe(2);
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.webm', 'outputDir/allureDir/MOCK-ALLURE-2.webm');
     });
   });
 

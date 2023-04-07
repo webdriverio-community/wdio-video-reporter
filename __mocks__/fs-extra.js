@@ -9,13 +9,13 @@ export const resetFsMocks = () => {
     existsSync: jest.fn().mockReturnValue('MOCK'),
     mkdirsSync: jest.fn(),
     readFileSync: jest.fn()
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.mp4')
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.mp4')
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.mp4')
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.mp4')
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.mp4')
-      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.mp4'),
-    readdirSync: jest.fn().mockReturnValue(['MOCK-ALLURE-1.mp4', 'MOCK-ALLURE-2.mp4']),
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.webm')
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.webm')
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-1.webm')
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.webm')
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.webm')
+      .mockReturnValueOnce('outputDir/MOCK-VIDEO-2.webm'),
+    readdirSync: jest.fn().mockReturnValue(['MOCK-ALLURE-1.webm', 'MOCK-ALLURE-2.webm']),
     statSync: jest.fn().mockReturnValue(({ size: 128 })),
   };
 };
