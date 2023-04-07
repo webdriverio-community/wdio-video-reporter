@@ -19,6 +19,7 @@ const config = {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering
+      videoFormat: 'webm'
     }],
     ['allure', {
       outputDir: './_results_/allure-raw',

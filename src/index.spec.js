@@ -516,7 +516,7 @@ describe('wdio-video-recorder - ', () => {
 
       video.onBeforeCommand();
       expect(allureMocks.addAttachment).toHaveBeenCalledTimes(1);
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.webm', 'video/webm');
     });
 
     it('should only add a video attachment once for each test', async () => {
@@ -539,9 +539,9 @@ describe('wdio-video-recorder - ', () => {
       video.onBeforeCommand();
 
       expect(allureMocks.addAttachment).toHaveBeenCalledTimes(3);
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/second-test.mp4', 'video/mp4');
-      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/third-test.mp4', 'video/mp4');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.webm', 'video/webm');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/second-test.webm', 'video/webm');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/third-test.webm', 'video/webm');
     });
 
     it('should not add video attachment placeholders to Allure, if not using Allure', async () => {
@@ -975,7 +975,7 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onRunnerEnd - ', () => {
-    const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
+    const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
 
     beforeEach(() => {
       resetFsMocks();
@@ -1109,7 +1109,7 @@ describe('wdio-video-recorder - ', () => {
   });
 
   describe('onExit - ', () => {
-    const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
+    const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
     let originalDate = Date;
     let currentTime = 0;
 
@@ -1167,8 +1167,8 @@ describe('wdio-video-recorder - ', () => {
 
       video.onExit();
 
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.webm', 'outputDir/allureDir/MOCK-ALLURE-2.webm');
     });
 
     it('should not try to copy missing files to Allure', () => {
@@ -1180,12 +1180,12 @@ describe('wdio-video-recorder - ', () => {
 
       video.onExit();
 
-      expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
+      expect(fsMocks.copySync).not.toHaveBeenCalledWith('outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
     });
 
     it('should update Allure report if Allure is present with correct browser videos', () => {
-      const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4',
-        'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.mp4', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.mp4'];
+      const videos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm',
+        'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-1.webm', 'outputDir/MOCK-VIDEO-ANOTHER-BROWSER-2.webm'];
       let video = new Video(options);
       video.config.allureOutputDir = 'outputDir/allureDir';
       video.config.usingAllure = true;
@@ -1194,8 +1194,8 @@ describe('wdio-video-recorder - ', () => {
       video.onExit();
 
       expect(fsMocks.copySync.mock.calls.length).toBe(2);
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.mp4', 'outputDir/allureDir/MOCK-ALLURE-1.mp4');
-      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.mp4', 'outputDir/allureDir/MOCK-ALLURE-2.mp4');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(1, 'outputDir/MOCK-VIDEO-1.webm', 'outputDir/allureDir/MOCK-ALLURE-1.webm');
+      expect(fsMocks.copySync).toHaveBeenNthCalledWith(2, 'outputDir/MOCK-VIDEO-2.webm', 'outputDir/allureDir/MOCK-ALLURE-2.webm');
     });
   });
 
