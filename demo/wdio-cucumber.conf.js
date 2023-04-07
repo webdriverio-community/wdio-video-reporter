@@ -2,6 +2,10 @@
 // import video from 'wdio-video-reporter';
 // But for this demo:
 import video from'../dist/wdio-video-reporter.mjs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const config = {
   // Set up the browser window
@@ -14,7 +18,7 @@ export const config = {
   // Custom settings
   // ===============
   logLevel: 'info', // trace | debug | info | warn | error | silent
-  outputDir: './_results_',
+  outputDir: `${__dirname}/_results_`,
   reporters: [
     'spec',
     [video, {
@@ -24,7 +28,7 @@ export const config = {
       videoFormat: 'webm'         // Output videoFormat. One of "webm" (vp8), "mp4" (x264)
     }],
     ['allure', {
-      outputDir: './_results_/allure-raw',
+      outputDir: `${__dirname}/_results_/allure-raw`,
       disableWebdriverStepsReporting: true,
       disableWebdriverScreenshotsReporting: true,
       useCucumberStepReporter: true,
