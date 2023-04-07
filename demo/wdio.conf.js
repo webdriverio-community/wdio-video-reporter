@@ -45,11 +45,11 @@ export const config = {
       browserName: 'chrome',
       acceptInsecureCerts : true,
     },
-/*    {
+    {
       maxInstances: 1,
       browserName: 'firefox',
       acceptInsecureCerts : true,
-    },*/
+    },
   ],
 
 
