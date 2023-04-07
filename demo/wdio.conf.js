@@ -1,8 +1,11 @@
+// Import like this:
+// import video from 'wdio-video-reporter';
+// But for this demo:
 import video from '../dist/wdio-video-reporter.mjs';
 import path from 'path'
 
-const config = {
-  // Setup the browser window
+export const config = {
+  // Set up the browser window
   before: function (capabilities, specs) {
     browser.setWindowSize(1320, 768);
   },
@@ -69,6 +72,3 @@ const config = {
     defaultTimeoutInterval: 120000,
   },
 };
-
-export {config};
-
