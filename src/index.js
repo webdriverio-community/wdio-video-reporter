@@ -36,6 +36,7 @@ export default class Video extends WdioReporter {
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoScale = options.videoScale || config.videoScale;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
+    config.videoFormat = options.videoFormat || config.videoFormat;
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
     config.recordAllActions = options.recordAllActions || false;
@@ -268,7 +269,7 @@ export default class Video extends WdioReporter {
 
     fs
       .readdirSync(config.allureOutputDir)
-      .filter(line => line.includes('.mp4'))
+      .filter(line => line.includes(helpers.getVideoFileExtension()))
       .map(filename => path.resolve(config.allureOutputDir, filename))
       .filter(allureFile => fs.statSync(allureFile).size < 1024)
       .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready

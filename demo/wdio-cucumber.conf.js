@@ -1,18 +1,7 @@
-require('@babel/register')({
-  presets: [[
-    '@babel/preset-env',
-    { targets: { node: 8 } },
-  ]],
-  babelrc: false,
-});
+import video from'../dist/wdio-video-reporter.mjs';
 
-// Import like this:
-// const video = require('wdio-video-reporter');
-// But for this demo:
-const video = require('../dist/wdio-video-reporter.js');
-
-const config = {
-  // Setup the browser window
+export const config = {
+  // Set up the browser window
   before: function (capabilities, specs) {
     browser.setWindowSize(1320, 768);
   },
@@ -28,7 +17,8 @@ const config = {
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
-      videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering
+      videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering,
+      videoFormat: 'webm'         // Output videoFormat. One of "webm" (vp8), "mp4" (x264)
     }],
     ['allure', {
       outputDir: './_results_/allure-raw',
@@ -98,8 +88,3 @@ const config = {
     ignoreUndefinedDefinitions: false,
   },
 };
-
-module.exports = {
-  config,
-};
-
