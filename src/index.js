@@ -36,6 +36,7 @@ export default class Video extends WdioReporter {
     config.videoSlowdownMultiplier = options.videoSlowdownMultiplier || config.videoSlowdownMultiplier;
     config.videoScale = options.videoScale || config.videoScale;
     config.videoRenderTimeout = options.videoRenderTimeout || config.videoRenderTimeout;
+    config.videoFormat = options.videoFormat || config.videoFormat;
     config.excludedActions.push(...(options.addExcludedActions || []));
     config.jsonWireActions.push(...(options.addJsonWireActions || []));
     config.recordAllActions = options.recordAllActions || false;
@@ -118,12 +119,12 @@ export default class Video extends WdioReporter {
 
   onBeforeCommand () {
     if (config.usingAllure) {
-      const videoPath = path.resolve(config.outputDir, this.testname + '.mp4');
+      const videoPath = helpers.getVideoPath(this.testname);
 
       if (!this.allureVideos.includes(videoPath)) {
         this.allureVideos.push(videoPath);
         helpers.debugLog(`Adding execution video attachment as ${videoPath}\n`);
-        allureReporter.addAttachment('Execution video', videoPath, 'video/mp4');
+        allureReporter.addAttachment('Execution video', videoPath, helpers.getVideoFileContentType());
       }
     }
   }
@@ -193,7 +194,7 @@ export default class Video extends WdioReporter {
   }
 
   /**
-   * Add attachment to Allue if applicable and start to generate the video (Not applicable to Cucumber)
+   * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test) {
     if (this.intervalScreenshot) {
@@ -268,7 +269,7 @@ export default class Video extends WdioReporter {
 
     fs
       .readdirSync(config.allureOutputDir)
-      .filter(line => line.includes('.mp4'))
+      .filter(line => line.includes(helpers.getVideoFileExtension()))
       .map(filename => path.resolve(config.allureOutputDir, filename))
       .filter(allureFile => fs.statSync(allureFile).size < 1024)
       .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString())) // Dont parse other browsers videos since they may not be ready

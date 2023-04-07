@@ -172,6 +172,19 @@ describe('Helpers - ', () => {
       expect(cpMocks.spawn).toHaveBeenCalled();
     });
 
+    it('should spawn ffmpeg with specified vcodec argument when different videoFormats used', async() => {
+      config.debugMode = true;
+
+      config.videoFormat = 'webm';
+      await helpers.generateVideo.call(video);
+
+      config.videoFormat = 'mp4';
+      await helpers.generateVideo.call(video);
+
+      expect(logger.mock.calls[0][0].includes(helpers.supportedVideoFormats.webm.vcodec)).toBeTruthy();
+      expect(logger.mock.calls[1][0].includes(helpers.supportedVideoFormats.mp4.vcodec)).toBeTruthy();
+    });
+
     it('should resolve when ffmpeg is done', async () => {
       await helpers.generateVideo.call(video);
 
@@ -295,6 +308,8 @@ describe('Helpers - ', () => {
 
     beforeEach(() => {
       config.videoRenderTimeout = 5;
+
+      config.videoFormat = 'webm';
 
       fsMocks.existsSync = jest.fn()
         .mockImplementation(() => true);

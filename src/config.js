@@ -35,6 +35,8 @@ export default {
   // Max chars for test names, adjust according to current system
   maxTestNameCharacters: 250,
 
+  videoFormat: 'webm',
+
   //
   // JSON Wire protocol
   //
