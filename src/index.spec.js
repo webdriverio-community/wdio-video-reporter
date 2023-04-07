@@ -519,6 +519,18 @@ describe('wdio-video-recorder - ', () => {
       expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
     });
 
+    it('should add a video(webm) attachment placeholder to Allure, if using Allure', async () => {
+      allureMocks.addAttachment = jest.fn();
+      configModule.default.usingAllure = true;
+      let video = new Video(options);
+      video.config.videoFormat = 'webm'
+      video.testname = 'first-test';
+
+      video.onBeforeCommand();
+      expect(allureMocks.addAttachment).toHaveBeenCalledTimes(1);
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.webm', 'video/webm');
+    });
+
     it('should only add a video attachment once for each test', async () => {
       allureMocks.addAttachment = jest.fn();
       configModule.default.usingAllure = true;
@@ -542,6 +554,32 @@ describe('wdio-video-recorder - ', () => {
       expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.mp4', 'video/mp4');
       expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/second-test.mp4', 'video/mp4');
       expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/third-test.mp4', 'video/mp4');
+    });
+
+    it('should only add a video(webm) attachment once for each test', async () => {
+      allureMocks.addAttachment = jest.fn();
+      configModule.default.usingAllure = true;
+      let video = new Video(options);
+      video.config.videoFormat = 'webm'
+      video.testname = 'first-test';
+
+      video.onBeforeCommand();
+      video.onBeforeCommand();
+      video.onBeforeCommand();
+
+      video.testname = 'second-test';
+      video.onBeforeCommand();
+      video.onBeforeCommand();
+
+      video.testname = 'third-test';
+      video.onBeforeCommand();
+      video.onBeforeCommand();
+      video.onBeforeCommand();
+
+      expect(allureMocks.addAttachment).toHaveBeenCalledTimes(3);
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/first-test.webm', 'video/webm');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/second-test.webm', 'video/webm');
+      expect(allureMocks.addAttachment).toHaveBeenCalledWith('Execution video', 'outputDir/third-test.webm', 'video/webm');
     });
 
     it('should not add video attachment placeholders to Allure, if not using Allure', async () => {
@@ -976,6 +1014,7 @@ describe('wdio-video-recorder - ', () => {
 
   describe('onRunnerEnd - ', () => {
     const videos = ['outputDir/MOCK-VIDEO-1.mp4', 'outputDir/MOCK-VIDEO-2.mp4'];
+    const webmVideos = ['outputDir/MOCK-VIDEO-1.webm', 'outputDir/MOCK-VIDEO-2.webm'];
 
     beforeEach(() => {
       resetFsMocks();
@@ -1000,9 +1039,49 @@ describe('wdio-video-recorder - ', () => {
       expect(video.isDone).toBeTruthy();
     });
 
+    it('should wait for videos(webm) to render', async () => {
+      let video = new Video(options);
+      video.videos = webmVideos;
+      let resolve;
+      const videoDonePromise = new Promise((res) => {
+        resolve = res;
+      });
+      video.videoPromises.push(videoDonePromise);
+      video.onRunnerEnd();
+
+      expect(video.isDone).toBeFalsy();
+
+      resolve();
+      await flushPromises();
+
+      expect(video.isDone).toBeTruthy();
+    });
+
     it('should abort wait after configured videoRenderTimeout seconds', async () => {
       let video = new Video(options);
       video.videos = videos;
+
+      const videoDonePromiseThatNeverResolves = new Promise(() => {
+      });
+      video.videoPromises.push(videoDonePromiseThatNeverResolves);
+      video.onRunnerEnd();
+
+      expect(video.isDone).toBeFalsy();
+
+      jest.advanceTimersByTime(video.config.videoRenderTimeout * 1000 - 1);
+      await flushPromises();
+
+      expect(video.isDone).toBeFalsy();
+
+      jest.advanceTimersByTime(1);
+      await flushPromises();
+
+      expect(video.isDone).toBeTruthy();
+    });
+
+    it('should abort wait after configured videoRenderTimeout seconds(webm)', async () => {
+      let video = new Video(options);
+      video.videos = webmVideos;
 
       const videoDonePromiseThatNeverResolves = new Promise(() => {
       });
