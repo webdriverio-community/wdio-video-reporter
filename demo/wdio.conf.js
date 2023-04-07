@@ -1,18 +1,14 @@
-require('@babel/register')({
-  presets: [[
-    '@babel/preset-env',
-    { targets: { node: 8 } },
-  ]],
-  babelrc: false,
-});
-
 // Import like this:
-// const video = require('wdio-video-reporter');
+// import video from 'wdio-video-reporter';
 // But for this demo:
-const video = require('../dist/wdio-video-reporter.js');
+import video from '../dist/wdio-video-reporter.mjs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-const config = {
-  // Setup the browser window
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const config = {
+  // Set up the browser window
   before: function (capabilities, specs) {
     browser.setWindowSize(1320, 768);
   },
@@ -22,16 +18,17 @@ const config = {
   // Custom settings
   // ===============
   logLevel: 'info', // trace | debug | info | warn | error | silent
-  outputDir: './_results_',
+  outputDir: join(__dirname, '_results_'),
   reporters: [
     'spec',
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       videoRenderTimeout: 5,      // Max seconds to wait for a video to finish rendering
+      videoFormat: 'webm'
     }],
     ['allure', {
-      outputDir: './_results_/allure-raw',
+      outputDir: join(__dirname, '_results_/allure-raw'),
       disableWebdriverStepsReporting: true,
       disableWebdriverScreenshotsReporting: true,
     }],
@@ -68,7 +65,6 @@ const config = {
   ],
   deprecationWarnings: true,
   maxInstances: 10,
-  sync: true,
   coloredLogs: true,
   bail: 1,
   waitforTimeout: 10000,
@@ -79,8 +75,3 @@ const config = {
     defaultTimeoutInterval: 120000,
   },
 };
-
-module.exports = {
-  config,
-};
-
