@@ -56,14 +56,14 @@ or
 Add the reporter to config
 --------------------------
 
-At the top of the `wdio.conf.js`-file, require the library:
-```
-const video = require('wdio-video-reporter');
+At the top of the `wdio.conf.js`-file, import the library:
+```js
+import video from 'wdio-video-reporter';
 ```
 
 Then add the video reporter to the configuration in the reporters property:
 
-```
+```js
  reporters: [
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
@@ -78,7 +78,7 @@ Using with Allure
 
 Adding the Allure reporter as well, automatically updates the reports with videos without any need to configure anything :-)
 
-```
+```js
  reporters: [
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
@@ -97,7 +97,7 @@ Using with wdio-html-nice-reporter (https://github.com/rpii/wdio-html-reporter)
 
 Adding the html nice reporter automatically updates the reports with videos without any need to configure anything :-)
 
-```
+```js
  reporters: [
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
@@ -142,7 +142,7 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 - `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
 - `recordAllActions` Skip filtering and screenshot everything. (Not recommended) `Default: false`
 - `screenshotIntervalSecs` Force a screenshot at this interval (minumum 0.5s) `Default: undefined`
-- `videoFormat` Video format (container) to be used. Supported formats: `mp4`, `webm`. `Default: mp4`
+- `videoFormat` Video format (container) to be used. Supported formats: `mp4`, `webm`. `Default: webm`
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 To avoid extra logging all together and only get the video files, set `wdio.config.logLevel: 'silent'`. You won't get output of video files path and video reporter progress in the console.
@@ -154,7 +154,7 @@ If you are using the Allure reporter, you need to ensure you do the following:
 
 - Use `chai` instead of using the built-in node assertions otherwise the failed tests gets reported as broken in your steps definitions
 - Add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
-```
+```js
   reporters: [
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
@@ -182,7 +182,7 @@ It is recommended to include `browserVersion` as well for _all_ browsers to avoi
 The generated video files will also get `deviceType` added to the browser name.
 
 Example appium configuration:
-```
+```json
   "capabilities": [
     {
       ...
@@ -194,7 +194,7 @@ Example appium configuration:
 ```
 
 And `wdio-config.json`:
-```
+```json
   "capabilities": [
     {
       ...
