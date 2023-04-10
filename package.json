@@ -4,6 +4,11 @@
   "description": "Makes videos of failed tests and has optional allure integration",
   "main": "dist/wdio-video-reporter.cjs",
   "module": "dist/wdio-video-reporter.mjs",
+  "type": "module",
+  "exports": {
+    ".": "./dist/wdio-video-reporter.mjs",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "prebuild": "npm run lint && npm run testcov",
     "build": "rollup -c rollup.config.js",
