@@ -2,11 +2,16 @@
   "name": "wdio-video-reporter",
   "version": "4.0.1",
   "description": "Makes videos of failed tests and has optional allure integration",
-  "main": "dist/wdio-video-reporter.cjs",
-  "module": "dist/wdio-video-reporter.mjs",
+  "main": "./dist/wdio-video-reporter.cjs",
+  "module": "./dist/wdio-video-reporter.mjs",
   "type": "module",
   "exports": {
-    ".": "./dist/wdio-video-reporter.mjs",
+    ".": [
+      {
+        "import": "./dist/wdio-video-reporter.mjs",
+        "require": "./dist/wdio-video-reporter.cjs"
+      }
+    ],
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -49,16 +54,17 @@
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
-    "@babel/preset-env": "^7.14.6",
     "@babel/eslint-parser": "^7.21.3",
+    "@babel/preset-env": "^7.14.6",
     "babel-jest": "^24.9.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "eslint": "^8.37.0",
     "jest": "^24.9.0",
     "release-it": "^14.10.0",
-    "rollup": "^1.32.1",
-    "rollup-plugin-delete": "^2",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-pluginutils": "^2.8.2"
+    "rollup": "2.68",
+    "rollup-plugin-delete": "^2.0.0",
+    "@rollup/pluginutils": "^3.1.0",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0"
   }
 }

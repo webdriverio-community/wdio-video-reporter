@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { extname } from 'path';
-import { createFilter } from 'rollup-pluginutils';
-import resolve from 'rollup-plugin-node-resolve';
+import { createFilter } from '@rollup/pluginutils';
+import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
 
 /**
