@@ -3,6 +3,7 @@ import { extname } from 'path';
 import { createFilter } from '@rollup/pluginutils';
 import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
+import commonjs from '@rollup/plugin-commonjs';
 
 /**
  * Transform imports of pngs to base64
@@ -42,6 +43,7 @@ module.exports = {
       modulesOnly: true,
       preferBuiltins: true,
     }),
+    commonjs(),
   ],
   external: [
     'mkdirp',
