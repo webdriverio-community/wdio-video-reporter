@@ -54,7 +54,7 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
     });
 
     global.browser = {
-      saveScreenshot: jest.fn(),
+      saveScreenshot: jest.fn(() => Promise.resolve()),
       capabilities: {
         browserName: 'BROWSER',
       },
@@ -321,8 +321,9 @@ describe('wdio-video-recorder - cucumber framework - ', () => {
       });
 
       it('should write notAvailable.png as last screenshot if saveScreenshot fails', () => {
-        browser.saveScreenshot.mockImplementationOnce(() => {
-          throw 'error';
+        browser.saveScreenshot.mockReturnValueOnce({
+          then: jest.fn().mockReturnThis(),
+          catch: jest.fn().mockImplementationOnce((callback) => { callback(); }),
         });
         let video = new Video(options);
         video.recordingPath = 'folder';

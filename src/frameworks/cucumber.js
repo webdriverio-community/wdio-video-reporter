@@ -89,13 +89,13 @@ export default {
           this.recordingPath,
           this.frameNr.toString().padStart(config.screenshotPaddingWidth, '0') + '.png'
         );
-        try {
-          browser.saveScreenshot(filePath);
-          helpers.debugLog('- Screenshot!!\n');
-        } catch (e) {
-          fs.writeFile(filePath, notAvailableImage, 'base64');
-          helpers.debugLog('- Screenshot not available...\n');
-        }
+
+        browser.saveScreenshot(filePath)
+          .then(() => helpers.debugLog(`- Screenshot!! (frame: ${this.frameNr})\n`))
+          .catch((error) => {
+            fs.writeFile(filePath, notAvailableImage, 'base64');
+            helpers.debugLog(`- Screenshot not available (frame: ${this.frameNr}). Error: ${error}..\n`);
+          });
 
         helpers.generateVideo.call(this);
       }
