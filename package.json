@@ -62,9 +62,10 @@
     "eslint": "^8.37.0",
     "jest": "^24.9.0",
     "release-it": "^14.10.0",
-    "rollup": "^1.32.1",
-    "rollup-plugin-delete": "^2",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-pluginutils": "^2.8.2"
+    "rollup": "2.68",
+    "rollup-plugin-delete": "^2.0.0",
+    "@rollup/pluginutils": "^3.1.0",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0"
   }
 }

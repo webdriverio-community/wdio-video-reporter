@@ -1,8 +1,9 @@
 import { readFileSync } from 'fs';
 import { extname } from 'path';
-import { createFilter } from 'rollup-pluginutils';
-import resolve from 'rollup-plugin-node-resolve';
+import { createFilter } from '@rollup/pluginutils';
+import resolve from '@rollup/plugin-node-resolve';
 import del from 'rollup-plugin-delete';
+import commonjs from '@rollup/plugin-commonjs';
 
 /**
  * Transform imports of pngs to base64
@@ -27,12 +28,14 @@ module.exports = {
       file: 'dist/wdio-video-reporter.cjs',
       format: 'cjs',
       sourcemap: true,
+      exports: 'auto',
     },
     {
       name: 'VideoRecorder',
       file: 'dist/wdio-video-reporter.mjs',
       format: 'es',
       sourcemap: true,
+      exports: 'auto',
     },
   ],
   plugins: [
@@ -42,6 +45,7 @@ module.exports = {
       modulesOnly: true,
       preferBuiltins: true,
     }),
+    commonjs(),
   ],
   external: [
     'mkdirp',
