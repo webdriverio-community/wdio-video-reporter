@@ -6,7 +6,13 @@
   "module": "dist/wdio-video-reporter.mjs",
   "type": "module",
   "exports": {
-    ".": "./dist/wdio-video-reporter.mjs",
+    ".": [
+      {
+        "import": "./dist/wdio-video-reporter.mjs",
+        "require": "./dist/wdio-video-reporter.cjs"
+      },
+      "./dist/wdio-video-reporter.cjs"
+    ],
     "./package.json": "./package.json"
   },
   "scripts": {

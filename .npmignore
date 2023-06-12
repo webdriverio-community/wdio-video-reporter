@@ -1,0 +1,13 @@
+src
+demo
+.github
+.babelrc
+.editorconfig
+.eslintrc.cjs
+.tern-project
+.eslintignore
+.jestrc.json
+__mocks__
+coverage
+rollup.config.js
+*.tgz
