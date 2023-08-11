@@ -2,6 +2,8 @@
   "name": "wdio-video-reporter",
   "version": "4.0.3",
   "description": "Makes videos of failed tests and has optional allure integration",
+  "author": "Johan Hernefeldt",
+  "license": "MIT",
   "main": "dist/wdio-video-reporter.cjs",
   "module": "dist/wdio-video-reporter.mjs",
   "type": "module",
@@ -32,19 +34,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/presidenten/wdio-video-reporter.git"
+    "url": "git+https://github.com/webdriverio-community/wdio-video-reporter.git"
   },
   "majestic": {
     "args": [
       "--config=.jestrc.json"
     ]
   },
-  "author": "Johan Hernefeldt",
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/presidenten/wdio-video-reporter/issues"
+    "url": "https://github.com/webdriverio-community/wdio-video-reporter/issues"
   },
-  "homepage": "https://github.com/presidenten/wdio-video-reporter#readme",
+  "homepage": "https://github.com/webdriverio-community/wdio-video-reporter#readme",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "@wdio/allure-reporter": "^8.7.0",

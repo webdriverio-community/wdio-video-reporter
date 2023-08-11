@@ -48,30 +48,29 @@ Installation
 Install the reporter
 --------------------
 
-`yarn add wdio-video-reporter`
-or
-`npm install wdio-video-reporter`
+```sh
+yarn add wdio-video-reporter
+```
 
+or
+
+```
+npm install wdio-video-reporter
+```
 
 Add the reporter to config
 --------------------------
 
-At the top of the `wdio.conf.js`-file, import the library:
-```js
-import video from 'wdio-video-reporter';
-```
-
-Then add the video reporter to the configuration in the reporters property:
+Add the video reporter to the configuration in the reporters property:
 
 ```js
  reporters: [
-    [video, {
+    ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
   ],
 ```
-
 
 Using with Allure
 -----------------
@@ -80,7 +79,7 @@ Adding the Allure reporter as well, automatically updates the reports with video
 
 ```js
  reporters: [
-    [video, {
+    ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
@@ -95,11 +94,11 @@ Adding the Allure reporter as well, automatically updates the reports with video
 Using with wdio-html-nice-reporter (https://github.com/rpii/wdio-html-reporter)
 -----------------
 
-Adding the html nice reporter automatically updates the reports with videos without any need to configure anything :-)
+Adding the html nice reporter automatically updates the reports with videos without any need to configure anything 🙂
 
 ```js
  reporters: [
-    [video, {
+    ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       outputDir: './reports/html-reports/',
@@ -156,7 +155,7 @@ If you are using the Allure reporter, you need to ensure you do the following:
 - Add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
 ```js
   reporters: [
-    [video, {
+    ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
@@ -193,18 +192,17 @@ Example appium configuration:
   ],
 ```
 
-And `wdio-config.json`:
-```json
-  "capabilities": [
+And `wdio.conf.js`:
+```js
+  capabilities: [
     {
       ...
-      "appium:deviceType": "phone",
-      "browserVersion": "73.0-phone-1",
+      'appium:deviceType': 'phone',
+      'browserVersion': '73.0-phone-1',
       ...
     },
   ],
 ```
-
 
 Contributing
 ============
@@ -212,7 +210,6 @@ Contributing
 Fork, make changes, write some tests, lint, run tests, build, and verify in the demo that changes work as they should, then make a PR.
 
 The demo folder works with the built version of the library, so make sure to build if you added new features and want to try them out.
-
 
 Thanks
 ======
