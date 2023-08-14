@@ -89,7 +89,4 @@ export default {
 
   // Add a screenshot at a regular interval
   screenshotIntervalSecs: undefined,
-
-  // Skip screenshot if alert is displayed
-  skipAlertScreenshots: false,
 };

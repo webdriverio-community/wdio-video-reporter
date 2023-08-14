@@ -142,7 +142,6 @@ Advanced users who want to change when the engine makes a screengrab can edit th
 - `recordAllActions` Skip filtering and screenshot everything. (Not recommended) `Default: false`
 - `screenshotIntervalSecs` Force a screenshot at this interval (minumum 0.5s) `Default: undefined`
 - `videoFormat` Video format (container) to be used. Supported formats: `mp4`, `webm`. `Default: webm`
-- `skipAlertScreenshots` Skips screenshot if alert is displayed `Default: false`
 To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
 
 To avoid extra logging all together and only get the video files, set `wdio.config.logLevel: 'silent'`. You won't get output of video files path and video reporter progress in the console.
