@@ -46,6 +46,7 @@ export default class Video extends WdioReporter {
     if (config.screenshotIntervalSecs) {
       config.screenshotIntervalSecs = Math.max(config.screenshotIntervalSecs, 0.5);
     }
+    config.skipAlertScreenshots = options.skipAlertScreenshots || false;
 
     this.screenshotPromises = [];
     this.videos = [];
@@ -144,7 +145,13 @@ export default class Video extends WdioReporter {
       return;
     }
 
-    this.addFrame();
+    if (config.skipAlertScreenshots) {
+      browser.isAlertOpen().then((result) => {
+        if (!result) this.addFrame();
+      })
+    } else {
+      this.addFrame();
+    }
   }
 
   /**
