@@ -56,16 +56,11 @@ or
 Add the reporter to config
 --------------------------
 
-At the top of the `wdio.conf.js`-file, require the library:
-```
-const video = require('wdio-video-reporter');
-```
-
-Then add the video reporter to the configuration in the reporters property:
+Add the video reporter to the configuration in the reporters property:
 
 ```
  reporters: [
-    [video, {
+    ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
