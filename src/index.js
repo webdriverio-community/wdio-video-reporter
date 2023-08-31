@@ -145,9 +145,12 @@ export default class Video extends WdioReporter {
     }
 
     // Skips screenshot if alert is displayed
-    browser.isAlertOpen().then((result) => {
-      if (!result) this.addFrame();
-      else helpers.debugLog('Skipped screenshot to avoid unexpected alert closing\n');
+    return browser.isAlertOpen().then((result) => {
+      if (!result) {
+          return this.addFrame();
+      }
+      
+      return helpers.debugLog('Skipped screenshot to avoid unexpected alert closing\n');
     })
   }
 
