@@ -50,6 +50,7 @@ describe('wdio-video-recorder - ', () => {
 
     global.browser = {
       saveScreenshot: jest.fn(() => Promise.resolve()),
+      isAlertOpen: jest.fn(() => Promise.resolve(false)),
       capabilities: {
         browserName: 'BROWSER',
       },
@@ -593,17 +594,17 @@ describe('wdio-video-recorder - ', () => {
     });
 
     describe('should create video frame when -', () => {
-      it('command is present in included JsonWireActions', () => {
+      it('command is present in included JsonWireActions', async () => {
         let video = new Video(options);
         video.recordingPath = 'folder';
 
-        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        await video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
 
-        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        await video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0001.png');
 
-        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        await video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0002.png');
       });
 
@@ -627,12 +628,12 @@ describe('wdio-video-recorder - ', () => {
         expect(fsMocks.writeFile).toHaveBeenCalledWith('folder/0002.png', 'file-mock', 'base64');
       });
 
-      it('should log', (done) => {
+      it('should log', async (done) => {
         let video = new Video(options);
         video.recordingPath = 'folder';
 
         helpers.default.debugLog = jest.fn();
-        video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
+        await video.onAfterCommand({endpoint: '/session/abcdef/' + originalConfig.jsonWireActions[0]});
         expect(browser.saveScreenshot).toHaveBeenCalledWith('folder/0000.png');
         expect(helpers.default.debugLog).toHaveBeenCalledWith('Incoming command: /session/abcdef/url => [url]\n');
         setImmediate(() => {
@@ -641,24 +642,34 @@ describe('wdio-video-recorder - ', () => {
         });
       });
 
-      it('if the recordAllActions option is set', () => {
+      it('if the recordAllActions option is set', async () => {
         options.recordAllActions = true;
 
         let video = new Video(options);
         video.recordingPath = 'folder';
-        video.onAfterCommand({endpoint: '/session/abcdef/piripiri'});
+        await video.onAfterCommand({endpoint: '/session/abcdef/piripiri'});
         expect(video.frameNr).toBe(1);
       });
     });
 
     describe('specific bugs -  ', () => {
-      it('should handle when json-wire message is not present', () => {
+      it('should handle when json-wire message is not present', async () => {
         options.recordAllActions = true;
 
         let video = new Video(options);
         video.recordingPath = 'folder';
-        video.onAfterCommand({endpoint: null});
+        await video.onAfterCommand({endpoint: null});
         expect(video.frameNr).toBe(1);
+      });
+
+      it('should not create video frame when alert is displayed', async () => {
+        browser.isAlertOpen.mockResolvedValueOnce(true);
+        options.recordAllActions = true;
+
+        let video = new Video(options);
+        video.recordingPath = 'folder';
+        await video.onAfterCommand({endpoint: null});
+        expect(video.frameNr).toBe(0);
       });
     });
   });
