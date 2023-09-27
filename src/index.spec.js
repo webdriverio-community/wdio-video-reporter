@@ -50,7 +50,7 @@ describe('wdio-video-recorder - ', () => {
 
     global.browser = {
       saveScreenshot: jest.fn(() => Promise.resolve()),
-      isAlertOpen: jest.fn(() => Promise.resolve(false)),
+      getAlertText: jest.fn(() => Promise.reject()),
       capabilities: {
         browserName: 'BROWSER',
       },
@@ -663,7 +663,7 @@ describe('wdio-video-recorder - ', () => {
       });
 
       it('should not create video frame when alert is displayed', async () => {
-        browser.isAlertOpen.mockResolvedValueOnce(true);
+        browser.getAlertText.mockResolvedValueOnce('foo');
         options.recordAllActions = true;
 
         let video = new Video(options);
