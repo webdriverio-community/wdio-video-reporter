@@ -36,7 +36,7 @@
     "@rollup/pluginutils": "^5.1.0",
     "eslint": "^8.56.0",
     "release-it": "^17.0.1",
-    "rollup": "^3.29.4",
+    "rollup": "^4.9.1",
     "rollup-plugin-delete": "^2.0.0",
     "typescript": "^5.3.3",
     "vitest": "^1.1.0"
