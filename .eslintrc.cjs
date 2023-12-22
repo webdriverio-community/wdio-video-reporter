@@ -1,70 +1,75 @@
-module.exports = {
+/** @type {import('eslint').Linter.Config} */
+const config = {
   root: true,
-  'env': {
-    'node': true
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'unicorn', 'import'],
+  extends: ['eslint:recommended'],
+  env: {
+      node: true,
+      es6: true,
   },
-  "parser": "@babel/eslint-parser",
-  extends: [
-    'eslint:recommended'
-  ],
-  // add your custom rules here
+  parserOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'module',
+  },
   rules: {
-    'semi': 1,
-    'no-useless-escape': 0,
-    'function-paren-newline': 0,
-    'no-multi-spaces': 0,
-    'object-curly-newline': 0,
-    'prefer-destructuring': 0,
-    'no-param-reassign': 0,
-    'no-mixed-operators': 0,
-    'no-unused-vars': 1,
-    'no-plusplus': 0,
-    'no-console': 0,
-    'prefer-template': 0,
-    'import/no-extraneous-dependencies': 0,
-    'import/extensions': 0,
-    'class-methods-use-this': 0,
-    'consistent-return': 0,
-    'no-restricted-syntax': 0,
-    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
-    'max-len': ['warn', 140, { 'ignoreComments': true }],
-    'quote-props': ['error', 'as-needed'],
-    'comma-dangle': ['error', {
-      'arrays': 'always-multiline',
-      'objects': 'always-multiline',
-    }],
-    'one-var': ['error', 'never'],
-    'space-in-parens': ['error', 'never'],
-    'space-before-blocks': ['error', 'always'],
-    'quotes': ['error', 'single', { 'allowTemplateLiterals': true }],
-    'no-var': 2,
+      quotes: ['error', 'single', { avoidEscape: true }],
+      camelcase: ['error', { properties: 'never' }],
+      semi: ['error', 'never'],
+      indent: [2, 4],
+      eqeqeq: ['error', 'always'],
+
+      'prefer-const': 'error',
+      'no-multiple-empty-lines': [2, { max: 1, maxEOF: 1 }],
+      'array-bracket-spacing': ['error', 'never'],
+      'brace-style': ['error', '1tbs', { allowSingleLine: true }],
+      'comma-spacing': ['error', { before: false, after: true }],
+      'no-lonely-if': 'error',
+      'dot-notation': 'error',
+      'no-else-return': 'error',
+      'no-tabs': 'error',
+      'no-trailing-spaces': [
+          'error',
+          {
+              skipBlankLines: false,
+              ignoreComments: false,
+          },
+      ],
+      'no-var': 'error',
+      'unicode-bom': ['error', 'never'],
+      curly: ['error', 'all'],
+      'object-curly-spacing': ['error', 'always'],
+      'keyword-spacing': ['error'],
+      'require-atomic-updates': 0,
+      'linebreak-style': ['error', 'unix'],
+      'unicorn/prefer-node-protocol': ['error'],
+      'import/extensions': ['error', 'ignorePackages'],
+      'no-restricted-syntax': [
+          'error',
+          'IfStatement > ExpressionStatement > AssignmentExpression',
+      ],
+      'unicorn/prefer-ternary': 'error',
   },
-  globals:{
-    window: true,
-    document: true,
-    jest: true,
-    describe: true,
-    fdescribe: true,
-    xdescribe: true,
-
-    beforeAll: true,
-    afterAll: true,
-
-    beforeEach: true,
-    afterEach: true,
-
-    it: true,
-    fit: true,
-    xit: true,
-
-    expect: true,
-    spyOn: true,
-
-    $: true,
-    browser: true,
-    Promise: true,
-    Atomics: true,
-    Int32Array: true,
-    SharedArrayBuffer: true,
-  }
+  overrides: [
+      {
+          files: ['*.ts'],
+          rules: {
+              // see https://stackoverflow.com/questions/55280555/typescript-eslint-eslint-plugin-error-route-is-defined-but-never-used-no-un
+              'no-unused-vars': 'off',
+              '@typescript-eslint/no-unused-vars': 'error',
+              '@typescript-eslint/consistent-type-imports': 'error',
+              'no-undef': 'off',
+              // allow overloads
+              'no-redeclare': 'off',
+          },
+      },
+      {
+          files: ['*.test.ts'],
+          rules: {
+              'dot-notation': 'off',
+          },
+      },
+  ],
 }
+
+module.exports = config

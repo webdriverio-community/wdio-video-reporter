@@ -1,0 +1,35 @@
+/* Visit https://aka.ms/tsconfig to read more about this file */
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "es2020",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+
+    /* Modules */
+    "module": "NodeNext",                                /* Specify what module code is generated. */
+    "rootDir": "./",                                     /* Specify the root folder within your source files. */
+
+    "esModuleInterop": true,
+    "moduleResolution": "Node16",                        /* Specify how TypeScript looks up a file from a given module specifier. */
+    "baseUrl": "./",                                     /* Specify the base directory to resolve non-relative module names. */
+
+    /* Emit */
+    "declaration": true,                                 /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+    "declarationMap": true,                              /* Create sourcemaps for d.ts files. */
+    "sourceMap": true,                                   /* Create source map files for emitted JavaScript files. */
+    "outDir": "./dist",                                  /* Specify an output folder for all emitted files. */
+    "removeComments": true,                              /* Disable emitting comments. */
+
+    /* Interop Constraints */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+
+    /* Type Checking */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "noImplicitAny": true,                               /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+    "strictNullChecks": true,                            /* When type checking, take into account 'null' and 'undefined'. */
+    "useUnknownInCatchVariables": true,                  /* Default catch clause variables as 'unknown' instead of 'any'. */
+    "alwaysStrict": true,                                /* Ensure 'use strict' is always emitted. */
+    "noUnusedLocals": true,                              /* Enable error reporting when local variables aren't read. */
+    "noUnusedParameters": true,                          /* Raise an error when a function parameter isn't read. */
+  },
+  "include": ["./src/**/*", "./__mocks__/**/*", "rollup.config.ts"]
+}

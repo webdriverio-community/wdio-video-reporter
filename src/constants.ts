@@ -1,18 +1,35 @@
-export const defaultOutputDir = '_results_';
+import type { ReporterOptions } from './types.js'
 
-export default {
+export const DEFAULT_OUTPUT_DIR = '_results_'
+export const SCREENSHOT_PADDING_WITH = 4
+export const FRAME_REGEX = new RegExp(`^.*\\/(\\d\{${SCREENSHOT_PADDING_WITH}\})\\.png`)
+export const SUPPORTED_VIDEO_FORMATS = {
+  mp4: {
+    fileExtension: 'mp4',
+    contentType: 'video/mp4',
+    vcodec: 'libx264',
+  },
+  webm: {
+    fileExtension: 'webm',
+    contentType: 'video/webm',
+    vcodec: 'libvpx-vp9',
+  },
+  default: {
+    fileExtension: 'mp4',
+    contentType: 'video/mp4',
+    vcodec: 'libx264',
+  }
+} as const
+
+export const DEFAULT_OPTIONS: ReporterOptions = {
   debugMode: false,
 
   logLevel: 'info',
 
   videoRenderTimeout: 5,
 
-  outputDir: defaultOutputDir,
+  outputDir: DEFAULT_OUTPUT_DIR,
   allureOutputDir: 'allure-results',
-
-  // How many digits to zero-pad the screenshot file names by
-  // - 0001.png for the second frame by default
-  screenshotPaddingWidth: 4,
 
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',
@@ -38,18 +55,12 @@ export default {
   // videoFormat to be used for generated videos. One of 'mp4', 'webm'
   videoFormat: 'webm',
 
-  //
-  // JSON Wire protocol
-  //
-
   // Which commands should be excluded from screenshots
-  excludedActions: [
-
-  ],
+  excludedActions: [],
 
   // Which commands should result in a screenshot (without `/session/:sessionId/`)
   // https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol
-  jsonWireActions: [
+  snapshotCommands: [
     'url',
     'forward',
     'back',

@@ -1,17 +1,20 @@
-export let writeMock;
+import { vi } from 'vitest'
+
+export let writeMock: Function
 
 export const resetWriteMock = () => {
-  writeMock = jest.fn();
+  writeMock = vi.fn();
 };
 
 resetWriteMock();
 
 export default class Reporter {
-  constructor(options) {
+  optionsSetInConstructor: any;
+  constructor(options: any) {
     this.optionsSetInConstructor = options;
   }
 
-  write(msg) {
+  write(msg: any) {
     writeMock(msg);
   }
 }
