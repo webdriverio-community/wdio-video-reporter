@@ -1,3 +1,4 @@
+
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
@@ -6,22 +7,23 @@ import { spawn } from 'node:child_process'
 import WdioReporter, { type RunnerStats, type AfterCommandArgs, SuiteStats, TestStats } from '@wdio/reporter'
 import allureReporter from '@wdio/allure-reporter'
 import logger from '@wdio/logger'
+import { browser } from '@wdio/globals'
+import type { Options } from '@wdio/types'
+
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg'
 import { glob } from 'glob'
-import type { Capabilities, Options } from '@wdio/types'
 
 import {
   waitForVideosToExist, waitForVideosToBeWritten, getCurrentCapabilities, getVideoFormatSettings,
-  getVideoPath, pad
+  getVideoPath, pad, generateFilename
 } from './helpers.js'
 import { DEFAULT_OPTIONS, SCREENSHOT_PADDING_WITH, FRAME_REGEX } from './constants.js'
+import type { ReporterOptions } from './types.js'
 
 // @ts-expect-error image import
 import notAvailableImage from './assets/not-available.png'
 
-import DefaultFramework from './frameworks/default.js'
-import CucumberFramework from './frameworks/cucumber.js'
-import type { ReporterOptions } from './types.js'
+
 
 const log = logger('wdio-video-reporter')
 
@@ -32,17 +34,12 @@ export default class VideoReporter extends WdioReporter {
   screenshotPromises: Promise<void>[] = []
   videos: string[] = []
   videoPromises: Promise<unknown>[] = []
-  testNameStructure: string[] = []
-  testName = ''
   frameNr = 0
-  sessionId?: string
   intervalScreenshot?: NodeJS.Timeout
   allureVideos: string[] = []
-  capabilities?: Capabilities.RemoteCapability
-  isMultiremote = false
-  runnerInstance?: Options.Testrunner
-  framework?: DefaultFramework | CucumberFramework
   recordingPath?: string
+  testNameStructure: string[] = []
+  testName?: string
 
   /**
    * Set reporter options
@@ -68,9 +65,6 @@ export default class VideoReporter extends WdioReporter {
    * Set wdio config options
    */
   async onRunnerStart (runner: RunnerStats) {
-    this.capabilities = runner.capabilities
-    this.isMultiremote = runner.isMultiremote
-
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
@@ -79,13 +73,11 @@ export default class VideoReporter extends WdioReporter {
     if (!sessionId) {
       return
     }
-    this.sessionId = sessionId;
 
     const runnerInstance = runner.instanceOptions[sessionId] as Options.Testrunner
     if (!runnerInstance) {
       return
     }
-    this.runnerInstance = runnerInstance;
     const allureConfig: any = runnerInstance.reporters?.find(r => r === 'allure' || (r as any)[0] === 'allure')
 
     if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
@@ -100,18 +92,13 @@ export default class VideoReporter extends WdioReporter {
     log.debug(`Using reporter config: ${JSON.stringify(runnerInstance.reporters, undefined, 2)}`);
     log.debug(`Using config: ${JSON.stringify(this.#options, undefined, 2)}`)
 
-    // Jasmine and Mocha ought to behave the same regarding test-structure
-    this.framework = runnerInstance.framework === 'cucumber'
-      ? new CucumberFramework(this.#options)
-      : new DefaultFramework(this.#options)
-
     if (this.#options.usingAllure) {
       process.on('exit', () => this.onExit.call(this));
     }
   }
 
   onBeforeCommand () {
-    if (!this.#options.usingAllure) {
+    if (!this.#options.usingAllure || !this.testName) {
       return
     }
 
@@ -158,22 +145,46 @@ export default class VideoReporter extends WdioReporter {
    */
   onSuiteStart (suite: SuiteStats) {
     log.debug(`\n\n\n--- New suite: ${suite.title} ---\n`)
-    this.framework?.onSuiteStart(suite)
+    this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
+    if (suite.type === 'scenario') {
+      this.#setRecordingPath(suite)
+    }
   }
 
   /**
    * Cleare suite name from naming structure
    */
   onSuiteEnd (suite: SuiteStats) {
+    this.#extendAllureReport()
+
+    if (!this.testName) {
+      return
+    }
+
     this.testNameStructure.pop()
-    this.framework?.onSuiteEnd(suite)
+    const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0;
+    const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0;
+
+    if (hasFailedTests || (allTestsPassed && this.#options.saveAllVideos)) {
+      const filePath = path.resolve(
+        this.recordingPath!,
+        this.frameNr.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png'
+      );
+
+      browser.saveScreenshot(filePath)
+        .then(() => log.debug(`- Screenshot!! (frame: ${this.frameNr})\n`))
+        .catch((error: Error) => {
+          fs.writeFileSync(filePath, notAvailableImage, 'base64');
+          log.debug(`- Screenshot not available (frame: ${this.frameNr}). Error: ${error}..\n`);
+        });
+    }
   }
 
   /**
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (test: TestStats) {
-    this.framework?.onTestStart(test)
+    this.#setRecordingPath(test)
 
     // Create the report directory, if it does not exists
     if (this.recordingPath && !fs.existsSync(this.recordingPath)) {
@@ -198,8 +209,6 @@ export default class VideoReporter extends WdioReporter {
       clearInterval(this.intervalScreenshot);
       this.intervalScreenshot = undefined;
     }
-
-    this.framework?.onTestSkip()
   }
 
   /**
@@ -306,7 +315,7 @@ export default class VideoReporter extends WdioReporter {
     this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
         .then(() => log.debug(`- Screenshot!! (frame: ${frame})\n`))
-        .catch((error) => {
+        .catch((error: Error) => {
           fs.writeFileSync(filePath, notAvailableImage, 'base64');
           log.debug(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`);
         })
@@ -314,6 +323,10 @@ export default class VideoReporter extends WdioReporter {
   }
 
   #generateVideo () {
+    if (!this.testName) {
+      return
+    }
+
     const formatSettings = getVideoFormatSettings(this.#options.videoFormat)
     const videoPath = getVideoPath(this.#options.outputDir, this.testName, formatSettings.fileExtension)
     this.videos.push(videoPath)
@@ -366,7 +379,7 @@ export default class VideoReporter extends WdioReporter {
     log.debug(`ffmpeg command: ${command + ' ' + args}\n`)
 
     const promise = Promise
-      .all(this.screenshotPromises || [])
+      .all(this.screenshotPromises)
       .then(() => frameCheckPromise)
       .then(() => new Promise((resolve) => {
         const cp = spawn(command, args, {
@@ -380,6 +393,39 @@ export default class VideoReporter extends WdioReporter {
     this.videoPromises.push(promise)
     return promise
   }
+
+  #extendAllureReport () {
+    if (!this.#options.usingAllure) {
+      return
+    }
+    const capabilities = getCurrentCapabilities(browser);
+    const deviceName = capabilities['appium:deviceName']
+    if (deviceName) {
+      allureReporter.addArgument('deviceName', deviceName);
+    }
+    if (capabilities.browserVersion) {
+      allureReporter.addArgument('browserVersion', capabilities.browserVersion);
+    }
+  }
+
+  #setRecordingPath (testOrSuite: TestStats | SuiteStats) {
+    this.testNameStructure.push(testOrSuite.title.replace(/ /g, '-'));
+    const fullName = this.testNameStructure.slice(1)
+      .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0]);
+
+    let browserName = 'browser';
+    const capabilities = getCurrentCapabilities(browser);
+
+    const deviceName = capabilities['appium:deviceName']
+    if (capabilities.browserName) {
+      browserName = capabilities.browserName.toUpperCase();
+    } else if (deviceName && capabilities.platformName) {
+      browserName = `${deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`;
+    }
+
+    const testName = this.testName = generateFilename(this.#options.maxTestNameCharacters, browserName, fullName);
+    this.frameNr = 0;
+    this.recordingPath = path.resolve(this.#options.outputDir, this.#options.rawPath, testName);
+    fs.mkdirSync(this.recordingPath)
+  }
 }
-
-

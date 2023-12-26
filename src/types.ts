@@ -80,4 +80,4 @@ export interface ReporterOptions {
    * Add a screenshot at a regular interval (in seconds)
    */
   screenshotIntervalSecs?: number
-};
+}

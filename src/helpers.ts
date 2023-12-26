@@ -1,11 +1,11 @@
 import path from 'node:path'
-import fss from 'node:fs'
+import fs from 'node:fs'
 
 import logger from '@wdio/logger'
 import type { Capabilities } from '@wdio/types'
 
 import type { VideoFileExtension } from './types.js'
-import { SUPPORTED_VIDEO_FORMATS, SCREENSHOT_PADDING_WITH } from './constants.js'
+import { SUPPORTED_VIDEO_FORMATS, SCREENSHOT_PADDING_WITH, TO_LOCAL_STRING_OPTIONS } from './constants.js'
 
 const log = logger('wdio-video-reporter:helpers')
 
@@ -16,15 +16,9 @@ export function sleep(ms: number) {
 export function generateFilename (maxTestNameCharacters: number, browserName: string, fullName: string) {
   const date = new Date()
   const msec = ('000' + date.getMilliseconds()).slice(-3)
-  const timestamp = date.toLocaleString('iso', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).replace(/[ ]/g, '--').replace(/:|\//g, '-') + `-${msec}`
+  const timestamp = date.toLocaleString('iso', TO_LOCAL_STRING_OPTIONS)
+    .replace(/[ ]/g, '--')
+    .replace(/:|\//g, '-') + `-${msec}`
 
   let filename = encodeURIComponent(`${fullName.replace(/\s+/g, '-')}--${browserName}--${timestamp}`)
     .replace(/%../g, '')
@@ -47,64 +41,75 @@ export function getVideoFormatSettings (videoFormat: VideoFileExtension) {
   return SUPPORTED_VIDEO_FORMATS[videoFormat]
 }
 
-export function waitForVideosToExist (videos: string[], abortTime: number) {
-  let allExist = false
+/**
+ * wait for videos to be generated
+ * @param videos     path to generated videos
+ * @param abortTime  timeout in ms
+ * @param sleepFn    sleep function (for testing purposes)
+ */
+export function waitForVideosToExist (videos: string[], abortTime: number, sleepFn = sleep) {
+  const waitTime = 100
+  const allExist = videos
+    .map(v => fs.existsSync(v))
+    .every(Boolean)
+
   let allGenerated = false
-
-  do {
-    sleep(100)
-    allExist = videos
-      .map(v => fss.existsSync(v))
-      .reduce((acc, cur) => acc && cur, true)
-
-    if (allExist) {
-      allGenerated = videos
-        .map(v => fss.statSync(v).size)
-        .reduce((acc, cur) => acc && cur > 48, true)
-    }
-  } while (Date.now() < abortTime && !(allExist && allGenerated))
-
-  if (new Date().getTime() >= abortTime && !(allExist && allGenerated)) {
-    log.debug(`abortTime exceeded while waiting for videos to exist.\n`)
+  if (allExist) {
+    allGenerated = videos
+      .map(v => fs.statSync(v).size)
+      .reduce((acc, cur) => acc && cur > 48, true)
   }
+
+  if (allGenerated) {
+    return true
+  }
+
+  if (abortTime <= 0 && (!allExist || !allGenerated)) {
+    log.debug(`abortTime exceeded while waiting for videos to exist.\n`)
+    return false
+  }
+
+  sleepFn(waitTime)
+  return waitForVideosToExist(videos, abortTime - waitTime, sleepFn)
 }
 
-interface VideoSizes {
-  filename: string
-  size: number
-}
-export function waitForVideosToBeWritten (videos: string[], abortTime: number) {
-  let allSizes: (VideoSizes | VideoSizes[])[] = []
-  let allConstant = false
+/**
+ * Wait for videos to be written, i.e. their size is not changing anymore
+ * @param videos    path to generated videos
+ * @param abortTime timeout in ms
+ * @param sleepFn   sleep function (for testing purposes)
+ */
+export function waitForVideosToBeWritten (videos: string[], abortTime: number, sleepFn = sleep) {
+  const start = Date.now()
+  let currentSizes = videos.reduce((fileMap, filename) => {
+    fileMap[filename] = fs.statSync(filename).size
+    return fileMap
+  }, {} as Record<string, number>)
 
-  /**
-   * ToDo(Christian): simplify this
-   */
-  do {
-    sleep(100)
-    const currentSizes = videos.map(filename => ({
-      filename,
-      size: fss.statSync(filename).size
-    }))
-
-    allSizes = [...allSizes, currentSizes].slice(-3)
-
-    allConstant = allSizes.length === 3 && currentSizes
-      .reduce((accOuter, curOuter) => accOuter && allSizes
-        .reduce((accFilter, curFilter) => [
-          ...(accFilter as VideoSizes[]),
-          (curFilter as VideoSizes[]).filter(v => v.filename === curOuter.filename).pop()!
-        ], [] as (VideoSizes | VideoSizes[])[])
-        .map((v) => (v as VideoSizes).size)
-        .reduce((accInner, curInner) => accInner && curInner === curOuter.size, true), true)
-  } while(Date.now() < abortTime && !allConstant)
+  while (true) {
+    sleepFn(100)
+    const updatedSizes = videos.reduce((fileMap, filename) => {
+      fileMap[filename] = fs.statSync(filename).size
+      return fileMap
+    }, {} as Record<string, number>)
+    const hasChanged = Object.entries(currentSizes)
+      .every(([filename, size]) => size !== updatedSizes[filename])
+    if (!hasChanged) {
+      return true
+    }
+    currentSizes = updatedSizes
+    if ((Date.now() - start) > abortTime) {
+      log.debug(`abortTime exceeded while waiting for videos to be written.\n`)
+      return false
+    }
+  }
 }
 
 export function getCurrentCapabilities (browser: WebdriverIO.Browser) {
   const mrCaps = browser.capabilities as Capabilities.MultiRemoteCapabilities
   const w3cCaps = browser.capabilities as Capabilities.W3CCapabilities
   const currentCapabilities: WebdriverIO.Capabilities = browser.isMultiremote
-    ? mrCaps[Object.keys(browser.capabilities)[0]]
+    ? mrCaps[Object.keys(browser.capabilities)[0]].capabilities as WebdriverIO.Capabilities
     : w3cCaps.alwaysMatch || browser.capabilities as WebdriverIO.Capabilities
   return currentCapabilities
 }

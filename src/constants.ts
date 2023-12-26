@@ -21,7 +21,7 @@ export const SUPPORTED_VIDEO_FORMATS = {
   }
 } as const
 
-export const DEFAULT_OPTIONS: ReporterOptions = {
+export const DEFAULT_OPTIONS: Required<ReporterOptions> = {
   debugMode: false,
 
   logLevel: 'info',
@@ -99,5 +99,15 @@ export const DEFAULT_OPTIONS: ReporterOptions = {
   recordAllActions: false,
 
   // Add a screenshot at a regular interval
-  screenshotIntervalSecs: undefined,
+  screenshotIntervalSecs: 0,
 };
+
+export const TO_LOCAL_STRING_OPTIONS = {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+} as const
