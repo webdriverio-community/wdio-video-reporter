@@ -58,6 +58,8 @@ const config: RollupOptions = {
     'fs-extra',
     '@ffmpeg-installer/ffmpeg',
     '@wdio/reporter',
+    '@wdio/logger',
+    '@wdio/globals',
     '@wdio/allure-reporter',
     'system-sleep',
     'path',

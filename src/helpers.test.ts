@@ -101,7 +101,6 @@ describe('getVideoFormatSettings', () => {
   })
 })
 
-
 describe('waitForVideos - ', () => {
   const videos = ['file1.mp4', 'file2.mp4', 'file3.mp4']
   const videoRenderTimeout = 5 * 1000
@@ -129,11 +128,11 @@ describe('waitForVideos - ', () => {
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
-      .mockImplementation(() => ({ size: 512 } as any));
+      .mockImplementation(() => ({ size: 512 } as any))
     const sleepMock = vi.fn().mockImplementation(sleep)
     expect(waitForVideosToExist(videos, videoRenderTimeout, sleepMock)).toBe(true)
     expect(sleepMock).toBeCalledTimes(2)
-  });
+  })
 
   it('should wait for videos to be exist and be generated', async () => {
     vi.mocked(fs.existsSync)
@@ -143,7 +142,7 @@ describe('waitForVideos - ', () => {
       .mockImplementationOnce(() => false)
       .mockImplementationOnce(() => false)
       .mockImplementationOnce(() => false)
-      .mockImplementation(() => true);
+      .mockImplementation(() => true)
     vi.mocked(fs.statSync)
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
@@ -151,7 +150,7 @@ describe('waitForVideos - ', () => {
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
-      .mockImplementation(() => ({ size: 512 } as any));
+      .mockImplementation(() => ({ size: 512 } as any))
     const sleepMock = vi.fn().mockImplementation(sleep)
     expect(waitForVideosToExist(videos, videoRenderTimeout, sleepMock)).toBe(true)
     expect(sleepMock).toBeCalledTimes(4)
@@ -165,7 +164,7 @@ describe('waitForVideos - ', () => {
       .mockImplementationOnce(() => false)
       .mockImplementationOnce(() => false)
       .mockImplementationOnce(() => false)
-      .mockImplementation(() => true);
+      .mockImplementation(() => true)
     vi.mocked(fs.statSync)
       .mockImplementationOnce(() => ({ size: 48 } as any))
       .mockImplementationOnce(() => ({ size: 48 } as any))
@@ -206,7 +205,7 @@ describe('waitForVideosToBeWritten', () => {
       .mockImplementationOnce(() => ({ size: 51 } as any))
       .mockImplementationOnce(() => ({ size: 62 } as any))
       .mockImplementationOnce(() => ({ size: 73 } as any))
-      .mockImplementation(() => ({ size: 512 } as any));
+      .mockImplementation(() => ({ size: 512 } as any))
     const sleepMock = vi.fn().mockImplementation(sleep)
     expect(waitForVideosToBeWritten(videos, 200, sleepMock)).toBe(false)
     expect(sleepMock).toBeCalledTimes(2)
@@ -225,7 +224,7 @@ describe('pad', () => {
 
 describe('getCurrentCapabilities', () => {
   it('should return capabilities', () => {
-    const caps: any = { browserName: 'chrome '}
+    const caps: any = { browserName: 'chrome' }
     const browser: any = {
       capabilities: caps
     }
@@ -236,7 +235,7 @@ describe('getCurrentCapabilities', () => {
     }
     const mrBrowser: any = {
       capabilities: {
-        browserA: { capabilities: caps}
+        browserA: { capabilities: caps }
       },
       isMultiremote: true
     }

@@ -65,7 +65,7 @@ export function waitForVideosToExist (videos: string[], abortTime: number, sleep
   }
 
   if (abortTime <= 0 && (!allExist || !allGenerated)) {
-    log.debug(`abortTime exceeded while waiting for videos to exist.\n`)
+    log.debug('abortTime exceeded while waiting for videos to exist.\n')
     return false
   }
 
@@ -86,7 +86,8 @@ export function waitForVideosToBeWritten (videos: string[], abortTime: number, s
     return fileMap
   }, {} as Record<string, number>)
 
-  while (true) {
+  // eslint-disable-next-line no-constant-condition
+  while ((Date.now() - start) <= abortTime) {
     sleepFn(100)
     const updatedSizes = videos.reduce((fileMap, filename) => {
       fileMap[filename] = fs.statSync(filename).size
@@ -98,11 +99,10 @@ export function waitForVideosToBeWritten (videos: string[], abortTime: number, s
       return true
     }
     currentSizes = updatedSizes
-    if ((Date.now() - start) > abortTime) {
-      log.debug(`abortTime exceeded while waiting for videos to be written.\n`)
-      return false
-    }
   }
+
+  log.debug('abortTime exceeded while waiting for videos to be written.\n')
+  return false
 }
 
 export function getCurrentCapabilities (browser: WebdriverIO.Browser) {

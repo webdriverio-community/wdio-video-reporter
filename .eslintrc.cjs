@@ -16,7 +16,7 @@ const config = {
       quotes: ['error', 'single', { avoidEscape: true }],
       camelcase: ['error', { properties: 'never' }],
       semi: ['error', 'never'],
-      indent: [2, 4],
+      indent: [2, 2],
       eqeqeq: ['error', 'always'],
 
       'prefer-const': 'error',

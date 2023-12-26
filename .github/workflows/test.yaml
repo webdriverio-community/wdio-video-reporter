@@ -12,15 +12,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js v20.x
         uses: actions/setup-node@v3
         with:
-            node-version: 18
+            node-version: 20.x
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Setup
-        run: yarn
+        run: npm run build
       - name: Run headless test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run ci
+        run: npm test

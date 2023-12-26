@@ -2,7 +2,7 @@ import type { ReporterOptions } from './types.js'
 
 export const DEFAULT_OUTPUT_DIR = '_results_'
 export const SCREENSHOT_PADDING_WITH = 4
-export const FRAME_REGEX = new RegExp(`^.*\\/(\\d\{${SCREENSHOT_PADDING_WITH}\})\\.png`)
+export const FRAME_REGEX = new RegExp(`^.*\\/(\\d{${SCREENSHOT_PADDING_WITH}})\\.png`)
 export const SUPPORTED_VIDEO_FORMATS = {
   mp4: {
     fileExtension: 'mp4',
@@ -100,7 +100,7 @@ export const DEFAULT_OPTIONS: Required<ReporterOptions> = {
 
   // Add a screenshot at a regular interval
   screenshotIntervalSecs: 0,
-};
+}
 
 export const TO_LOCAL_STRING_OPTIONS = {
   year: 'numeric',

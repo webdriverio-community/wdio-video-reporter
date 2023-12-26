@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
-import WdioReporter, { type RunnerStats, type AfterCommandArgs, SuiteStats, TestStats } from '@wdio/reporter'
+import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
 import allureReporter from '@wdio/allure-reporter'
 import logger from '@wdio/logger'
 import { browser } from '@wdio/globals'
@@ -22,8 +22,6 @@ import type { ReporterOptions } from './types.js'
 
 // @ts-expect-error image import
 import notAvailableImage from './assets/not-available.png'
-
-
 
 const log = logger('wdio-video-reporter')
 
@@ -45,20 +43,19 @@ export default class VideoReporter extends WdioReporter {
    * Set reporter options
    */
   constructor (options: ReporterOptions) {
-    super(options);
+    super(options)
     this.#options = Object.assign({}, DEFAULT_OPTIONS, options) as Required<ReporterOptions>
 
     if (this.#options.screenshotIntervalSecs) {
-      this.#options.screenshotIntervalSecs = Math.max(this.#options.screenshotIntervalSecs, 0.5);
+      this.#options.screenshotIntervalSecs = Math.max(this.#options.screenshotIntervalSecs, 0.5)
     }
   }
 
-
   /**
-   * overwrite isSynchronised method
+   * overwrite `isSynchronised` method
    */
   get isSynchronised () {
-    return this.#isDone;
+    return this.#isDone
   }
 
   /**
@@ -89,11 +86,11 @@ export default class VideoReporter extends WdioReporter {
       runnerInstance.logLevel!.toLowerCase() === 'debug'
     )
 
-    log.debug(`Using reporter config: ${JSON.stringify(runnerInstance.reporters, undefined, 2)}`);
+    log.debug(`Using reporter config: ${JSON.stringify(runnerInstance.reporters, undefined, 2)}`)
     log.debug(`Using config: ${JSON.stringify(this.#options, undefined, 2)}`)
 
     if (this.#options.usingAllure) {
-      process.on('exit', () => this.onExit.call(this));
+      process.on('exit', () => this.onExit.call(this))
     }
   }
 
@@ -115,10 +112,10 @@ export default class VideoReporter extends WdioReporter {
    * Save screenshot or add not available image movie stills
    */
   onAfterCommand (commandArgs: AfterCommandArgs) {
-    const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^\/]+$/);
-    const commandName = command ? command[0] : 'undefined';
+    const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^/]+$/)
+    const commandName = command ? command[0] : 'undefined'
 
-    log.debug('Incoming command: ' + commandArgs.endpoint + ' => [' + commandName + ']\n');
+    log.debug('Incoming command: ' + commandArgs.endpoint + ' => [' + commandName + ']\n')
 
     // Filter out non-action commands and keep only last action command
     if (
@@ -131,7 +128,7 @@ export default class VideoReporter extends WdioReporter {
       ) ||
       !this.recordingPath
     ) {
-      return;
+      return
     }
 
     // Skips screenshot if alert is displayed
@@ -145,7 +142,7 @@ export default class VideoReporter extends WdioReporter {
    */
   onSuiteStart (suite: SuiteStats) {
     log.debug(`\n\n\n--- New suite: ${suite.title} ---\n`)
-    this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'));
+    this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     if (suite.type === 'scenario') {
       this.#setRecordingPath(suite)
     }
@@ -162,21 +159,21 @@ export default class VideoReporter extends WdioReporter {
     }
 
     this.testNameStructure.pop()
-    const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0;
-    const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0;
+    const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0
+    const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0
 
     if (hasFailedTests || (allTestsPassed && this.#options.saveAllVideos)) {
       const filePath = path.resolve(
         this.recordingPath!,
         this.frameNr.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png'
-      );
+      )
 
       browser.saveScreenshot(filePath)
         .then(() => log.debug(`- Screenshot!! (frame: ${this.frameNr})\n`))
         .catch((error: Error) => {
-          fs.writeFileSync(filePath, notAvailableImage, 'base64');
-          log.debug(`- Screenshot not available (frame: ${this.frameNr}). Error: ${error}..\n`);
-        });
+          fs.writeFileSync(filePath, notAvailableImage, 'base64')
+          log.debug(`- Screenshot not available (frame: ${this.frameNr}). Error: ${error}..\n`)
+        })
     }
   }
 
@@ -188,12 +185,12 @@ export default class VideoReporter extends WdioReporter {
 
     // Create the report directory, if it does not exists
     if (this.recordingPath && !fs.existsSync(this.recordingPath)) {
-      log.debug(`Creating: ${this.recordingPath}, as it not exists...\n`);
-      fs.mkdirSync(this.recordingPath)
+      log.debug(`Creating: ${this.recordingPath}, as it not exists...\n`)
+      fs.mkdirSync(this.recordingPath, { recursive: true })
     }
 
     if (this.#options.screenshotIntervalSecs) {
-      const instance = this;
+      const instance = this
       this.intervalScreenshot = setInterval(
         () => instance.addFrame(),
         this.#options.screenshotIntervalSecs * 1000
@@ -206,8 +203,8 @@ export default class VideoReporter extends WdioReporter {
    */
   onTestSkip () {
     if (this.intervalScreenshot) {
-      clearInterval(this.intervalScreenshot);
-      this.intervalScreenshot = undefined;
+      clearInterval(this.intervalScreenshot)
+      this.intervalScreenshot = undefined
     }
   }
 
@@ -222,7 +219,7 @@ export default class VideoReporter extends WdioReporter {
 
     this.testNameStructure.pop()
 
-    if(this.#options.usingAllure) {
+    if (this.#options.usingAllure) {
       const capabilities = getCurrentCapabilities(browser)
 
       if (capabilities['appium:deviceName']) {
@@ -243,19 +240,24 @@ export default class VideoReporter extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    let abortTimer: NodeJS.Timeout
     let started = false
+
+    const abortTimer = setTimeout(() => {
+      this.write('videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n')
+      wrapItUp()
+    }, this.#options.videoRenderTimeout * 1000)
+
     const wrapItUp = () => {
       if (started) {
         return
       }
       clearTimeout(abortTimer)
       started = true
-      log.debug(`\n--- FFMPEG is done ---\n\n`)
+      log.debug('\n--- FFMPEG is done ---\n\n')
 
       if (this.#options.logLevel !== 'silent') {
         this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n')
-        this.write(`\n\nVideo reporter Done!\n`)
+        this.write('\n\nVideo reporter Done!\n')
       }
 
       this.#isDone = true
@@ -267,12 +269,6 @@ export default class VideoReporter extends WdioReporter {
         this.write(`onRunnerEnd promise resolution caught ${error}\n`)
         wrapItUp()
       })
-
-
-    abortTimer = setTimeout(() => {
-      this.write(`videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n`)
-      wrapItUp()
-    }, this.#options.videoRenderTimeout * 1000)
   }
 
   /**
@@ -285,7 +281,7 @@ export default class VideoReporter extends WdioReporter {
     waitForVideosToBeWritten(this.videos, abortTime)
 
     if (new Date().getTime() > abortTime) {
-      console.log(`videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure`);
+      console.log('videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure')
     }
 
     const video = getVideoFormatSettings(this.#options.videoFormat)
@@ -297,9 +293,9 @@ export default class VideoReporter extends WdioReporter {
       // Dont parse other browsers videos since they may not be ready
       .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString()))
       .forEach((filePath) => {
-        const videoFilePath = fs.readFileSync(filePath).toString(); // The contents of the placeholder file is the video path
+        const videoFilePath = fs.readFileSync(filePath).toString() // The contents of the placeholder file is the video path
         if (fs.existsSync(videoFilePath)) {
-          fs.copyFileSync(videoFilePath, filePath);
+          fs.copyFileSync(videoFilePath, filePath)
         }
       })
   }
@@ -309,17 +305,17 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    const frame = this.frameNr++;
-    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png');
+    const frame = this.frameNr++
+    const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png')
 
     this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
         .then(() => log.debug(`- Screenshot!! (frame: ${frame})\n`))
         .catch((error: Error) => {
-          fs.writeFileSync(filePath, notAvailableImage, 'base64');
-          log.debug(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`);
+          fs.writeFileSync(filePath, notAvailableImage, 'base64')
+          log.debug(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`)
         })
-    );
+    )
   }
 
   #generateVideo () {
@@ -398,34 +394,34 @@ export default class VideoReporter extends WdioReporter {
     if (!this.#options.usingAllure) {
       return
     }
-    const capabilities = getCurrentCapabilities(browser);
+    const capabilities = getCurrentCapabilities(browser)
     const deviceName = capabilities['appium:deviceName']
     if (deviceName) {
-      allureReporter.addArgument('deviceName', deviceName);
+      allureReporter.addArgument('deviceName', deviceName)
     }
     if (capabilities.browserVersion) {
-      allureReporter.addArgument('browserVersion', capabilities.browserVersion);
+      allureReporter.addArgument('browserVersion', capabilities.browserVersion)
     }
   }
 
   #setRecordingPath (testOrSuite: TestStats | SuiteStats) {
-    this.testNameStructure.push(testOrSuite.title.replace(/ /g, '-'));
+    this.testNameStructure.push(testOrSuite.title.replace(/ /g, '-'))
     const fullName = this.testNameStructure.slice(1)
-      .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0]);
+      .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0])
 
-    let browserName = 'browser';
-    const capabilities = getCurrentCapabilities(browser);
+    let browserName = 'browser'
+    const capabilities = getCurrentCapabilities(browser)
 
     const deviceName = capabilities['appium:deviceName']
     if (capabilities.browserName) {
-      browserName = capabilities.browserName.toUpperCase();
+      browserName = capabilities.browserName.toUpperCase()
     } else if (deviceName && capabilities.platformName) {
-      browserName = `${deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`;
+      browserName = `${deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`
     }
 
-    const testName = this.testName = generateFilename(this.#options.maxTestNameCharacters, browserName, fullName);
-    this.frameNr = 0;
-    this.recordingPath = path.resolve(this.#options.outputDir, this.#options.rawPath, testName);
-    fs.mkdirSync(this.recordingPath)
+    const testName = this.testName = generateFilename(this.#options.maxTestNameCharacters, browserName, fullName)
+    this.frameNr = 0
+    this.recordingPath = path.resolve(this.#options.outputDir, this.#options.rawPath, testName)
+    fs.mkdirSync(this.recordingPath, { recursive: true })
   }
 }

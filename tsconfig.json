@@ -32,5 +32,5 @@
     "noUnusedParameters": true,                          /* Raise an error when a function parameter isn't read. */
     "types": ["webdriverio"]
   },
-  "include": ["./src/**/*", "./__mocks__/**/*", "rollup.config.ts"]
+  "include": ["./src/**/*", "rollup.config.ts"]
 }
