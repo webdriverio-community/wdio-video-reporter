@@ -11,7 +11,7 @@ export const config: WebdriverIO.Config = {
   ],
   framework: 'cucumber',
   cucumberOpts: {
-    require: ['./tests/cucumber-scenarios/steps/UserInteractions.steps.ts'],
+    require: ['./demo/cucumber-scenarios/steps/UserInteractions.steps.ts'],
     backtrace: false,
     compiler: [],
     dryRun: false,
