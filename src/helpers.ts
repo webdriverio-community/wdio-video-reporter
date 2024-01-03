@@ -20,7 +20,11 @@ export function generateFilename (maxTestNameCharacters: number, browserName: st
     .replace(/[ ]/g, '--')
     .replace(/:|\//g, '-') + `-${msec}`
 
-  let filename = encodeURIComponent(`${fullName.replace(/\s+/g, '-')}--${browserName}--${timestamp}`)
+  let filename = 'video-'
+  if (process.env.WDIO_WORKER_ID) {
+    filename += `${process.env.WDIO_WORKER_ID}-`
+  }
+  filename += encodeURIComponent(`${fullName.replace(/\s+/g, '-')}--${browserName}--${timestamp}`)
     .replace(/%../g, '')
     .replace(/\./g, '-')
     .replace(/[/\\?%*:'|"<>()]/g, '')

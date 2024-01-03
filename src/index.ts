@@ -1,4 +1,4 @@
-
+import os from 'node:os'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
@@ -24,6 +24,7 @@ import notAvailableImage from './assets/not-available.png'
 
 export default class VideoReporter extends WdioReporter {
   options: Required<ReporterOptions>
+  #outputDir: string = os.tmpdir()
   #isDone = false
   #usingAllure = false
   #allureOutputDir?: string
@@ -68,6 +69,7 @@ export default class VideoReporter extends WdioReporter {
    * Set wdio config options
    */
   onRunnerStart (runner: RunnerStats) {
+    this.#outputDir = runner.config.outputDir as string
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
@@ -100,7 +102,7 @@ export default class VideoReporter extends WdioReporter {
     }
 
     const formatSettings = getVideoFormatSettings(this.options.videoFormat)
-    const videoPath = getVideoPath(this.options.outputDir, this.testName, formatSettings.fileExtension)
+    const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
     if (!this.allureVideos.includes(videoPath)) {
       this.allureVideos.push(videoPath)
       this.#log(`Adding execution video attachment as ${videoPath}`)
@@ -114,8 +116,6 @@ export default class VideoReporter extends WdioReporter {
   onAfterCommand (commandArgs: AfterCommandArgs) {
     const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^/]+$/)
     const commandName = command ? command[0] : 'undefined'
-
-    this.#log(`Incoming command: ${commandArgs.endpoint} => [${commandName}]`)
 
     /**
      * Filter out non-action commands and keep only last action command
@@ -136,6 +136,7 @@ export default class VideoReporter extends WdioReporter {
     /**
      * Skips screenshot if alert is displayed
      */
+    this.#log(`Add frame for command: ${commandArgs.endpoint} => [${commandName}]`)
     return this.addFrame()
   }
 
@@ -224,7 +225,7 @@ export default class VideoReporter extends WdioReporter {
       if (this.#isDone) {
         return
       }
-      this.#log(`Generated ${this.videos.length} videos, video report done!`)
+      this.#log(`Generated videos: "${this.videos.join('", "')}", video report done!`)
       this.#isDone = true
     }
 
@@ -300,7 +301,7 @@ export default class VideoReporter extends WdioReporter {
     }
 
     const formatSettings = getVideoFormatSettings(this.options.videoFormat)
-    const videoPath = getVideoPath(this.options.outputDir, this.testName, formatSettings.fileExtension)
+    const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
     this.videos.push(videoPath)
 
     // send event to nice-html-reporter
@@ -396,7 +397,7 @@ export default class VideoReporter extends WdioReporter {
 
     const testName = this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
     this.frameNr = 0
-    this.recordingPath = path.resolve(this.options.outputDir, this.options.rawPath, testName)
+    this.recordingPath = path.resolve(this.#outputDir, this.options.rawPath, testName)
     fs.mkdirSync(this.recordingPath, { recursive: true })
   }
 

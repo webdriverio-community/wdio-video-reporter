@@ -4,10 +4,16 @@ import type { SUPPORTED_VIDEO_FORMATS } from './constants.js'
 export type VideoFileExtension = keyof typeof SUPPORTED_VIDEO_FORMATS
 export interface ReporterOptions extends Reporters.Options {
   /**
+   * Path to store the videos (defaults to the WebdriverIO `outputDir` option)
+   */
+  outputDir?: string
+
+  /**
    * Maximum time to wait for a video to finish rendering (in ms).
    * @default 5000
    */
   videoRenderTimeout?: number
+
   /**
    * Where to save screenshots
    * @default 'rawSeleniumVideoGrabs'

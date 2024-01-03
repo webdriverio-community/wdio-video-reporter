@@ -1,4 +1,3 @@
-export const DEFAULT_OUTPUT_DIR = '_results_'
 export const SCREENSHOT_PADDING_WITH = 4
 export const FRAME_REGEX = new RegExp(`^.*\\/(\\d{${SCREENSHOT_PADDING_WITH}})\\.png`)
 export const SUPPORTED_VIDEO_FORMATS = {
@@ -21,8 +20,6 @@ export const SUPPORTED_VIDEO_FORMATS = {
 
 export const DEFAULT_OPTIONS = {
   videoRenderTimeout: 5000,
-
-  outputDir: DEFAULT_OUTPUT_DIR,
 
   // Where to save screenshots
   rawPath: '.video-reporter-screenshots',
@@ -53,6 +50,7 @@ export const DEFAULT_OPTIONS = {
     'back',
     'refresh',
     'execute',
+    'sync',
     'size',
     'position',
     'maximize',
@@ -80,6 +78,7 @@ export const DEFAULT_OPTIONS = {
     'longclick',
     'flick',
     'location',
+    'actions'
   ],
 
   // If test speed is not an issue, this option can be enabled to do a screenshot on every json wire message
