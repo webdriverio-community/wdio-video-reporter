@@ -3,7 +3,6 @@ import type { SUPPORTED_VIDEO_FORMATS } from './constants.js'
 
 export type VideoFileExtension = keyof typeof SUPPORTED_VIDEO_FORMATS
 export interface ReporterOptions extends Reporters.Options {
-  debugMode?: boolean
   /**
    * @default 'info'
    */

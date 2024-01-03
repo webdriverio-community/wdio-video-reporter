@@ -143,10 +143,7 @@ export default class VideoReporter extends WdioReporter {
     /**
      * Skips screenshot if alert is displayed
      */
-    return browser.getAlertText().then(() => {
-      log.debug('Detected alert open, trying to close it...\n')
-      return browser.acceptAlert()
-    }).finally(() => this.addFrame())
+    return this.addFrame()
   }
 
   /**
