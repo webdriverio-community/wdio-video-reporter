@@ -84,6 +84,9 @@ export const DEFAULT_OPTIONS = {
   // If test speed is not an issue, this option can be enabled to do a screenshot on every json wire message
   recordAllActions: false,
 
+  // Should only the last failure be recorded
+  onlyRecordLastFailure: false,
+
   // Add a screenshot at a regular interval
   screenshotIntervalSecs: 0,
 } as const
