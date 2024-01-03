@@ -20,16 +20,12 @@ export const SUPPORTED_VIDEO_FORMATS = {
 } as const
 
 export const DEFAULT_OPTIONS = {
-  debugMode: false,
-
-  logLevel: 'info',
-
-  videoRenderTimeout: 5,
+  videoRenderTimeout: 5000,
 
   outputDir: DEFAULT_OUTPUT_DIR,
 
   // Where to save screenshots
-  rawPath: 'rawSeleniumVideoGrabs',
+  rawPath: '.video-reporter-screenshots',
 
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,

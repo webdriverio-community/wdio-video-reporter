@@ -4,14 +4,10 @@ import type { SUPPORTED_VIDEO_FORMATS } from './constants.js'
 export type VideoFileExtension = keyof typeof SUPPORTED_VIDEO_FORMATS
 export interface ReporterOptions extends Reporters.Options {
   /**
-   * @default 'info'
-   */
-  logLevel?: string
-  /**
-   * @default 5
+   * Maximum time to wait for a video to finish rendering (in ms).
+   * @default 5000
    */
   videoRenderTimeout?: number
-  outputDir?: string
   /**
    * Where to save screenshots
    * @default 'rawSeleniumVideoGrabs'

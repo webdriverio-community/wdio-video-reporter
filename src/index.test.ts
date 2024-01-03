@@ -62,7 +62,6 @@ const allureRunner: any = {
   sessionId: '1234',
   instanceOptions: {
     1234: {
-      logLevel: 'trace',
       reporters: [['allure', { outputDir: '/foo/bar' }]]
     }
   }
@@ -99,7 +98,6 @@ describe('Video Reporter', () => {
     reporter.onRunnerStart(allureRunner)
     expect(reporter.allureOutputDir).toBe('/foo/bar')
     expect(vi.mocked(process.on)).toBeCalledTimes(1)
-    expect(reporter.options.debugMode).toBe(true)
   })
 
   it('onBeforeCommand', async () => {

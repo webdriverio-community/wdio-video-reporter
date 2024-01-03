@@ -5,7 +5,6 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 
 import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
-import logger from '@wdio/logger'
 import { browser } from '@wdio/globals'
 import type { Options } from '@wdio/types'
 
@@ -22,8 +21,6 @@ import type { ReporterOptions } from './types.js'
 
 // @ts-expect-error image import
 import notAvailableImage from './assets/not-available.png'
-
-const log = logger('wdio-video-reporter')
 
 export default class VideoReporter extends WdioReporter {
   options: Required<ReporterOptions>
@@ -91,10 +88,6 @@ export default class VideoReporter extends WdioReporter {
       this.#allureOutputDir = path.resolve(allureConfig[1].outputDir)
     }
     this.#usingAllure = Boolean(allureConfig)
-    this.options.debugMode = (
-      runnerInstance.logLevel!.toLowerCase() === 'trace' ||
-      runnerInstance.logLevel!.toLowerCase() === 'debug'
-    )
 
     if (this.#usingAllure) {
       process.on('exit', () => this.onExit.call(this))
@@ -110,7 +103,7 @@ export default class VideoReporter extends WdioReporter {
     const videoPath = getVideoPath(this.options.outputDir, this.testName, formatSettings.fileExtension)
     if (!this.allureVideos.includes(videoPath)) {
       this.allureVideos.push(videoPath)
-      log.debug(`Adding execution video attachment as ${videoPath}\n`)
+      this.#log(`Adding execution video attachment as ${videoPath}`)
       this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
     }
   }
@@ -122,7 +115,7 @@ export default class VideoReporter extends WdioReporter {
     const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^/]+$/)
     const commandName = command ? command[0] : 'undefined'
 
-    log.debug('Incoming command: ' + commandArgs.endpoint + ' => [' + commandName + ']\n')
+    this.#log(`Incoming command: ${commandArgs.endpoint} => [${commandName}]`)
 
     /**
      * Filter out non-action commands and keep only last action command
@@ -221,33 +214,24 @@ export default class VideoReporter extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    let started = false
-
     const abortTimer = setTimeout(() => {
-      this.write('videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n')
+      this.#log('videoRenderTimeout triggered before ffmpeg had a chance to wrap up')
       wrapItUp()
-    }, this.options.videoRenderTimeout * 1000)
+    }, this.options.videoRenderTimeout)
 
     const wrapItUp = () => {
-      if (started) {
+      clearTimeout(abortTimer)
+      if (this.#isDone) {
         return
       }
-      clearTimeout(abortTimer)
-      started = true
-      log.debug('\n--- FFMPEG is done ---\n\n')
-
-      if (this.options.logLevel !== 'silent') {
-        this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n')
-        this.write('\n\nVideo reporter Done!\n')
-      }
-
+      this.#log(`Generated ${this.videos.length} videos, video report done!`)
       this.#isDone = true
     }
 
     Promise.all(this.videoPromises)
       .then(wrapItUp)
       .catch((error) => {
-        this.write(`onRunnerEnd promise resolution caught ${error}\n`)
+        this.#log(`onRunnerEnd promise resolution caught ${error}\n`)
         wrapItUp()
       })
   }
@@ -260,7 +244,7 @@ export default class VideoReporter extends WdioReporter {
     if (!allureOutputDir) {
       return
     }
-    const abortTime = Date.now() + (this.options.videoRenderTimeout * 1000)
+    const abortTime = Date.now() + this.options.videoRenderTimeout
 
     waitForVideosToExist(this.videos, abortTime)
     waitForVideosToBeWritten(this.videos, abortTime)
@@ -295,10 +279,10 @@ export default class VideoReporter extends WdioReporter {
 
     this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
-        .then(() => log.debug(`- Screenshot (frame: ${frame})\n`))
+        .then(() => this.#log(`- Screenshot (frame: ${frame})`))
         .catch((error: Error) => {
           fs.writeFileSync(filePath, notAvailableImage, 'base64')
-          log.debug(`Screenshot not available (frame: ${frame}). Error: ${error}..\n`)
+          this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
         })
     )
   }
@@ -329,7 +313,7 @@ export default class VideoReporter extends WdioReporter {
       const insertMissing = (sourceFrame: number, targetFrame: number) => {
         const src = `${this.recordingPath}/${pad(sourceFrame)}.png`
         const dest = `${this.recordingPath}/${pad(targetFrame)}.png`
-        log.debug(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...\n`)
+        this.#log(`copying ${pad(sourceFrame)} to missing frame ${pad(targetFrame)}...`)
         insertionPromises.push(fsp.copyFile(src, dest))
       }
 
@@ -364,7 +348,7 @@ export default class VideoReporter extends WdioReporter {
       '-vf', `"scale=${this.options.videoScale}","setpts=${this.options.videoSlowdownMultiplier}.0*PTS"`,
       `"${videoPath}"`,
     ]
-    log.debug(`ffmpeg command: ${command + ' ' + args}\n`)
+    this.#log(`ffmpeg command: ${command} ${args.join(' ')}`)
 
     const promise = Promise
       .all(this.screenshotPromises)
@@ -414,5 +398,9 @@ export default class VideoReporter extends WdioReporter {
     this.frameNr = 0
     this.recordingPath = path.resolve(this.options.outputDir, this.options.rawPath, testName)
     fs.mkdirSync(this.recordingPath, { recursive: true })
+  }
+
+  #log (...args: string[]) {
+    this.write(`[${new Date().toISOString()}] ${args.join(' ')}\n`)
   }
 }
