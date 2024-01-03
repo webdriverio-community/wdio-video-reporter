@@ -5,7 +5,6 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 
 import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
-import allureReporter from '@wdio/allure-reporter'
 import logger from '@wdio/logger'
 import { browser } from '@wdio/globals'
 import type { Options } from '@wdio/types'
@@ -13,6 +12,7 @@ import type { Options } from '@wdio/types'
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg'
 import { glob } from 'glob'
 
+import AllureReporterExtension from './allure.js'
 import {
   waitForVideosToExist, waitForVideosToBeWritten, getCurrentCapabilities, getVideoFormatSettings,
   getVideoPath, pad, generateFilename
@@ -26,8 +26,11 @@ import notAvailableImage from './assets/not-available.png'
 const log = logger('wdio-video-reporter')
 
 export default class VideoReporter extends WdioReporter {
-  #options: Required<ReporterOptions>
+  options: Required<ReporterOptions>
   #isDone = false
+  #usingAllure = false
+  #allureOutputDir?: string
+  #allureReporter = new AllureReporterExtension()
 
   screenshotPromises: Promise<void>[] = []
   videos: string[] = []
@@ -38,16 +41,17 @@ export default class VideoReporter extends WdioReporter {
   recordingPath?: string
   testNameStructure: string[] = []
   testName?: string
+  isCucumberFramework = false
 
   /**
    * Set reporter options
    */
   constructor (options: ReporterOptions) {
     super(options)
-    this.#options = Object.assign({}, DEFAULT_OPTIONS, options) as Required<ReporterOptions>
+    this.options = Object.assign({}, DEFAULT_OPTIONS, options) as Required<ReporterOptions>
 
-    if (this.#options.screenshotIntervalSecs) {
-      this.#options.screenshotIntervalSecs = Math.max(this.#options.screenshotIntervalSecs, 0.5)
+    if (this.options.screenshotIntervalSecs) {
+      this.options.screenshotIntervalSecs = Math.max(this.options.screenshotIntervalSecs, 0.5)
     }
   }
 
@@ -59,9 +63,14 @@ export default class VideoReporter extends WdioReporter {
   }
 
   /**
+   * set getter to verify values for testing purposes
+   */
+  get allureOutputDir () { return this.#allureOutputDir }
+
+  /**
    * Set wdio config options
    */
-  async onRunnerStart (runner: RunnerStats) {
+  onRunnerStart (runner: RunnerStats) {
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
@@ -75,36 +84,34 @@ export default class VideoReporter extends WdioReporter {
     if (!runnerInstance) {
       return
     }
-    const allureConfig: any = runnerInstance.reporters?.find(r => r === 'allure' || (r as any)[0] === 'allure')
 
+    this.isCucumberFramework = runnerInstance.framework === 'cucumber'
+    const allureConfig: any = runnerInstance.reporters?.find(r => r === 'allure' || (r as any)[0] === 'allure')
     if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
-      this.#options.allureOutputDir = path.resolve(allureConfig[1].outputDir)
+      this.#allureOutputDir = path.resolve(allureConfig[1].outputDir)
     }
-    this.#options.usingAllure = Boolean(allureConfig)
-    this.#options.debugMode = (
+    this.#usingAllure = Boolean(allureConfig)
+    this.options.debugMode = (
       runnerInstance.logLevel!.toLowerCase() === 'trace' ||
       runnerInstance.logLevel!.toLowerCase() === 'debug'
     )
 
-    log.debug(`Using reporter config: ${JSON.stringify(runnerInstance.reporters, undefined, 2)}`)
-    log.debug(`Using config: ${JSON.stringify(this.#options, undefined, 2)}`)
-
-    if (this.#options.usingAllure) {
+    if (this.#usingAllure) {
       process.on('exit', () => this.onExit.call(this))
     }
   }
 
   onBeforeCommand () {
-    if (!this.#options.usingAllure || !this.testName) {
+    if (!this.#usingAllure || !this.testName) {
       return
     }
 
-    const formatSettings = getVideoFormatSettings(this.#options.videoFormat)
-    const videoPath = getVideoPath(this.#options.outputDir, this.testName, formatSettings.fileExtension)
+    const formatSettings = getVideoFormatSettings(this.options.videoFormat)
+    const videoPath = getVideoPath(this.options.outputDir, this.testName, formatSettings.fileExtension)
     if (!this.allureVideos.includes(videoPath)) {
       this.allureVideos.push(videoPath)
       log.debug(`Adding execution video attachment as ${videoPath}\n`)
-      allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
+      this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
     }
   }
 
@@ -117,13 +124,15 @@ export default class VideoReporter extends WdioReporter {
 
     log.debug('Incoming command: ' + commandArgs.endpoint + ' => [' + commandName + ']\n')
 
-    // Filter out non-action commands and keep only last action command
+    /**
+     * Filter out non-action commands and keep only last action command
+     */
     if (
       (
-        !this.#options.recordAllActions &&
+        !this.options.recordAllActions &&
         (
-          this.#options.excludedActions.includes(commandName) ||
-          !this.#options.snapshotCommands.includes(commandName)
+          this.options.excludedActions.includes(commandName) ||
+          !this.options.snapshotCommands.includes(commandName)
         )
       ) ||
       !this.recordingPath
@@ -131,20 +140,25 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    // Skips screenshot if alert is displayed
-    return browser.getAlertText().then(
-      () => log.debug('Skipped screenshot to avoid unexpected alert closing\n'),
-      () => this.addFrame())
+    /**
+     * Skips screenshot if alert is displayed
+     */
+    return browser.getAlertText().then(() => {
+      log.debug('Detected alert open, trying to close it...\n')
+      return browser.acceptAlert()
+    }).finally(() => this.addFrame())
   }
 
   /**
    * Add suite name to naming structure
    */
   onSuiteStart (suite: SuiteStats) {
-    log.debug(`\n\n\n--- New suite: ${suite.title} ---\n`)
-    this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+    if (this.isCucumberFramework) {
+      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+    }
+
     if (suite.type === 'scenario') {
-      this.#setRecordingPath(suite)
+      this.#setRecordingPath()
     }
   }
 
@@ -162,38 +176,25 @@ export default class VideoReporter extends WdioReporter {
     const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0
     const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0
 
-    if (hasFailedTests || (allTestsPassed && this.#options.saveAllVideos)) {
-      const filePath = path.resolve(
-        this.recordingPath!,
-        this.frameNr.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png'
-      )
-
-      browser.saveScreenshot(filePath)
-        .then(() => log.debug(`- Screenshot!! (frame: ${this.frameNr})\n`))
-        .catch((error: Error) => {
-          fs.writeFileSync(filePath, notAvailableImage, 'base64')
-          log.debug(`- Screenshot not available (frame: ${this.frameNr}). Error: ${error}..\n`)
-        })
+    if (hasFailedTests || (allTestsPassed && this.options.saveAllVideos)) {
+      this.addFrame()
     }
   }
 
   /**
    * Setup filename based on test name and prepare storage directory
    */
-  onTestStart (test: TestStats) {
-    this.#setRecordingPath(test)
-
-    // Create the report directory, if it does not exists
-    if (this.recordingPath && !fs.existsSync(this.recordingPath)) {
-      log.debug(`Creating: ${this.recordingPath}, as it not exists...\n`)
-      fs.mkdirSync(this.recordingPath, { recursive: true })
+  onTestStart (suite: TestStats) {
+    if (!this.isCucumberFramework) {
+      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
+    this.#setRecordingPath()
 
-    if (this.#options.screenshotIntervalSecs) {
+    if (this.options.screenshotIntervalSecs) {
       const instance = this
       this.intervalScreenshot = setInterval(
         () => instance.addFrame(),
-        this.#options.screenshotIntervalSecs * 1000
+        this.options.screenshotIntervalSecs * 1000
       )
     }
   }
@@ -202,35 +203,18 @@ export default class VideoReporter extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    if (this.intervalScreenshot) {
-      clearInterval(this.intervalScreenshot)
-      this.intervalScreenshot = undefined
-    }
+    this.#clearScreenshotInterval()
   }
 
   /**
    * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test: TestStats) {
-    if (this.intervalScreenshot) {
-      clearInterval(this.intervalScreenshot)
-      this.intervalScreenshot = undefined
-    }
-
+    this.#clearScreenshotInterval()
     this.testNameStructure.pop()
+    this.#extendAllureReport()
 
-    if (this.#options.usingAllure) {
-      const capabilities = getCurrentCapabilities(browser)
-
-      if (capabilities['appium:deviceName']) {
-        allureReporter.addArgument('deviceName', capabilities['appium:deviceName'])
-      }
-      if (capabilities.browserVersion) {
-        allureReporter.addArgument('browserVersion', capabilities.browserVersion)
-      }
-    }
-
-    if (test.state === 'failed' || (test.state === 'passed' && this.#options.saveAllVideos)) {
+    if (test.state === 'failed' || (test.state === 'passed' && this.options.saveAllVideos)) {
       this.addFrame()
       this.#generateVideo()
     }
@@ -245,7 +229,7 @@ export default class VideoReporter extends WdioReporter {
     const abortTimer = setTimeout(() => {
       this.write('videoRenderTimeout triggered before ffmpeg had a chance to wrap up\n')
       wrapItUp()
-    }, this.#options.videoRenderTimeout * 1000)
+    }, this.options.videoRenderTimeout * 1000)
 
     const wrapItUp = () => {
       if (started) {
@@ -255,7 +239,7 @@ export default class VideoReporter extends WdioReporter {
       started = true
       log.debug('\n--- FFMPEG is done ---\n\n')
 
-      if (this.#options.logLevel !== 'silent') {
+      if (this.options.logLevel !== 'silent') {
         this.write('\nGenerated:' + JSON.stringify(this.videos, undefined, 2) + '\n\n')
         this.write('\n\nVideo reporter Done!\n')
       }
@@ -275,7 +259,11 @@ export default class VideoReporter extends WdioReporter {
    * Finalize allure report
    */
   onExit () {
-    const abortTime = Date.now() + (this.#options.videoRenderTimeout * 1000)
+    const allureOutputDir = this.#allureOutputDir
+    if (!allureOutputDir) {
+      return
+    }
+    const abortTime = Date.now() + (this.options.videoRenderTimeout * 1000)
 
     waitForVideosToExist(this.videos, abortTime)
     waitForVideosToBeWritten(this.videos, abortTime)
@@ -284,11 +272,11 @@ export default class VideoReporter extends WdioReporter {
       console.log('videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure')
     }
 
-    const video = getVideoFormatSettings(this.#options.videoFormat)
+    const video = getVideoFormatSettings(this.options.videoFormat)
     fs
-      .readdirSync(this.#options.allureOutputDir)
+      .readdirSync(allureOutputDir)
       .filter(line => line.endsWith(video.fileExtension))
-      .map(filename => path.resolve(this.#options.allureOutputDir, filename))
+      .map(filename => path.resolve(allureOutputDir, filename))
       .filter(allureFile => fs.statSync(allureFile).size < 1024)
       // Dont parse other browsers videos since they may not be ready
       .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString()))
@@ -310,12 +298,19 @@ export default class VideoReporter extends WdioReporter {
 
     this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
-        .then(() => log.debug(`- Screenshot!! (frame: ${frame})\n`))
+        .then(() => log.debug(`- Screenshot (frame: ${frame})\n`))
         .catch((error: Error) => {
           fs.writeFileSync(filePath, notAvailableImage, 'base64')
-          log.debug(`- Screenshot not available (frame: ${frame}). Error: ${error}..\n`)
+          log.debug(`Screenshot not available (frame: ${frame}). Error: ${error}..\n`)
         })
     )
+  }
+
+  #clearScreenshotInterval () {
+    if (this.intervalScreenshot) {
+      clearInterval(this.intervalScreenshot)
+      this.intervalScreenshot = undefined
+    }
   }
 
   #generateVideo () {
@@ -323,8 +318,8 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    const formatSettings = getVideoFormatSettings(this.#options.videoFormat)
-    const videoPath = getVideoPath(this.#options.outputDir, this.testName, formatSettings.fileExtension)
+    const formatSettings = getVideoFormatSettings(this.options.videoFormat)
+    const videoPath = getVideoPath(this.options.outputDir, this.testName, formatSettings.fileExtension)
     this.videos.push(videoPath)
 
     // send event to nice-html-reporter
@@ -369,7 +364,7 @@ export default class VideoReporter extends WdioReporter {
       '-vcodec', formatSettings.vcodec,
       '-crf', '32',
       '-pix_fmt', 'yuv420p',
-      '-vf', `"scale=${this.#options.videoScale}","setpts=${this.#options.videoSlowdownMultiplier}.0*PTS"`,
+      '-vf', `"scale=${this.options.videoScale}","setpts=${this.options.videoSlowdownMultiplier}.0*PTS"`,
       `"${videoPath}"`,
     ]
     log.debug(`ffmpeg command: ${command + ' ' + args}\n`)
@@ -391,23 +386,22 @@ export default class VideoReporter extends WdioReporter {
   }
 
   #extendAllureReport () {
-    if (!this.#options.usingAllure) {
+    if (!this.#usingAllure) {
       return
     }
     const capabilities = getCurrentCapabilities(browser)
     const deviceName = capabilities['appium:deviceName']
     if (deviceName) {
-      allureReporter.addArgument('deviceName', deviceName)
+      this.#allureReporter.addArgument('deviceName', deviceName)
     }
     if (capabilities.browserVersion) {
-      allureReporter.addArgument('browserVersion', capabilities.browserVersion)
+      this.#allureReporter.addArgument('browserVersion', capabilities.browserVersion)
     }
   }
 
-  #setRecordingPath (testOrSuite: TestStats | SuiteStats) {
-    this.testNameStructure.push(testOrSuite.title.replace(/ /g, '-'))
+  #setRecordingPath () {
     const fullName = this.testNameStructure.slice(1)
-      .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0])
+      .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0] || 'unknown')
 
     let browserName = 'browser'
     const capabilities = getCurrentCapabilities(browser)
@@ -419,9 +413,9 @@ export default class VideoReporter extends WdioReporter {
       browserName = `${deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`
     }
 
-    const testName = this.testName = generateFilename(this.#options.maxTestNameCharacters, browserName, fullName)
+    const testName = this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
     this.frameNr = 0
-    this.recordingPath = path.resolve(this.#options.outputDir, this.#options.rawPath, testName)
+    this.recordingPath = path.resolve(this.options.outputDir, this.options.rawPath, testName)
     fs.mkdirSync(this.recordingPath, { recursive: true })
   }
 }

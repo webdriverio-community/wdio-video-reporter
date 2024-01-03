@@ -1,5 +1,3 @@
-import type { ReporterOptions } from './types.js'
-
 export const DEFAULT_OUTPUT_DIR = '_results_'
 export const SCREENSHOT_PADDING_WITH = 4
 export const FRAME_REGEX = new RegExp(`^.*\\/(\\d{${SCREENSHOT_PADDING_WITH}})\\.png`)
@@ -21,7 +19,7 @@ export const SUPPORTED_VIDEO_FORMATS = {
   }
 } as const
 
-export const DEFAULT_OPTIONS: Required<ReporterOptions> = {
+export const DEFAULT_OPTIONS = {
   debugMode: false,
 
   logLevel: 'info',
@@ -29,16 +27,9 @@ export const DEFAULT_OPTIONS: Required<ReporterOptions> = {
   videoRenderTimeout: 5,
 
   outputDir: DEFAULT_OUTPUT_DIR,
-  allureOutputDir: 'allure-results',
 
   // Where to save screenshots
   rawPath: 'rawSeleniumVideoGrabs',
-
-  // Should an allure report be updated with videos
-  // There is a bug, or just bad design really, where
-  // Allure is needed to make sure the videos have
-  // time to be saved before the process exits
-  usingAllure: false,
 
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,
@@ -100,7 +91,7 @@ export const DEFAULT_OPTIONS: Required<ReporterOptions> = {
 
   // Add a screenshot at a regular interval
   screenshotIntervalSecs: 0,
-}
+} as const
 
 export const TO_LOCAL_STRING_OPTIONS = {
   year: 'numeric',

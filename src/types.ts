@@ -1,7 +1,8 @@
+import type { Reporters } from '@wdio/types'
 import type { SUPPORTED_VIDEO_FORMATS } from './constants.js'
 
 export type VideoFileExtension = keyof typeof SUPPORTED_VIDEO_FORMATS
-export interface ReporterOptions {
+export interface ReporterOptions extends Reporters.Options {
   debugMode?: boolean
   /**
    * @default 'info'
@@ -13,21 +14,10 @@ export interface ReporterOptions {
   videoRenderTimeout?: number
   outputDir?: string
   /**
-   * @default 'allure-results'
-   */
-  allureOutputDir?: string
-  /**
    * Where to save screenshots
    * @default 'rawSeleniumVideoGrabs'
    */
   rawPath?: string
-
-  /**
-   * Should an allure report be updated with videos. There is a bug, or just bad design really,
-   * where Allure is needed to make sure the videos have time to be saved before the process exits.
-   * @default false
-   */
-  usingAllure?: boolean
 
   /**
    * Should all videos be saved, or only from failed tests
