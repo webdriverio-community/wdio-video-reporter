@@ -94,6 +94,13 @@ Set to true to save videos for passing tests.
 Type: `boolean`<br>
 Default: `false`
 
+### `rawPath`
+
+Where to save the screenshots for the video.
+
+Type: `string`<br>
+Default: `.video-reporter-screenshots`
+
 ### `videoSlowdownMultiplier`
 
 Integer between [1-100]. Increase if videos are playing to quick.
@@ -110,10 +117,10 @@ Default: `'1200:trunc(ow/a/2)*2'`
 
 ### `videoRenderTimeout`
 
-Max seconds to wait for a video to render.
+Maximum time to wait for a video to finish rendering (in ms).
 
 Type: `number`<br>
-Default: `5`
+Default: `5000`
 
 ### `outputDir`
 
@@ -128,7 +135,14 @@ Max length of test name.
 Type: `number`<br>
 Default: `250`
 
-### `addExcludedActions`
+### `snapshotCommands`
+
+Which commands should result in a screenshot (without: `/session/:sessionId/`).
+
+Type: `string[]`<br>
+Default: `['url', 'forward', 'back', 'refresh', 'execute', 'size', 'position', 'maximize', 'click', 'submit', 'value', 'keys', 'clear', 'selected', 'enabled', 'displayed', 'orientation', 'alert_text', 'accept_alert', 'dismiss_alert', 'moveto', 'buttondown', 'buttonup', 'doubleclick', 'down', 'up', 'move', 'scroll', 'doubleclick', 'longclick', 'flick', 'location']`
+
+### `excludedActions`
 
 Add actions where screenshots are unnecessary.
 
