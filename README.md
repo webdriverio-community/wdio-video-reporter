@@ -1,67 +1,31 @@
-wdio-video-reporter [![Build Status](https://travis-ci.org/presidenten/wdio-video-reporter.svg?branch=master)](https://travis-ci.org/presidenten/wdio-video-reporter) [![test](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+WebdriverIO Video Reporter [![test](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 ===================
-
-![Logo](https://raw.githubusercontent.com/presidenten/wdio-video-reporter-example-report/master/wdio-video-reporter.png)
-
-This is a reporter for [Webdriver IO v6 and higher](https://webdriver.io/) that generates videos of your wdio test executions. If you use allure, then the test cases automatically get decorated with the videos as well. (For Webdriver IO v5, please use wdio-video-reporter version ^2.0.0.)
-
-Videos ends up in `wdio.config.outputDir`
-
-Checkout example Allure report with included videos on failed tests here:
-https://presidenten.github.io/wdio-video-reporter-example-report/
 
 ![example-allure-report](https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif)
 
-Pros:
-- Nice videos in your allure reports
-- Nice human speed videos, even though tests are fast
-- Works with Selenium grid
-- Works with all webdrivers that support `saveScreenshot`
-- Verified on the following Deskop browsers using Selenium 3.141.59:
-  - Chrome
-  - Firefox
-  - Safari
-  - Internet Explorer 11
-  - Microsoft Edge
-- Verified on the following ios and android devices with [Appium](http://appium.io/docs/en/about-appium/getting-started/) 1.13.0-beta3:
-  - Iphone 8
-  - Ipad Gen 6
-  - Samsung galaxy S9
-  - Samsung galaxy tab A10
+> Create a video screen capture of your tests and enhanced your Allure reporting easily!
 
-Cons:
-- Works by taking screenshots after "actions", which makes the tests a little bit slower. This is mitigated by carefully choosing which [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) messages that should result in a screenshot
-- Selenium drivers doesn't include alert-boxes and popups in screenshots, so they are not visible in the videos
+This is a [WebdriverIO](https://webdriver.io/) reporter that generates videos of your test executions. If you use it in combination with the [Allure Reporter](https://webdriver.io/docs/allure-reporter), then the test cases automatically get decorated with the videos as well (see [example project](https://presidenten.github.io/wdio-video-reporter-example-report/)).
 
+As this reporter is using the [`saveScreenshot`](https://webdriver.io/docs/api/element/saveScreenshot/) command to render the video it supports all environments including mobile environments.
 
-Quick start
-===========
+That said, taking a screenshot after almost every command can slow down your tests. Also, note that the videos don't include alert-boxes and popups.
 
-Checkout the simple template at [wdio-template](https://github.com/presidenten/wdio-template) to quickly get up to speed.
+# Installation
 
-Clone one of the repositories and install dependencies with `yarn` or `npm install`. Then run `yarn e2e` or `npm run e2e` in demo directory and finally `yarn report` or `npm run report` to see allure report.
-
-
-Installation
-============
-
-Install the reporter
---------------------
+First, install the reporter:
 
 ```sh
-yarn add wdio-video-reporter
+npm install --save-dev wdio-video-reporter
 ```
 
 or
 
-```
-npm install wdio-video-reporter
+```sh
+yarn add --dev wdio-video-reporter
 ```
 
-Add the reporter to config
---------------------------
-
-Add the video reporter to the configuration in the reporters property:
+Then add the reporter to your configuration:
 
 ```js
  reporters: [
@@ -72,10 +36,11 @@ Add the video reporter to the configuration in the reporters property:
   ],
 ```
 
-Using with Allure
------------------
+# Usage
 
-Adding the Allure reporter as well, automatically updates the reports with videos without any need to configure anything :-)
+## With [Allure Reporter](https://webdriver.io/docs/allure-reporter)
+
+Adding the Allure reporter as well automatically updates the reports with videos without any need to configure anything :-)
 
 ```js
  reporters: [
@@ -91,8 +56,7 @@ Adding the Allure reporter as well, automatically updates the reports with video
   ],
 ```
 
-Using with wdio-html-nice-reporter (https://github.com/rpii/wdio-html-reporter)
------------------
+## With [`wdio-html-nice-reporter`](https://github.com/rpii/wdio-html-reporter)
 
 Adding the html nice reporter automatically updates the reports with videos without any need to configure anything 🙂
 
@@ -117,42 +81,82 @@ Adding the html nice reporter automatically updates the reports with videos with
   ],
 ```
 
-Configuration
-=============
+# Configuration
 
-Normal configuration parameters
--------------------------------
+Most users may want to set these configurations:
 
-Most users may want to set these
+### `saveAllVideos`
 
-- `saveAllVideos` Set to true to save videos for passing tests. `Default: false`
-- `videoSlowdownMultiplier` Integer between [1-100]. Increase if videos are playing to quick. `Default: 3`
-- `videoScale` Scaling of video. See https://trac.ffmpeg.org/wiki/Scaling. `Default: '1200:trunc(ow/a/2)*2'`
-- `videoRenderTimeout` Max seconds to wait for a video to render. `Default: 5`
-- `outputDir` If its not set, it uses wdio.config.outputDir. `Default: undefined`
-- `maxTestNameCharacters` Max length of test name. `Default: 250`
+Set to true to save videos for passing tests.
 
-Advanced configuration parameters
----------------------------------
+Type: `boolean`<br>
+Default: `false`
 
-Advanced users who want to change when the engine makes a screengrab can edit these. These arrays may be populated with the last word of a [jsonWireProtocol](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol) message, i.e. /session/:sessionId/`buttondown`.
+### `videoSlowdownMultiplier`
 
-- `addExcludedActions` Add actions where screenshots are unnecessary. `Default: []`
-- `addJsonWireActions` Add actions where screenshots are missing. `Default: []`
-- `recordAllActions` Skip filtering and screenshot everything. (Not recommended) `Default: false`
-- `screenshotIntervalSecs` Force a screenshot at this interval (minumum 0.5s) `Default: undefined`
-- `videoFormat` Video format (container) to be used. Supported formats: `mp4`, `webm`. `Default: webm`
-To see processed messages, set `wdio.config.logLevel: 'debug'` and check `outputDir/wdio-X-Y-Video-reporter.log`. This will also leave the screenshots output directory intact for review
+Integer between [1-100]. Increase if videos are playing to quick.
 
-To avoid extra logging all together and only get the video files, set `wdio.config.logLevel: 'silent'`. You won't get output of video files path and video reporter progress in the console.
+Type: `number`<br>
+Default: `3`
 
-Cucumber support
-----------------
+### `videoScale`
 
-If you are using the Allure reporter, you need to ensure you do the following:
+Scaling of video. See https://trac.ffmpeg.org/wiki/Scaling.
 
-- Use `chai` instead of using the built-in node assertions otherwise the failed tests gets reported as broken in your steps definitions
-- Add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
+Type: `string`<br>
+Default: `'1200:trunc(ow/a/2)*2'`
+
+### `videoRenderTimeout`
+
+Max seconds to wait for a video to render.
+
+Type: `number`<br>
+Default: `5`
+
+### `outputDir`
+
+If it's not set, it uses [`outputDir`](https://webdriver.io/docs/configuration#outputdir).
+
+Type: `string`<br>
+
+### `maxTestNameCharacters`
+
+Max length of test name.
+
+Type: `number`<br>
+Default: `250`
+
+### `addExcludedActions`
+
+Add actions where screenshots are unnecessary.
+
+Type: `string[]`<br>
+Default: `[]`
+
+### `recordAllActions`
+
+Skip filtering and screenshot everything. (Not recommended)
+
+Type: `boolean`<br>
+Default: `false`
+
+### `screenshotIntervalSecs`
+
+Force a screenshot at this interval (minimum 0.5s).
+
+Type: `number`
+
+### `videoFormat`
+
+Video format (container) to be used. Supported formats: `mp4`, `webm`.
+
+Type: `string`
+Default: `webm`
+
+## Cucumber Support
+
+If you are using the Allure reporter with Cucumber, add `useCucumberStepReporter: true` to Allure option in `wdio.conf.js` file, a typical configuration would look like this:
+
 ```js
   reporters: [
     ['video', {
@@ -167,20 +171,18 @@ If you are using the Allure reporter, you need to ensure you do the following:
     }],
   ],
 ```
-For a complete example, checkout the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
 
+For a complete example, check out the cucumber branch at the [wdio-template](https://github.com/presidenten/wdio-template/tree/cucumber)
 
-Appium setup
-------------
+## Appium Support
 
-Since `wdio-video-reporter` v1.2.4 there is support to help Allure differentiate between safari and chrome browsers on desktop and devices.
-The reporter uses the custom property `deviceType` to id the different devices.
-Recommended values are `phone` and `tablet`.
-It is recommended to include `browserVersion` as well for _all_ browsers to avoid a bug in Chrome webdriver when using devices in same Selenium grid as desktop Chrome browsers.
+Since `wdio-video-reporter` v1.2.4 there is support to help Allure differentiate between safari and chrome browsers on desktop and devices. The reporter uses the custom property `appium:deviceType` to id the different devices.
+Recommended values are `phone` and `tablet`. It is recommended to include `browserVersion` as well for _all_ browsers to avoid a bug in Chrome webdriver when using devices in same Selenium grid as desktop Chrome browsers.
 
-The generated video files will also get `deviceType` added to the browser name.
+The generated video files will also get `appium:deviceType` added to the browser name.
 
-Example appium configuration:
+Example Appium configuration:
+
 ```json
   "capabilities": [
     {
@@ -204,6 +206,12 @@ And `wdio.conf.js`:
   ],
 ```
 
+# Example
+
+Check out the simple template at [wdio-template](https://github.com/presidenten/wdio-template) to quickly get up to speed.
+
+Clone one of the repositories and install dependencies with `yarn` or `npm install`. Then run `yarn e2e` or `npm run e2e` in demo directory and finally `yarn report` or `npm run report` to see Allure report.
+
 Contributing
 ============
 
@@ -214,4 +222,4 @@ The demo folder works with the built version of the library, so make sure to bui
 Thanks
 ======
 
-Thanks to [Johnson E](https://github.com/jonn-set) for fixing Cucumber support which alot of users have asked for.
+Thanks to [Johnson E](https://github.com/jonn-set) for fixing Cucumber support which a lot of users have asked for.
