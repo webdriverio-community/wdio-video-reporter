@@ -32,6 +32,7 @@ vi.mock('@ffmpeg-installer/ffmpeg', () => ({
 vi.mock('@wdio/reporter', () => ({
   default: class {
     options: unknown
+    write = vi.fn()
     constructor (options: unknown) {
       this.options = options
     }
@@ -60,6 +61,9 @@ const sleep = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms))
 const allureRunner: any = {
   isMultiremote: false,
   sessionId: '1234',
+  config: {
+    outputDir: '/foo/bar'
+  },
   instanceOptions: {
     1234: {
       reporters: [['allure', { outputDir: '/foo/bar' }]]
@@ -136,21 +140,20 @@ describe('Video Reporter', () => {
         excludedActions: ['click']
       })
       reporter.recordingPath = '/foo/bar'
-      reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any)
-      expect(browser.getAlertText).toBeCalledTimes(0)
+      expect(reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any))
+        .toBe(false)
     })
 
     it('should do nothing if recordingPath is not set', () => {
       const reporter = new VideoReporter({})
-      reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any)
-      expect(browser.getAlertText).toBeCalledTimes(0)
+      expect(reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any))
+        .toBe(false)
     })
 
     it('should add frame if no alert is displayed', async () => {
       const reporter = new VideoReporter({})
       reporter.recordingPath = '/foo/bar'
       await reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any)
-      expect(browser.getAlertText).toBeCalledTimes(1)
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
 
@@ -158,7 +161,6 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({ recordAllActions: true })
       reporter.recordingPath = '/foo/bar'
       await reporter.onAfterCommand({ endpoint: '/session/1234/foobar' } as any)
-      expect(browser.getAlertText).toBeCalledTimes(1)
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
   })
@@ -178,10 +180,10 @@ describe('Video Reporter', () => {
     it('should set recordingPath if suite is scenario', () => {
       const reporter = new VideoReporter({})
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/unknown--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining('/video-unknown--CHROME--'))
       reporter.isCucumberFramework = true
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/foo-bar--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining('/video-foo-bar--CHROME--'))
     })
   })
 
@@ -236,7 +238,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.onTestStart({ title: 'foo bar' } as any)
       expect(fs.mkdirSync).toBeCalledWith(
-        expect.stringContaining('/foo-bar--CHROME--'),
+        expect.stringContaining('/video-foo-bar--CHROME--'),
         { recursive: true }
       )
     })

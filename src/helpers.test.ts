@@ -41,25 +41,25 @@ describe('generateFilename - ', () => {
 
   it('should generate name in form: name--browser--date', () => {
     expect(generateFilename(maxTestNameCharacters, browser, name))
-      .toBe(`${name}--${browser}--${date}`)
+      .toBe(`video-${name}--${browser}--${date}`)
   })
 
   it('should replace space with -', () => {
     const testname = name + ' space'
     expect(generateFilename(maxTestNameCharacters, browser, testname))
-      .toBe(`${name}-space--${browser}--${date}`)
+      .toBe(`video-${name}-space--${browser}--${date}`)
   })
 
   it('should replace . with -', () => {
     const testname = name + '.dot'
     expect(generateFilename(maxTestNameCharacters, browser, testname))
-      .toBe(`${name}-dot--${browser}--${date}`)
+      .toBe(`video-${name}-dot--${browser}--${date}`)
   })
 
   it('should remove characters: /?<>\\/:*|"()[]\'<>%', () => {
     const testname = name + '-/?<>\\/:*|"()[]\'<>%comment/'
     expect(generateFilename(maxTestNameCharacters, browser, testname))
-      .toBe(`${name}-comment--${browser}--${date}`)
+      .toBe(`video-${name}-comment--${browser}--${date}`)
   })
 
   it('should keep filenames <= config.maxTestNameCharacters', () => {

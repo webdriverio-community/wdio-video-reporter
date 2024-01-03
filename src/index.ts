@@ -130,7 +130,7 @@ export default class VideoReporter extends WdioReporter {
       ) ||
       !this.recordingPath
     ) {
-      return
+      return false
     }
 
     /**
@@ -272,7 +272,7 @@ export default class VideoReporter extends WdioReporter {
 
   addFrame () {
     if (!this.recordingPath) {
-      return
+      return false
     }
 
     const frame = this.frameNr++

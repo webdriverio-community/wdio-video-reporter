@@ -5,7 +5,9 @@ export default defineConfig({
     coverage: {
       enabled: true,
       provider: 'v8',
-      exclude: ['__mocks__', 'node_modules', '.github', 'allure-report', 'tests', 'src/types.ts', '.eslintrc.cjs'],
+      exclude: [
+        '__mocks__', 'node_modules', '.github', 'allure-report', 'demo', 'src/types.ts', '.eslintrc.cjs'
+      ],
       thresholds: {
         statements: 77,
         branches: 87,
