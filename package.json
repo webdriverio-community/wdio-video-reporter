@@ -21,6 +21,8 @@
     "clean": "rimraf _results_ allure-report coverage dist tests/_results_",
     "demo:mocha": "npx wdio run demo/wdio.conf.ts",
     "demo:cucumber": "npx wdio run demo/wdio.cucumber.conf.ts",
+    "release": "release-it --github.release",
+    "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "test": "run-s test:*",
     "test:lint": "eslint src",
     "test:unit": "npx vitest --coverage --run",
