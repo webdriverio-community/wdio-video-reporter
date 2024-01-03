@@ -39,11 +39,11 @@
     "@rollup/plugin-typescript": "^11.1.5",
     "@rollup/pluginutils": "^5.1.0",
     "@types/mocha": "^10.0.6",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
-    "@vitest/coverage-v8": "^1.1.0",
-    "@wdio/cli": "^8.27.0",
-    "@wdio/cucumber-framework": "^8.27.0",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "@vitest/coverage-v8": "^1.1.1",
+    "@wdio/cli": "^8.27.1",
+    "@wdio/cucumber-framework": "^8.27.1",
     "@wdio/jasmine-framework": "^8.27.0",
     "@wdio/local-runner": "^8.27.0",
     "@wdio/spec-reporter": "^8.27.0",
@@ -53,10 +53,10 @@
     "eslint-plugin-unicorn": "^50.0.1",
     "npm-run-all": "^4.1.5",
     "release-it": "^17.0.1",
-    "rollup": "^4.9.1",
+    "rollup": "^4.9.2",
     "rollup-plugin-delete": "^2.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vitest": "^1.1.0"
+    "vitest": "^1.1.1"
   }
 }
