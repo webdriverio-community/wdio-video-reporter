@@ -1,7 +1,9 @@
 WebdriverIO Video Reporter [![test](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 ===================
 
-![example-allure-report](https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif)
+<p align="center">
+  <img width="100%" src="https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif" />
+</p>
 
 > Create a video screen capture of your tests and enhanced your Allure reporting easily!
 
