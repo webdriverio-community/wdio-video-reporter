@@ -225,7 +225,7 @@ export default class VideoReporter extends WdioReporter {
       if (this.#isDone) {
         return
       }
-      this.#log(`Generated videos: "${this.videos.join('", "')}", video report done!`)
+      this.#log(`Generated ${this.videos.length} videos, video report done!`)
       this.#isDone = true
     }
 
@@ -351,7 +351,8 @@ export default class VideoReporter extends WdioReporter {
     ]
     this.#log(`ffmpeg command: ${command} ${args.join(' ')}`)
 
-    const promise = Promise
+    const start = Date.now()
+    const promise: Promise<void> = Promise
       .all(this.screenshotPromises)
       .then(() => frameCheckPromise)
       .then(() => new Promise((resolve) => {
@@ -360,7 +361,10 @@ export default class VideoReporter extends WdioReporter {
           shell: true,
           windowsHide: true,
         })
-        cp.on('close', resolve)
+        cp.on('close', () => {
+          this.#log(`Generated video: "${videoPath}" (${Date.now() - start}ms)`)
+          return resolve()
+        })
       }))
 
     this.videoPromises.push(promise)
