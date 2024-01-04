@@ -166,8 +166,15 @@ Type: `number`
 
 Video format (container) to be used. Supported formats: `mp4`, `webm`.
 
-Type: `string`
+Type: `string`<br>
 Default: `webm`
+
+### `onlyRecordLastFailure`
+
+Only record the last failure when `specFileRetries` is > 0
+
+Type: `boolean`<br>
+Default: `false`
 
 ## Cucumber Support
 

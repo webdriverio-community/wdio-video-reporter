@@ -29,6 +29,7 @@ export default class VideoReporter extends WdioReporter {
   #usingAllure = false
   #allureOutputDir?: string
   #allureReporter = new AllureReporterExtension()
+  #record = true
 
   screenshotPromises: Promise<void>[] = []
   videos: string[] = []
@@ -66,9 +67,24 @@ export default class VideoReporter extends WdioReporter {
   get allureOutputDir () { return this.#allureOutputDir }
 
   /**
+   * set getter to verify values for testing purposes
+   */
+  get record () { return this.#record }
+
+  /**
+   * set setter to verify values for testing purposes
+   */
+  set record (value) { this.#record = value }
+
+  /**
    * Set wdio config options
    */
   onRunnerStart (runner: RunnerStats) {
+    if (this.options.onlyRecordLastFailure && runner.retry !== runner.config.specFileRetries) {
+      this.#record = false
+      return
+    }
+
     this.#outputDir = runner.config.outputDir as string
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
@@ -97,7 +113,7 @@ export default class VideoReporter extends WdioReporter {
   }
 
   onBeforeCommand () {
-    if (!this.#usingAllure || !this.testName) {
+    if (!this.#usingAllure || !this.testName || !this.#record) {
       return
     }
 
@@ -114,6 +130,10 @@ export default class VideoReporter extends WdioReporter {
    * Save screenshot or add not available image movie stills
    */
   onAfterCommand (commandArgs: AfterCommandArgs) {
+    if (!this.#record) {
+      return
+    }
+
     const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^/]+$/)
     const commandName = command ? command[0] : 'undefined'
 
@@ -144,6 +164,10 @@ export default class VideoReporter extends WdioReporter {
    * Add suite name to naming structure
    */
   onSuiteStart (suite: SuiteStats) {
+    if (!this.#record) {
+      return
+    }
+
     if (this.isCucumberFramework) {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
@@ -157,6 +181,10 @@ export default class VideoReporter extends WdioReporter {
    * Cleare suite name from naming structure
    */
   onSuiteEnd (suite: SuiteStats) {
+    if (!this.#record) {
+      return
+    }
+
     this.#extendAllureReport()
 
     if (!this.testName) {
@@ -176,6 +204,10 @@ export default class VideoReporter extends WdioReporter {
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (suite: TestStats) {
+    if (!this.#record) {
+      return
+    }
+
     if (!this.isCucumberFramework) {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
@@ -194,20 +226,28 @@ export default class VideoReporter extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    this.#clearScreenshotInterval()
+    if (!this.#record) {
+      return
+    }
+
+    this.clearScreenshotInterval()
   }
 
   /**
    * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test: TestStats) {
-    this.#clearScreenshotInterval()
+    if (!this.#record) {
+      return
+    }
+
+    this.clearScreenshotInterval()
     this.testNameStructure.pop()
     this.#extendAllureReport()
 
     if (test.state === 'failed' || (test.state === 'passed' && this.options.saveAllVideos)) {
       this.addFrame()
-      this.#generateVideo()
+      this.generateVideo()
     }
   }
 
@@ -215,6 +255,10 @@ export default class VideoReporter extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
+    if (!this.#record) {
+      return
+    }
+
     const abortTimer = setTimeout(() => {
       this.#log('videoRenderTimeout triggered before ffmpeg had a chance to wrap up')
       wrapItUp()
@@ -288,14 +332,14 @@ export default class VideoReporter extends WdioReporter {
     )
   }
 
-  #clearScreenshotInterval () {
+  clearScreenshotInterval () {
     if (this.intervalScreenshot) {
       clearInterval(this.intervalScreenshot)
       this.intervalScreenshot = undefined
     }
   }
 
-  #generateVideo () {
+  generateVideo () {
     if (!this.testName) {
       return
     }

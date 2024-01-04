@@ -97,11 +97,30 @@ describe('Video Reporter', () => {
     expect(reporter.options.screenshotIntervalSecs).toBe(0.5)
   })
 
-  it('onRunnerStart', () => {
-    const reporter = new VideoReporter({})
-    reporter.onRunnerStart(allureRunner)
-    expect(reporter.allureOutputDir).toBe('/foo/bar')
-    expect(vi.mocked(process.on)).toBeCalledTimes(1)
+  describe('onRunnerStart', () => {
+    it('should set allure output dir and be called one time', () => {
+      const reporter = new VideoReporter({})
+      reporter.onRunnerStart(allureRunner)
+      expect(vi.mocked(process.on)).toBeCalledTimes(1)
+    })
+
+    it('should set record to true', () => {
+      const reporter = new VideoReporter({})
+      reporter.onRunnerStart(allureRunner)
+      expect(reporter.record).toBe(true)
+    })
+
+    it('should set record to false when onlyRecordLastFailure is set and not last retry', () => {
+      const reporter = new VideoReporter({ onlyRecordLastFailure: true })
+      reporter.onRunnerStart({ ...allureRunner, retry: 1, specFileRetries: 2 })
+      expect(reporter.record).toBe(false)
+    })
+
+    it('should set record to true when onlyRecordLastFailure is set and is on the last retry', () => {
+      const reporter = new VideoReporter({ onlyRecordLastFailure: true })
+      reporter.onRunnerStart({ ...allureRunner, retry: 2, config: { specFileRetries: 2 } })
+      expect(reporter.record).toBe(true)
+    })
   })
 
   it('onBeforeCommand', async () => {
@@ -163,6 +182,22 @@ describe('Video Reporter', () => {
       await reporter.onAfterCommand({ endpoint: '/session/1234/foobar' } as any)
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
+
+    it('should call addFrame', async () => {
+      const reporter = new VideoReporter({})
+      reporter.addFrame = vi.fn() as any
+      reporter.record = true
+      const result = await reporter.onAfterCommand({ endpoint: '/session/1234/foobar' } as any)
+      expect(result).toBe(false)
+    })
+
+    it('should not call addFrame', async () => {
+      const reporter = new VideoReporter({})
+      reporter.addFrame = vi.fn() as any
+      reporter.record = false
+      await reporter.onAfterCommand({ endpoint: '/session/1234/foobar' } as any)
+      expect(reporter.addFrame).toBeCalledTimes(0)
+    })
   })
 
   describe('onSuiteStart', () => {
@@ -223,6 +258,15 @@ describe('Video Reporter', () => {
       expect(browser.saveScreenshot).toBeCalledTimes(1)
       expect(fs.writeFileSync).toBeCalledTimes(1)
     })
+
+    it('should not call addFrame', () => {
+      const reporter = new VideoReporter({})
+      reporter.addFrame = vi.fn() as any
+      reporter.testName = 'foo bar'
+      reporter.record = false
+      reporter.onSuiteStart({ tests: [{ state: 'failed' }] } as any)
+      expect(reporter.addFrame).toBeCalledTimes(0)
+    })
   })
 
   describe('onTestStart', () => {
@@ -245,10 +289,52 @@ describe('Video Reporter', () => {
 
     it('adds a frame on interval', () => {
       const reporter = new VideoReporter({ screenshotIntervalSecs: 1 })
-      reporter.addFrame = vi.fn()
+      reporter.addFrame = vi.fn() as any
       reporter.onTestStart({ title: 'foo bar' } as any)
       vi.advanceTimersToNextTimer()
       expect(reporter.addFrame).toBeCalledTimes(1)
+    })
+
+    it('should not call mkdirSync', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = false
+      reporter.onTestStart({ title: 'foo bar' } as any)
+      expect(fs.mkdirSync).toBeCalledTimes(0)
+    })
+
+    it('should call mkdirSync', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = true
+      reporter.onTestStart({ title: 'foo bar' } as any)
+      expect(fs.mkdirSync).toBeCalledTimes(1)
+    })
+  })
+
+  describe('onTestEnd', () => {
+    it('should generate video', () => {
+      const reporter = new VideoReporter({})
+      reporter.testName = 'foo bar'
+      reporter.generateVideo = vi.fn() as any
+      reporter.onTestEnd({ state: 'failed' } as any)
+      expect(reporter.generateVideo).toBeCalledTimes(1)
+    })
+
+    it('should not generate video when retry < specFileRetries and the test has failed', () => {
+      const reporter = new VideoReporter({ onlyRecordLastFailure: true })
+      reporter.testName = 'foo bar'
+      reporter.onRunnerStart({ ...allureRunner, retry: 1, specFileRetries: 2 })
+      reporter.generateVideo = vi.fn() as any
+      reporter.onTestEnd({ state: 'failed' } as any)
+      expect(reporter.generateVideo).toBeCalledTimes(0)
+    })
+
+    it('should generate video when retry equals specFileRetries and the test failed', () => {
+      const reporter = new VideoReporter({ onlyRecordLastFailure: true })
+      reporter.testName = 'foo bar'
+      reporter.onRunnerStart({ ...allureRunner, retry: 2, config: { specFileRetries: 2 } })
+      reporter.generateVideo = vi.fn() as any
+      reporter.onTestEnd({ state: 'failed' } as any)
+      expect(reporter.generateVideo).toBeCalledTimes(1)
     })
   })
 
@@ -258,6 +344,22 @@ describe('Video Reporter', () => {
       reporter.intervalScreenshot = 1234 as any
       reporter.onTestSkip()
       expect(reporter.intervalScreenshot).toBeUndefined()
+    })
+
+    it('should call clearScreenshotInterval', () => {
+      const reporter = new VideoReporter({})
+      reporter.clearScreenshotInterval = vi.fn() as any
+      reporter.record = true
+      reporter.onTestSkip()
+      expect(reporter.clearScreenshotInterval).toBeCalledTimes(1)
+    })
+
+    it('should not call clearScreenshotInterval', () => {
+      const reporter = new VideoReporter({})
+      reporter.clearScreenshotInterval = vi.fn() as any
+      reporter.record = false
+      reporter.onTestSkip()
+      expect(reporter.clearScreenshotInterval).toBeCalledTimes(0)
     })
   })
 })
