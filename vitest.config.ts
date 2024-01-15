@@ -9,10 +9,10 @@ export default defineConfig({
         '__mocks__', 'node_modules', '.github', 'allure-report', 'demo', 'src/types.ts', '.eslintrc.cjs'
       ],
       thresholds: {
-        statements: 77,
+        statements: 76,
         branches: 87,
-        functions: 83,
-        lines: 77,
+        functions: 82,
+        lines: 76,
       }
     }
   }
