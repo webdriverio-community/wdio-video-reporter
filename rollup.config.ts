@@ -13,19 +13,19 @@ interface PNGOptions {
 }
 
 /**
- * Transform imports of pngs to base64
+ * Transform imports of png's to base64
  */
 const png = (options: PNGOptions = {}) => {
-  const filter = createFilter(options.include, options.exclude);
+  const filter = createFilter(options.include, options.exclude)
   return {
     name: 'png',
     load(id: string) {
       if (filter(id) && extname(id) === '.png') {
-        return `export default '${readFileSync(id, 'base64')}'`;
+        return `export default '${readFileSync(id, 'base64')}'`
       }
-    },
-  };
-};
+    }
+  }
+}
 
 const config: RollupOptions = {
   input: 'src/index.ts',
@@ -66,7 +66,7 @@ const config: RollupOptions = {
     'child_process',
     'glob',
     'util',
-  ],
-};
+  ]
+}
 
 export default config

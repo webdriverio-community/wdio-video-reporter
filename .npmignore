@@ -11,3 +11,9 @@ __mocks__
 coverage
 rollup.config.js
 *.tgz
+allure-report
+test
+tsconfig.json
+/*.ts
+!dist/**/*.ts
+_results_
