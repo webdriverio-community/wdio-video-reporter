@@ -80,9 +80,7 @@ export default class VideoReporter extends WdioReporter {
    * Set wdio config options
    */
   onRunnerStart (runner: RunnerStats) {
-    console.log('==== onRunnerStart');
     if (this.options.onlyRecordLastFailure && runner.retry !== runner.config.specFileRetries) {
-      console.log('==== onlyRecordLast & retry !== specFileRetries');
       this.#record = false
       return
     }
@@ -94,13 +92,11 @@ export default class VideoReporter extends WdioReporter {
 
     // May not be present in the case were a spawned worker has no tests when running a subset of the test suite.
     if (!sessionId) {
-      console.log('==== NO SEESION FOUND!?');
       return
     }
 
     const runnerInstance = runner.instanceOptions[sessionId] as Options.Testrunner
     if (!runnerInstance) {
-      console.log('==== NO RUNNER INSTACE');
       return
     }
 
@@ -118,14 +114,12 @@ export default class VideoReporter extends WdioReporter {
 
   onBeforeCommand () {
     if (!this.#usingAllure || !this.testName || !this.#record) {
-      console.log('==== onBeforeCommand not using allure... return');
       return
     }
 
     const formatSettings = getVideoFormatSettings(this.options.videoFormat)
     const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
     if (!this.allureVideos.includes(videoPath)) {
-      console.log('==== allure videos doesnt include video path');
       this.allureVideos.push(videoPath)
       this.#log(`Adding execution video attachment as ${videoPath}`)
       this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
@@ -136,9 +130,7 @@ export default class VideoReporter extends WdioReporter {
    * Save screenshot or add not available image movie stills
    */
   onAfterCommand (commandArgs: AfterCommandArgs) {
-      console.log('==== onAfterCommand okay');
     if (!this.#record) {
-      console.log('==== onAfterCommand record not set, return');
       return
     }
 
@@ -172,25 +164,23 @@ export default class VideoReporter extends WdioReporter {
    * Add suite name to naming structure
    */
   onSuiteStart (suite: SuiteStats) {
-      console.log('==== onSuiteStart okay');
     if (!this.#record) {
-      return
+            return
     }
 
     if (this.isCucumberFramework) {
-      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+            this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
 
     if (suite.type === 'scenario') {
-      this.#setRecordingPath()
+            this.#setRecordingPath()
     }
-  }
+      }
 
   /**
    * Cleare suite name from naming structure
    */
   onSuiteEnd (suite: SuiteStats) {
-      console.log('==== onSuiteEnd okay');
     if (!this.#record) {
       return
     }
@@ -214,17 +204,17 @@ export default class VideoReporter extends WdioReporter {
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (suite: TestStats) {
-    if (!this.#record) {
-      return
+        if (!this.#record) {
+            return
     }
 
     if (!this.isCucumberFramework) {
-      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+            this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
-    this.#setRecordingPath()
-
+        this.#setRecordingPath()
+    
     if (this.options.screenshotIntervalSecs) {
-      const instance = this
+            const instance = this
       this.intervalScreenshot = setInterval(
         () => instance.addFrame(),
         this.options.screenshotIntervalSecs * 1000
@@ -236,7 +226,7 @@ export default class VideoReporter extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-    if (!this.#record) {
+        if (!this.#record) {
       return
     }
 
@@ -247,7 +237,6 @@ export default class VideoReporter extends WdioReporter {
    * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
   onTestEnd (test: TestStats) {
-      console.log('==== onTestEnd okay');
     if (!this.#record) {
       return
     }
@@ -266,7 +255,7 @@ export default class VideoReporter extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-    if (!this.#record) {
+        if (!this.#record) {
       return
     }
 
@@ -296,7 +285,7 @@ export default class VideoReporter extends WdioReporter {
    * Finalize allure report
    */
   onExit () {
-    const allureOutputDir = this.#allureOutputDir
+        const allureOutputDir = this.#allureOutputDir
     if (!allureOutputDir) {
       return
     }
@@ -326,18 +315,18 @@ export default class VideoReporter extends WdioReporter {
   }
 
   addFrame () {
-    if (!this.recordingPath) {
-      return false
+        if (!this.recordingPath) {
+            return false
     }
 
     const frame = this.frameNr++
     const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png')
 
-    this.screenshotPromises.push(
+        this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
         .then(() => this.#log(`- Screenshot (frame: ${frame})`))
         .catch((error: Error) => {
-          fs.writeFileSync(filePath, notAvailableImage, 'base64')
+                    fs.writeFileSync(filePath, notAvailableImage, 'base64')
           this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
         })
     )
@@ -456,7 +445,8 @@ export default class VideoReporter extends WdioReporter {
 
     const testName = this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
     this.frameNr = 0
-    this.recordingPath = path.resolve(this.#outputDir, this.options.rawPath, testName)
+    this.recordingPath = path.resolve(this.#outputDir ?? this.options.outputDir, this.options.rawPath, testName)
+
     fs.mkdirSync(this.recordingPath, { recursive: true })
   }
 
