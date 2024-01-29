@@ -165,17 +165,17 @@ export default class VideoReporter extends WdioReporter {
    */
   onSuiteStart (suite: SuiteStats) {
     if (!this.#record) {
-            return
+      return
     }
 
     if (this.isCucumberFramework) {
-            this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
 
     if (suite.type === 'scenario') {
-            this.#setRecordingPath()
+      this.#setRecordingPath()
     }
-      }
+  }
 
   /**
    * Cleare suite name from naming structure
@@ -204,17 +204,17 @@ export default class VideoReporter extends WdioReporter {
    * Setup filename based on test name and prepare storage directory
    */
   onTestStart (suite: TestStats) {
-        if (!this.#record) {
-            return
+    if (!this.#record) {
+      return
     }
 
     if (!this.isCucumberFramework) {
-            this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+      this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
-        this.#setRecordingPath()
+    this.#setRecordingPath()
     
     if (this.options.screenshotIntervalSecs) {
-            const instance = this
+      const instance = this
       this.intervalScreenshot = setInterval(
         () => instance.addFrame(),
         this.options.screenshotIntervalSecs * 1000
@@ -226,7 +226,7 @@ export default class VideoReporter extends WdioReporter {
    * Remove empty directories
    */
   onTestSkip () {
-        if (!this.#record) {
+    if (!this.#record) {
       return
     }
 
@@ -255,7 +255,7 @@ export default class VideoReporter extends WdioReporter {
    * Wait for all ffmpeg-processes to finish
    */
   onRunnerEnd () {
-        if (!this.#record) {
+    if (!this.#record) {
       return
     }
 
@@ -285,7 +285,7 @@ export default class VideoReporter extends WdioReporter {
    * Finalize allure report
    */
   onExit () {
-        const allureOutputDir = this.#allureOutputDir
+    const allureOutputDir = this.#allureOutputDir
     if (!allureOutputDir) {
       return
     }
@@ -315,18 +315,18 @@ export default class VideoReporter extends WdioReporter {
   }
 
   addFrame () {
-        if (!this.recordingPath) {
-            return false
+    if (!this.recordingPath) {
+      return false
     }
 
     const frame = this.frameNr++
     const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png')
 
-        this.screenshotPromises.push(
+    this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
         .then(() => this.#log(`- Screenshot (frame: ${frame})`))
         .catch((error: Error) => {
-                    fs.writeFileSync(filePath, notAvailableImage, 'base64')
+          fs.writeFileSync(filePath, notAvailableImage, 'base64')
           this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
         })
     )
