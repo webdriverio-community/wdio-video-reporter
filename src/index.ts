@@ -212,7 +212,6 @@ export default class VideoReporter extends WdioReporter {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
     this.#setRecordingPath()
-
     if (this.options.screenshotIntervalSecs) {
       const instance = this
       this.intervalScreenshot = setInterval(
@@ -445,7 +444,8 @@ export default class VideoReporter extends WdioReporter {
 
     const testName = this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
     this.frameNr = 0
-    this.recordingPath = path.resolve(this.#outputDir, this.options.rawPath, testName)
+    this.recordingPath = path.resolve(this.#outputDir ?? this.options.outputDir, this.options.rawPath, testName)
+
     fs.mkdirSync(this.recordingPath, { recursive: true })
   }
 
