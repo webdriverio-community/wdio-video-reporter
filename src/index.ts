@@ -85,7 +85,9 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    this.#outputDir = runner.config.outputDir as string
+    this.#outputDir = this.options.outputDir ?? runner.config.outputDir as string;
+    this.#outputDir = this.#outputDir ?? '_results_';
+
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
@@ -324,7 +326,9 @@ export default class VideoReporter extends WdioReporter {
 
     this.screenshotPromises.push(
       browser.saveScreenshot(filePath)
-        .then(() => this.#log(`- Screenshot (frame: ${frame})`))
+        .then(() => {
+          this.#log(`- Screenshot (frame: ${frame})`)
+        })
         .catch((error: Error) => {
           fs.writeFileSync(filePath, notAvailableImage, 'base64')
           this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
@@ -445,7 +449,7 @@ export default class VideoReporter extends WdioReporter {
 
     const testName = this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
     this.frameNr = 0
-    this.recordingPath = path.resolve(this.#outputDir ?? this.options.outputDir, this.options.rawPath, testName)
+    this.recordingPath = path.resolve(this.#outputDir, this.options.rawPath, testName)
 
     fs.mkdirSync(this.recordingPath, { recursive: true })
   }
