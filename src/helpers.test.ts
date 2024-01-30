@@ -207,7 +207,7 @@ describe('waitForVideosToBeWritten', () => {
       .mockImplementationOnce(() => ({ size: 73 } as any))
       .mockImplementation(() => ({ size: 512 } as any))
     const sleepMock = vi.fn().mockImplementation(sleep)
-    expect(waitForVideosToBeWritten(videos, 200, sleepMock)).toBe(false)
+    expect(waitForVideosToBeWritten(videos, 150, sleepMock)).toBe(false)
     expect(sleepMock).toBeCalledTimes(2)
   })
 })

@@ -104,6 +104,15 @@ describe('Video Reporter', () => {
       expect(vi.mocked(process.on)).toBeCalledTimes(1)
     })
 
+    it('sets outputDir to default value if not configured', () => {
+      const reporter = new VideoReporter({})
+      reporter.onRunnerStart({
+        ...allureRunner,
+        config: {}
+      })
+      expect(reporter.outputDir).toEqual('_results_')
+    })
+
     it('should set record to true', () => {
       const reporter = new VideoReporter({})
       reporter.onRunnerStart(allureRunner)
