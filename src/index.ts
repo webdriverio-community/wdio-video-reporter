@@ -214,7 +214,6 @@ export default class VideoReporter extends WdioReporter {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
     this.#setRecordingPath()
-    
     if (this.options.screenshotIntervalSecs) {
       const instance = this
       this.intervalScreenshot = setInterval(
