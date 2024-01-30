@@ -85,8 +85,8 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    this.#outputDir = this.options.outputDir ?? runner.config.outputDir as string;
-    this.#outputDir = this.#outputDir ?? '_results_';
+    this.#outputDir = this.options.outputDir ?? runner.config.outputDir as string
+    this.#outputDir = this.#outputDir ?? '_results_'
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
