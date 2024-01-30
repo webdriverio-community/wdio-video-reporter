@@ -30,6 +30,7 @@ export default class VideoReporter extends WdioReporter {
   #allureOutputDir?: string
   #allureReporter = new AllureReporterExtension()
   #record = true
+  #defaultOutputDir = '_results_'
 
   screenshotPromises: Promise<void>[] = []
   videos: string[] = []
@@ -64,6 +65,11 @@ export default class VideoReporter extends WdioReporter {
   /**
    * set getter to verify values for testing purposes
    */
+  get outputDir () { return this.#outputDir }
+
+  /**
+   * set getter to verify values for testing purposes
+   */
   get allureOutputDir () { return this.#allureOutputDir }
 
   /**
@@ -86,7 +92,7 @@ export default class VideoReporter extends WdioReporter {
     }
 
     this.#outputDir = this.options.outputDir ?? runner.config.outputDir as string
-    this.#outputDir = this.#outputDir ?? '_results_'
+    this.#outputDir = this.#outputDir ?? this.#defaultOutputDir
     const sessionId = runner.isMultiremote
       ? Object.entries(runner.capabilities).map(([, caps]) => caps.sessionId)[0] as string
       : runner.sessionId
