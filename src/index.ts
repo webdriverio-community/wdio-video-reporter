@@ -295,7 +295,7 @@ export default class VideoReporter extends WdioReporter {
     if (!allureOutputDir) {
       return
     }
-    const abortTime = Date.now() + this.options.videoRenderTimeout
+    const abortTime =  this.options.videoRenderTimeout
 
     waitForVideosToExist(this.videos, abortTime)
     waitForVideosToBeWritten(this.videos, abortTime)
