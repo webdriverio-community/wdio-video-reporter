@@ -297,10 +297,12 @@ export default class VideoReporter extends WdioReporter {
     }
     const abortTime =  this.options.videoRenderTimeout
 
+    const startTime = new Date().getTime()
+
     waitForVideosToExist(this.videos, abortTime)
     waitForVideosToBeWritten(this.videos, abortTime)
 
-    if (new Date().getTime() > abortTime) {
+    if (new Date().getTime() - startTime > abortTime) {
       console.log('videoRenderTimeout triggered, not all videos finished writing to disk before patching Allure')
     }
 
