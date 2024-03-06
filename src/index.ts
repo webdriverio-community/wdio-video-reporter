@@ -262,6 +262,7 @@ export default class VideoReporter extends WdioReporter {
    */
   onRunnerEnd () {
     if (!this.#record) {
+      this.#isDone = true
       return
     }
 
