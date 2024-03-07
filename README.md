@@ -105,7 +105,7 @@ Default: `.video-reporter-screenshots`
 
 Prefix for video filenames by either suite or test name. When using cucumber it will always be suite.
 
-Type: `string`<br>
+Type: `'suite' | 'test'`<br>
 Default: `test`
 
 ### `videoSlowdownMultiplier`
