@@ -175,7 +175,7 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    if (this.isCucumberFramework) {
+    if (this.isCucumberFramework || this.options.filenamePrefixSource === 'suite') {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
 
@@ -215,7 +215,7 @@ export default class VideoReporter extends WdioReporter {
       return
     }
 
-    if (!this.isCucumberFramework) {
+    if (!this.isCucumberFramework && this.options.filenamePrefixSource === 'test') {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
     this.#setRecordingPath()
@@ -248,7 +248,9 @@ export default class VideoReporter extends WdioReporter {
     }
 
     this.clearScreenshotInterval()
-    this.testNameStructure.pop()
+    if (this.options.filenamePrefixSource === 'test' || this.isCucumberFramework) {
+      this.testNameStructure.pop()
+    }
     this.#extendAllureReport()
 
     if (test.state === 'failed' || (test.state === 'passed' && this.options.saveAllVideos)) {

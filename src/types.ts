@@ -21,6 +21,12 @@ export interface ReporterOptions extends Reporters.Options {
   rawPath?: string
 
   /**
+   * Prefix for video filenames by either suite or test name
+   * @default 'test'
+   */
+  filenamePrefixSource?: 'test' | 'suite'
+
+  /**
    * Should all videos be saved, or only from failed tests
    * @default false
    */
