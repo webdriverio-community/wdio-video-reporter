@@ -101,6 +101,13 @@ Where to save the screenshots for the video.
 Type: `string`<br>
 Default: `.video-reporter-screenshots`
 
+### `filenamePrefixSource`
+
+Prefix for video filenames by either suite or test name. When using cucumber it will always be suite.
+
+Type: `'suite' | 'test'`<br>
+Default: `test`
+
 ### `videoSlowdownMultiplier`
 
 Integer between [1-100]. Increase if videos are playing to quick.

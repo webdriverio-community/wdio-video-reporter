@@ -224,10 +224,10 @@ describe('Video Reporter', () => {
     it('should set recordingPath if suite is scenario', () => {
       const reporter = new VideoReporter({})
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/video-unknown--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining('/unknown--CHROME--'))
       reporter.isCucumberFramework = true
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/video-foo-bar--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining('/foo-bar--CHROME--'))
     })
   })
 
@@ -291,7 +291,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.onTestStart({ title: 'foo bar' } as any)
       expect(fs.mkdirSync).toBeCalledWith(
-        expect.stringContaining('/video-foo-bar--CHROME--'),
+        expect.stringContaining('/foo-bar--CHROME--'),
         { recursive: true }
       )
     })

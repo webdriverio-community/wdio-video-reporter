@@ -24,6 +24,9 @@ export const DEFAULT_OPTIONS = {
   // Where to save screenshots
   rawPath: '.video-reporter-screenshots',
 
+  // Prefix for video filenames by either suite or test name
+  filenamePrefixSource: 'test',
+
   // Should all videos be saved, or only from failed tests
   saveAllVideos: false,
 
