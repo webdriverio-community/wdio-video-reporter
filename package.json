@@ -34,7 +34,7 @@
     "@wdio/globals": "^8.32.4",
     "@wdio/logger": "^8.28.0",
     "@wdio/reporter": "^8.32.4",
-    "glob": "^10.3.10"
+    "glob": "^11.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
