@@ -33,7 +33,7 @@
     "@wdio/allure-reporter": "^8.32.4",
     "@wdio/globals": "^9.0.4",
     "@wdio/logger": "^8.28.0",
-    "@wdio/reporter": "^8.32.4",
+    "@wdio/reporter": "^9.0.4",
     "glob": "^11.0.0"
   },
   "devDependencies": {
