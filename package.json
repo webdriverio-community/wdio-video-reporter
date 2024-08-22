@@ -42,8 +42,8 @@
     "@rollup/pluginutils": "^5.1.0",
     "@types/mocha": "^10.0.7",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
-    "@typescript-eslint/parser": "^7.1.1",
-    "@vitest/coverage-v8": "^2.0.5",
+    "@typescript-eslint/parser": "^8.2.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "@wdio/cli": "^9.0.7",
     "@wdio/cucumber-framework": "^9.0.6",
     "@wdio/jasmine-framework": "^9.0.7",
@@ -59,6 +59,6 @@
     "rollup-plugin-delete": "^2.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vitest": "^2.0.5"
+    "vitest": "^1.6.0"
   }
 }
