@@ -107,7 +107,7 @@ export function waitForVideosToBeWritten (videos: string[], abortTime: number, s
 }
 
 export function getCurrentCapabilities (browser: WebdriverIO.Browser) {
-  const mrCaps = browser.capabilities as Capabilities.MultiRemoteCapabilities
+  const mrCaps = browser.capabilities as Capabilities.RequestedMultiremoteCapabilities
   const w3cCaps = browser.capabilities as Capabilities.W3CCapabilities
   const currentCapabilities: WebdriverIO.Capabilities = browser.isMultiremote
     ? mrCaps[Object.keys(browser.capabilities)[0]].capabilities as WebdriverIO.Capabilities

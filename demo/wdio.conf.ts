@@ -3,13 +3,14 @@ import path from 'node:path'
 import allure from 'allure-commandline'
 
 import video from '../dist/wdio-video-reporter.mjs'
+import { browser } from '@wdio/globals'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
 export const config: WebdriverIO.Config = {
   // Set up the browser window
   before: function () {
-    browser.setWindowSize(1320, 768);
+    browser.setWindowSize(1320, 768)
   },
 
   // ===============
@@ -22,7 +23,7 @@ export const config: WebdriverIO.Config = {
     [video, {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
-      videoRenderTimeout: 5000,      // milliseconds to wait for a video to finish rendering
+      videoRenderTimeout: 15000,      // milliseconds to wait for a video to finish rendering
       videoFormat: 'webm'
     }],
     ['allure', {
@@ -33,16 +34,25 @@ export const config: WebdriverIO.Config = {
   // ============
   // Capabilities
   // ============
+  maxInstances: 1,
   capabilities: [
     {
-      maxInstances: 1,
       browserName: 'chrome',
+      browserVersion: 'stable',
       acceptInsecureCerts: true,
+      'goog:chromeOptions': {
+        args: [
+          '--no-sandbox',
+          '--headless=new',
+          '--disable-gpu']
+      },
     },
     {
-      maxInstances: 1,
       browserName: 'firefox',
       acceptInsecureCerts: true,
+      'moz:firefoxOptions': {
+        args: ['-headless', '--no-sandbox', '--disable-gpu']
+      }
     },
   ],
 

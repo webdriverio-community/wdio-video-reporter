@@ -1,45 +1,60 @@
-import { browser, expect } from '@wdio/globals'
-import { Key } from 'webdriverio'
+import { $, $$, browser, expect } from '@wdio/globals'
 
 describe('User interactions', () => {
   beforeEach(async () => {
-    await browser.url('https://demo.seleniumeasy.com')
-    const basicExampleButton = await $('#btn_basic_example')
-    await $(basicExampleButton).click()
+    await browser.url('https://the-internet.herokuapp.com/')
+    const header = await $('h1.heading').getElement()
+    await header.waitForDisplayed()
   })
 
-  it('should be able to edit input (should pass)', async() => {
-    await $('.list-group-item[href*="basic-first-form-demo"]').click()
-    await $('form #user-message').setValue('WDIO Video Reporter rocks!')
-    await $('form .btn').click()
+  async function getHeader() {
+    return await $('h3').getElement()
+  }
 
-    await expect($('#user-message #display')).toHaveText('WDIO Video Reporter rocks!')
+  it('should be able to use inputs', async () => {
+    // Open input
+    const inputLink = await $('a=Inputs').getElement()
+    await inputLink.click()
+
+    await (await getHeader()).waitForDisplayed()
+
+    const inputValue = '12344321'
+
+    const inputField = await $('input').getElement()
+    await inputField.setValue(inputValue)
+
+    await expect(inputField).toHaveValue(inputValue)
   })
 
-  it('should be able to move slider (fails by design to gen video)', async() => {
-    await $('#advanced_example').click()
-    await $('.list-group-item[href*="drag-drop-range"]').click()
-    await $('#slider1 input').click()
-    await expect($('#slider1 #range')).toHaveText('51')
+  it('should pick from dropdown menu (fails by design to gen video)', async () => {
+    const inputLink = await $('a=Dropdown').getElement()
+    await inputLink.click()
+    await (await getHeader()).waitForDisplayed()
+
+    const dropDown = await $('select#dropdown').getElement()
+    const options = await $$('option').getElements()
+
+    await dropDown.click()
+
+    await options[2].click()
+
+    await expect(dropDown).toHaveValue('Option 1')
+
   })
 
-  it('should be able to multi-select in dropdown (fails by design to gen video)', async() => {
-    await $('.list-group-item[href^="./basic-select-dropdown"]').click()
-    await $('#multi-select').scrollIntoView(true)
+  it('should scroll a lot (fails by design to gen video)', async() => {
+    const inputLink = await $('a=Infinite Scroll').getElement()
+    await inputLink.click()
+    await (await getHeader()).waitForDisplayed()
 
-    await browser.keys(Key.Ctrl)
+    for (let index = 0; index < 5; index++) {
+      const paragraphs = await $$('div.jscroll-added').getElements()
+      const lastParagraph = paragraphs[paragraphs.length - 1]
+      await lastParagraph.scrollIntoView(true)
+      await lastParagraph.click()
+      await browser.pause(1000)
+    }
 
-    await $('#multi-select').scrollIntoView(true)
-    await $('select#multi-select option[value="Florida"]').click()
-    await $('select#multi-select option[value="Ohio"]').click()
-    await $('select#multi-select option[value="Texas"]').click()
-
-    await browser.keys(Key.Ctrl)
-
-    await $('button#printAll').click()
-    const values = await $('.getall-selected').getText()
-    expect(values.includes('Florida')).toBe(true)
-    expect(values.includes('Ohio')).toBe(true)
-    expect(values.includes('Texas')).toBe(true)
+    await expect(await $$('div.jscroll-added').getElements()).toBeElementsArrayOfSize(1)
   })
 })
