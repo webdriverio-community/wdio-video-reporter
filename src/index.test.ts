@@ -178,21 +178,21 @@ describe('Video Reporter', () => {
         .toBe(false)
     })
 
-    it('should add frame if no alert is displayed', async () => {
+    it('should add frame if no alert is displayed', () => {
       const reporter = new VideoReporter({})
       reporter.recordingPath = '/foo/bar'
       reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any)
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
 
-    it('should add frame if recordAllActions is set', async () => {
+    it('should add frame if recordAllActions is set', () => {
       const reporter = new VideoReporter({ recordAllActions: true })
       reporter.recordingPath = '/foo/bar'
       reporter.onAfterCommand({ endpoint: '/session/1234/foobar' } as any)
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
 
-    it('should call addFrame', async () => {
+    it('should call addFrame', () => {
       const reporter = new VideoReporter({})
       reporter.addFrame = vi.fn() as any
       reporter.record = true
@@ -200,7 +200,7 @@ describe('Video Reporter', () => {
       expect(result).toBe(false)
     })
 
-    it('should not call addFrame', async () => {
+    it('should not call addFrame', () => {
       const reporter = new VideoReporter({})
       reporter.addFrame = vi.fn() as any
       reporter.record = false
