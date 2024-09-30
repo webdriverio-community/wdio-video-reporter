@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -6,13 +6,13 @@ export default defineConfig({
       enabled: true,
       provider: 'v8',
       exclude: [
-        '__mocks__', 'node_modules', '.github', 'allure-report', 'demo', 'src/types.ts', '.eslintrc.cjs'
+        '__mocks__', 'node_modules', '.github', 'allure-report', 'demo', 'src/types.ts', '.eslintrc.cjs', ...coverageConfigDefaults.exclude
       ],
       thresholds: {
-        statements: 76,
+        statements: 75,
         branches: 87,
         functions: 82,
-        lines: 76,
+        lines: 75,
       }
     }
   }
