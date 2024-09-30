@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@wdio/allure-reporter": "^9.0.4",
-    "@wdio/globals": "^9.0.7",
+    "@wdio/allure-reporter": "^9.1.2",
+    "@wdio/globals": "^9.1.2",
     "@wdio/logger": "^9.0.4",
-    "@wdio/reporter": "^9.0.4",
-    "@wdio/types": "^9.1.0",
+    "@wdio/reporter": "^9.1.2",
+    "@wdio/types": "^9.1.2",
     "glob": "^11.0.0"
   },
   "devDependencies": {
@@ -44,12 +44,12 @@
     "@types/mocha": "^10.0.7",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
-    "@vitest/coverage-v8": "^1.6.0",
-    "@wdio/cli": "^9.0.7",
-    "@wdio/cucumber-framework": "^9.0.6",
-    "@wdio/jasmine-framework": "^9.0.7",
-    "@wdio/local-runner": "^9.0.7",
-    "@wdio/spec-reporter": "^9.0.7",
+    "@vitest/coverage-v8": "^2.1.1",
+    "@wdio/cli": "^9.1.2",
+    "@wdio/cucumber-framework": "^9.1.2",
+    "@wdio/jasmine-framework": "^9.1.2",
+    "@wdio/local-runner": "^9.1.2",
+    "@wdio/spec-reporter": "^9.1.2",
     "allure-commandline": "^2.27.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
@@ -60,6 +60,6 @@
     "rollup-plugin-delete": "^2.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vitest": "^1.6.0"
+    "vitest": "^2.1.1"
   }
 }
