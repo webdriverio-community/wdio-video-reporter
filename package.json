@@ -53,7 +53,7 @@
     "allure-commandline": "^2.27.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-unicorn": "^55.0.0",
+    "eslint-plugin-unicorn": "^56.0.0",
     "npm-run-all2": "^6.1.2",
     "release-it": "^17.1.1",
     "rollup": "^4.12.0",
