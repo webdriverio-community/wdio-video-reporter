@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process'
 import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
 import { browser } from '@wdio/globals'
 import type { Options } from '@wdio/types'
+import type { BrowsingContextCaptureScreenshotParameters } from 'node_modules/webdriver/build/bidi/remoteTypes.js'
 
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg'
 import { glob } from 'glob'
@@ -160,9 +161,6 @@ export default class VideoReporter extends WdioReporter {
       return false
     }
 
-    /**
-     * Skips screenshot if alert is displayed
-     */
     this.#log(`Add frame for command: ${commandArgs.endpoint} => [${commandName}]`)
     return this.addFrame()
   }
@@ -185,7 +183,7 @@ export default class VideoReporter extends WdioReporter {
   }
 
   /**
-   * Cleare suite name from naming structure
+   * Clear suite name from naming structure
    */
   onSuiteEnd (suite: SuiteStats) {
     if (!this.#record) {
@@ -325,7 +323,7 @@ export default class VideoReporter extends WdioReporter {
       })
   }
 
-  addFrame () {
+  addFrame() {
     if (!this.recordingPath) {
       return false
     }
@@ -333,14 +331,35 @@ export default class VideoReporter extends WdioReporter {
     const frame = this.frameNr++
     const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png')
 
-    this.screenshotPromises.push(
-      browser.saveScreenshot(filePath)
-        .then(() => this.#log(`- Screenshot (frame: ${frame})`))
-        .catch((error: Error) => {
-          fs.writeFileSync(filePath, notAvailableImage, 'base64')
-          this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
-        })
-    )
+    if (browser.isBidi) {
+      browser.getWindowHandle().then((contextId:string) => {
+        const contextCaptureScreenshotParameters: BrowsingContextCaptureScreenshotParameters = {
+          context: contextId,
+          origin: 'viewport',
+          format: { type: 'image/png' }
+        }
+        this.screenshotPromises.push(
+          browser.browsingContextCaptureScreenshot(contextCaptureScreenshotParameters)
+            .then((captureScreenshotResult) => {
+              this.#log(`- Bidi Screenshot (frame: ${frame})`)
+              fs.writeFileSync(filePath, captureScreenshotResult.data, 'base64')
+            }).catch((error: Error) => {
+              fs.writeFileSync(filePath, notAvailableImage, 'base64')
+              this.#log(`Bidi Screenshot not available (frame: ${frame}). Error: ${error}..`)
+            })
+        )
+      })
+
+    } else {
+      this.screenshotPromises.push(
+        browser.saveScreenshot(filePath)
+          .then(() => this.#log(`- Screenshot (frame: ${frame})`))
+          .catch((error: Error) => {
+            fs.writeFileSync(filePath, notAvailableImage, 'base64')
+            this.#log(`Screenshot not available (frame: ${frame}). Error: ${error}..`)
+          })
+      )
+    }
   }
 
   clearScreenshotInterval () {

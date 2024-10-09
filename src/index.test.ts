@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 import { addAttachment, addArgument } from '@wdio/allure-reporter'
@@ -52,7 +53,9 @@ vi.mock('@wdio/globals', () => ({
     },
     acceptAlert: vi.fn().mockResolvedValue({}),
     getAlertText: vi.fn().mockResolvedValue({}),
-    saveScreenshot: vi.fn().mockResolvedValue({})
+    saveScreenshot: vi.fn().mockResolvedValue({}),
+    browsingContextCaptureScreenshot: vi.fn().mockResolvedValue({}),
+    getWindowHandle: vi.fn().mockResolvedValue('contextString')
   }
 }))
 
@@ -79,6 +82,7 @@ describe('Video Reporter', () => {
     vi.mocked(addArgument).mockClear()
     vi.mocked(browser.saveScreenshot).mockClear()
     vi.mocked(browser.getAlertText).mockClear()
+    vi.mocked(browser.browsingContextCaptureScreenshot).mockClear()
     vi.mocked(fs.mkdirSync).mockClear()
   })
   afterEach(() => {
@@ -224,10 +228,10 @@ describe('Video Reporter', () => {
     it('should set recordingPath if suite is scenario', () => {
       const reporter = new VideoReporter({})
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/unknown--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}unknown--CHROME--`))
       reporter.isCucumberFramework = true
       reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-      expect(reporter.recordingPath).toEqual(expect.stringContaining('/foo-bar--CHROME--'))
+      expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}foo-bar--CHROME--`))
     })
   })
 
@@ -291,7 +295,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.onTestStart({ title: 'foo bar' } as any)
       expect(fs.mkdirSync).toBeCalledWith(
-        expect.stringContaining('/foo-bar--CHROME--'),
+        expect.stringContaining(`${path.sep}foo-bar--CHROME--`),
         { recursive: true }
       )
     })
@@ -369,6 +373,36 @@ describe('Video Reporter', () => {
       reporter.record = false
       reporter.onTestSkip()
       expect(reporter.clearScreenshotInterval).toBeCalledTimes(0)
+    })
+  })
+
+  describe('addFrame', () => {
+    it('should return false if no recording path is set', () => {
+      const reporter = new VideoReporter({})
+      const addFrameResult = reporter.addFrame()
+      expect(browser.browsingContextCaptureScreenshot).not.toBeCalled()
+      expect(browser.saveScreenshot).not.toBeCalled()
+      expect(addFrameResult).toBeFalsy()
+    })
+
+    it('calls browsingContextCaptureScreenshot if browser is bidi', async () => {
+      browser.isBidi = true
+      const reporter = new VideoReporter({})
+      reporter.recordingPath = '/foo/bar'
+      reporter.addFrame()
+      await sleep()
+      expect(browser.browsingContextCaptureScreenshot).toBeCalledTimes(1)
+      expect(browser.saveScreenshot).not.toBeCalled()
+    })
+
+    it('calls saveScreenshot if browser is not bidi', async () => {
+      browser.isBidi = false
+      const reporter = new VideoReporter({})
+      reporter.recordingPath = '/foo/bar'
+      reporter.addFrame()
+      await sleep()
+      expect(browser.browsingContextCaptureScreenshot).not.toBeCalled()
+      expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
   })
 })
