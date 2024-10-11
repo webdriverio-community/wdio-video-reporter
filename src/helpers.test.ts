@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest'
 import {
@@ -90,8 +91,9 @@ describe('generateFilename - ', () => {
 
 describe('getVideoPath', () => {
   it('should return path to video', () => {
-    expect(getVideoPath('/foo/bar/outputDir', 'testName', 'mp4'))
-      .toBe('/foo/bar/outputDir/testName.mp4')
+    const basePath = `${path.sep}foo${path.sep}bar${path.sep}outputDir`
+    expect(getVideoPath(basePath, 'testName', 'mp4'))
+      .toEqual(expect.stringContaining(`${path.sep}foo${path.sep}bar${path.sep}outputDir${path.sep}testName.mp4`))
   })
 })
 
