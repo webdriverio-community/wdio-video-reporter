@@ -195,8 +195,9 @@ export default class VideoReporter extends WdioReporter {
     if (!this.testName) {
       return
     }
-
-    this.testNameStructure.pop()
+    if (this.isCucumberFramework || this.options.filenamePrefixSource === 'suite') {
+      this.testNameStructure.pop()
+    }
     const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0
     const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0
 
