@@ -355,7 +355,7 @@ describe('Video Reporter', () => {
     it('clears intervalScreenshot', () => {
       const reporter = new VideoReporter({})
       reporter.intervalScreenshot = 1234 as any
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.intervalScreenshot).toBeUndefined()
     })
 
@@ -363,7 +363,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.clearScreenshotInterval = vi.fn() as any
       reporter.record = true
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.clearScreenshotInterval).toBeCalledTimes(1)
     })
 
@@ -371,7 +371,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.clearScreenshotInterval = vi.fn() as any
       reporter.record = false
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.clearScreenshotInterval).toBeCalledTimes(0)
     })
   })
