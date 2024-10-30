@@ -220,9 +220,9 @@ describe('Video Reporter', () => {
       expect(reporter.testNameStructure).toEqual([])
 
       reporter.isCucumberFramework = true
-      reporter.onSuiteStart({ title: 'foo bar' } as any)
+      reporter.onSuiteStart({ title: 'foo bar', type:'scenario' } as any)
       expect(reporter.testNameStructure).toEqual(['foo-bar'])
-      expect(reporter.recordingPath).toBeUndefined()
+      expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}foo-bar--CHROME--`))
     })
 
     it('should set recordingPath if suite is scenario', () => {

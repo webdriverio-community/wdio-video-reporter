@@ -237,11 +237,14 @@ export default class VideoReporter extends WdioReporter {
   /**
    * Remove empty directories
    */
-  onTestSkip (payload: TestStats) {
-    if (!this.#record || !this.isCucumberFramework) {
+  onTestSkip(payload: TestStats) {
+    if (!this.#record) {
       return
     }
-
+    if (!this.isCucumberFramework) {
+      this.clearScreenshotInterval()
+      return
+    }
     // Only on cucumber because `onTestEnd` isn't called
     this.onTestEnd(payload)
   }
