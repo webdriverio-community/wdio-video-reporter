@@ -11,14 +11,14 @@ export default class AllureReporterExtension {
     })
   }
 
-  async addAttachment (...args: unknown[]) {
+  async addAttachmentExtension (...args: unknown[]) {
     const reporter = await this.reporterAPI
     if (reporter) {
       reporter.addAttachment(...args)
     }
   }
 
-  async addArgument (...args: unknown[]) {
+  async addArgumentExtension (...args: unknown[]) {
     const reporter = await this.reporterAPI
     if (reporter) {
       reporter.addArgument(...args)
