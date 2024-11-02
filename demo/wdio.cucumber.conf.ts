@@ -3,8 +3,7 @@ import { config as baseConfig } from './wdio.conf.js'
 baseConfig.reporters?.push(['cucumberjs-json', {
   jsonFolder: baseConfig.outputDir,
   language: 'en',
-},
-])
+}])
 export const config: WebdriverIO.Config = {
   ...baseConfig,
   // =================
