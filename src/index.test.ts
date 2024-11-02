@@ -134,7 +134,7 @@ describe('Video Reporter', () => {
   })
 
   it('onBeforeCommand', async () => {
-    const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachmentExtension')
+    const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
     const reporter = new VideoReporter({})
     expect(reporter.allureVideos).toEqual([])
 
@@ -235,7 +235,7 @@ describe('Video Reporter', () => {
 
   describe('onSuiteEnd', () => {
     it('extends Allure report', async () => {
-      const addArgumentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addArgumentExtension')
+      const addArgumentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addArgument')
       const reporter = new VideoReporter({})
       reporter.onSuiteEnd({} as any)
       await sleep()

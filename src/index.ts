@@ -130,7 +130,7 @@ export default class VideoReporter extends WdioReporter {
     if (!this.allureVideos.includes(videoPath)) {
       this.allureVideos.push(videoPath)
       this.#log(`Adding execution video attachment as ${videoPath}`)
-      this.#allureReporter.addAttachmentExtension('Execution video', videoPath, formatSettings.contentType)
+      this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
     }
   }
 
@@ -482,10 +482,10 @@ export default class VideoReporter extends WdioReporter {
     const capabilities = getCurrentCapabilities(browser)
     const deviceName = capabilities['appium:deviceName']
     if (deviceName) {
-      this.#allureReporter.addArgumentExtension('deviceName', deviceName)
+      this.#allureReporter.addArgument('deviceName', deviceName)
     }
     if (capabilities.browserVersion) {
-      this.#allureReporter.addArgumentExtension('browserVersion', capabilities.browserVersion)
+      this.#allureReporter.addArgument('browserVersion', capabilities.browserVersion)
     }
   }
 
