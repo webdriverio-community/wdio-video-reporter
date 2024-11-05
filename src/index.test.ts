@@ -2,9 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
-import { addAttachment, addArgument } from '@wdio/allure-reporter'
 import { browser } from '@wdio/globals'
-
+import AllureReporterExtension from './allure.js'
 import VideoReporter from './index.js'
 
 vi.mock('node:fs', () => {
@@ -78,8 +77,6 @@ describe('Video Reporter', () => {
   const processOn = process.on.bind(process)
   beforeEach(() => {
     process.on = vi.fn()
-    vi.mocked(addAttachment).mockClear()
-    vi.mocked(addArgument).mockClear()
     vi.mocked(browser.saveScreenshot).mockClear()
     vi.mocked(browser.getAlertText).mockClear()
     vi.mocked(browser.browsingContextCaptureScreenshot).mockClear()
@@ -137,6 +134,7 @@ describe('Video Reporter', () => {
   })
 
   it('onBeforeCommand', async () => {
+    const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
     const reporter = new VideoReporter({})
     expect(reporter.allureVideos).toEqual([])
 
@@ -145,7 +143,7 @@ describe('Video Reporter', () => {
     reporter.onBeforeCommand()
     expect(reporter.allureVideos).not.toEqual([])
     await sleep()
-    expect(addAttachment).toBeCalledWith(
+    expect(addAttachmentExtensionMock).toBeCalledWith(
       'Execution video',
       expect.stringMatching(/testName.webm$/),
       'video/webm'
@@ -220,9 +218,9 @@ describe('Video Reporter', () => {
       expect(reporter.testNameStructure).toEqual([])
 
       reporter.isCucumberFramework = true
-      reporter.onSuiteStart({ title: 'foo bar' } as any)
+      reporter.onSuiteStart({ title: 'foo bar', type:'scenario' } as any)
       expect(reporter.testNameStructure).toEqual(['foo-bar'])
-      expect(reporter.recordingPath).toBeUndefined()
+      expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}foo-bar--CHROME--`))
     })
 
     it('should set recordingPath if suite is scenario', () => {
@@ -237,16 +235,17 @@ describe('Video Reporter', () => {
 
   describe('onSuiteEnd', () => {
     it('extends Allure report', async () => {
+      const addArgumentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addArgument')
       const reporter = new VideoReporter({})
       reporter.onSuiteEnd({} as any)
       await sleep()
-      expect(addArgument).toBeCalledTimes(0)
+      expect(addArgumentExtensionMock).toBeCalledTimes(0)
 
       reporter.onRunnerStart(allureRunner)
       reporter.onSuiteEnd({} as any)
       await sleep()
-      expect(addArgument).toBeCalledTimes(1)
-      expect(addArgument).toBeCalledWith('browserVersion', '1.2.3')
+      expect(addArgumentExtensionMock).toBeCalledTimes(1)
+      expect(addArgumentExtensionMock).toBeCalledWith('browserVersion', '1.2.3')
     })
 
     it('should add frame if test failed', async () => {
@@ -355,7 +354,7 @@ describe('Video Reporter', () => {
     it('clears intervalScreenshot', () => {
       const reporter = new VideoReporter({})
       reporter.intervalScreenshot = 1234 as any
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.intervalScreenshot).toBeUndefined()
     })
 
@@ -363,7 +362,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.clearScreenshotInterval = vi.fn() as any
       reporter.record = true
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.clearScreenshotInterval).toBeCalledTimes(1)
     })
 
@@ -371,7 +370,7 @@ describe('Video Reporter', () => {
       const reporter = new VideoReporter({})
       reporter.clearScreenshotInterval = vi.fn() as any
       reporter.record = false
-      reporter.onTestSkip()
+      reporter.onTestSkip(({ state: 'skipped' } as any))
       expect(reporter.clearScreenshotInterval).toBeCalledTimes(0)
     })
   })
@@ -405,4 +404,61 @@ describe('Video Reporter', () => {
       expect(browser.saveScreenshot).toBeCalledTimes(1)
     })
   })
+
+  describe('onTestPass', () => {
+    it('should return if not recording', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = false
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestPass({ state: 'passed' } as any)
+      expect(testEndMock).not.toBeCalled()
+    })
+
+    it('should return if not cucumber', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = true
+      reporter.isCucumberFramework = false
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestPass({ state: 'passed' } as any)
+      expect(testEndMock).not.toBeCalled()
+    })
+
+    it('should call onTestEnd if cucumber framework', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = true
+      reporter.isCucumberFramework = true
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestPass({ state: 'passed' } as any)
+      expect(testEndMock).toBeCalledTimes(1)
+    })
+  })
+
+  describe('onTestFail', () => {
+    it('should return if not recording', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = false
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestFail({ state: 'failed' } as any)
+      expect(testEndMock).not.toBeCalled()
+    })
+
+    it('should return if not cucumber', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = true
+      reporter.isCucumberFramework = false
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestFail({ state: 'failed' } as any)
+      expect(testEndMock).not.toBeCalled()
+    })
+
+    it('should call onTestEnd if cucumber framework', () => {
+      const reporter = new VideoReporter({})
+      reporter.record = true
+      reporter.isCucumberFramework = true
+      const testEndMock = vi.spyOn(reporter, 'onTestEnd')
+      reporter.onTestFail({ state: 'failed' } as any)
+      expect(testEndMock).toBeCalledTimes(1)
+    })
+  })
+
 })

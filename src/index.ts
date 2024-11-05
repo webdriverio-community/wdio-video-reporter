@@ -168,12 +168,18 @@ export default class VideoReporter extends WdioReporter {
   /**
    * Add suite name to naming structure
    */
+
+  /**
+   * For cucumber this hook is called twice:
+   * 1. create the feature
+   * 2. add the scenario to the feature
+   */
   onSuiteStart (suite: SuiteStats) {
     if (!this.#record) {
       return
     }
 
-    if (this.isCucumberFramework || this.options.filenamePrefixSource === 'suite') {
+    if ((this.isCucumberFramework && suite.type === 'scenario') || this.options.filenamePrefixSource === 'suite') {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
     }
 
@@ -195,8 +201,9 @@ export default class VideoReporter extends WdioReporter {
     if (!this.testName) {
       return
     }
-
-    this.testNameStructure.pop()
+    if (this.isCucumberFramework || this.options.filenamePrefixSource === 'suite') {
+      this.testNameStructure.pop()
+    }
     const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0
     const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0
 
@@ -215,8 +222,9 @@ export default class VideoReporter extends WdioReporter {
 
     if (!this.isCucumberFramework && this.options.filenamePrefixSource === 'test') {
       this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+      this.#setRecordingPath()
     }
-    this.#setRecordingPath()
+
     if (this.options.screenshotIntervalSecs) {
       const instance = this
       this.intervalScreenshot = setInterval(
@@ -229,12 +237,34 @@ export default class VideoReporter extends WdioReporter {
   /**
    * Remove empty directories
    */
-  onTestSkip () {
+  onTestSkip(payload: TestStats) {
     if (!this.#record) {
       return
     }
+    if (!this.isCucumberFramework) {
+      this.clearScreenshotInterval()
+      return
+    }
+    // Only on cucumber because `onTestEnd` isn't called
+    this.onTestEnd(payload)
+  }
 
-    this.clearScreenshotInterval()
+  onTestPass(payload: TestStats): void {
+    if (!this.#record || !this.isCucumberFramework) {
+      return
+    }
+
+    // Only on cucumber because `onTestEnd` isn't called
+    this.onTestEnd(payload)
+  }
+
+  onTestFail(payload: TestStats): void {
+    if (!this.#record || !this.isCucumberFramework) {
+      return
+    }
+
+    // Only on cucumber because `onTestEnd` isn't called
+    this.onTestEnd(payload)
   }
 
   /**
@@ -246,7 +276,7 @@ export default class VideoReporter extends WdioReporter {
     }
 
     this.clearScreenshotInterval()
-    if (this.options.filenamePrefixSource === 'test' || this.isCucumberFramework) {
+    if (this.options.filenamePrefixSource === 'test' && !this.isCucumberFramework) {
       this.testNameStructure.pop()
     }
     this.#extendAllureReport()

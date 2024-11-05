@@ -1,47 +1,63 @@
 import { Given, When, Then } from '@wdio/cucumber-framework'
-import { browser } from '@wdio/globals'
+import { browser, $, $$, expect } from '@wdio/globals'
 
-Given(/^I navigate to base url$/, async () => {
-  await browser.url('https://demo.seleniumeasy.com')
+async function getHeader() {
+  return await $('h3').getElement()
+}
+
+Given('I navigate to base url', async () => {
+  await browser.url('https://the-internet.herokuapp.com/')
 })
 
-Given(/^I close close ad-popups$/, async () => {
-  const lightbox = await $('#at-cv-lightbox-close')
-  await lightbox.waitForExist()
-  await $(lightbox).click().catch(() => {
-    // ignore
-  })
+Given(/^I open inputs page$/, async () => {
+  const inputLink = await $('a=Inputs').getElement()
+  await inputLink.click()
+  await (await getHeader()).waitForDisplayed()
 })
 
-Given(/^I open Basic Examples tab$/, async () => {
-  await $('#btn_basic_example').click()
+Given(/^I open dropdown page$/, async () => {
+  const dropDownLink = await $('a=Dropdown').getElement()
+  await dropDownLink.click()
+  await (await getHeader()).waitForDisplayed()
 })
-
-Given(/^I open Advanced Examples tab$/, async () => {
-  await $('#advanced_example').click()
+Given(/^I open scrolling page$/, async () => {
+  const scrollLink = await $('a=Infinite Scroll').getElement()
+  await scrollLink.click()
+  await (await getHeader()).waitForDisplayed()
 })
-
-When(/I open '(.+)' demo$/, async (demo) => {
-  await $(`.list-group-item[href*="${demo}"]`).click()
-})
-
 When(/I enter message '(.+)'$/, async (message) => {
-  await $('#get-input input').setValue(message)
+  const inputField = await $('input').getElement()
+  await inputField.setValue(message)
+  await browser.pause(1000)
 })
 
-When(/I click 'Show Message'$/, async () => {
-  await $('#get-input button').click()
-  await $('#get-input button').click()
+When(/I select dropdown option '(.+)'$/, async (optionNumber) => {
+  const dropDown = await $('select#dropdown').getElement()
+  await dropDown.click()
+  const options = await $$('option').getElements()
+  await options[parseInt(optionNumber)].click()
+})
+
+When('I scroll a lot', async () => {
+  for (let index = 0; index < 5; index++) {
+    const paragraphs = await $$('div.jscroll-added').getElements()
+    const lastParagraph = paragraphs[paragraphs.length - 1]
+    await lastParagraph.scrollIntoView(true)
+    await lastParagraph.click()
+    await browser.pause(1000)
+  }
 })
 
 Then(/My message '(.+)' should be displayed$/, async (message) => {
-  await expect($('#user-message #display')).toHaveText(message)
+  const inputField = await $('input').getElement()
+  await expect(inputField).toHaveValue(message)
 })
 
-When(/I click first slider$/, async () => {
-  await $('#slider1 input').click()
+Then(/Dropdown value should be '(.+)'$/, async (dropdownValue:string) => {
+  const dropDown = await $('select#dropdown').getElement()
+  await expect(dropDown).toHaveValue(dropdownValue)
 })
 
-Then(/Slider range should be '(.+)'$/, async (message) => {
-  await expect($('#slider1 #range')).toHaveText(message)
+Then(/Paragraph count should be '(.+)'$/, async (paragraphCount: number)=>{
+  await expect(await $$('div.jscroll-added').getElements()).toBeElementsArrayOfSize(paragraphCount)
 })

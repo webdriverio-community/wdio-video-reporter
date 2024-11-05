@@ -1,2 +1,3 @@
 _results_/**/*.js
 config/**/*.js
+dist/**/*

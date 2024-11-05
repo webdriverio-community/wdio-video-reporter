@@ -34,7 +34,7 @@ export const config: WebdriverIO.Config = {
   // ============
   // Capabilities
   // ============
-  maxInstances: 1,
+  maxInstances: 2,
   capabilities: [
     {
       browserName: 'chrome',
@@ -51,7 +51,7 @@ export const config: WebdriverIO.Config = {
       browserName: 'firefox',
       acceptInsecureCerts: true,
       'moz:firefoxOptions': {
-        args: ['-headless', '--no-sandbox', '--disable-gpu']
+        args: ['--headless', '--no-sandbox', '--disable-gpu']
       }
     },
   ],
