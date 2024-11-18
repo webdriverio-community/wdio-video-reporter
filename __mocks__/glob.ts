@@ -1,13 +1,13 @@
 import { vi } from 'vitest'
 
-export let globMocks: { glob: Function };
+export let globMocks: { glob: Function }
 
 export const resetGlobMocks = () => {
-  globMocks = {
-    glob: vi.fn((_, cb) => cb(null, [])),
-  }
+    globMocks = {
+        glob: vi.fn((_, cb) => cb(null, [])),
+    }
 }
 
-resetGlobMocks();
+resetGlobMocks()
 
-export default (...args: any[]) => globMocks.glob(...args);
+export default (...args: any[]) => globMocks.glob(...args)

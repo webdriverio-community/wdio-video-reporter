@@ -3,18 +3,18 @@ import { vi } from 'vitest'
 export let writeMock: Function
 
 export const resetWriteMock = () => {
-  writeMock = vi.fn();
-};
+    writeMock = vi.fn()
+}
 
-resetWriteMock();
+resetWriteMock()
 
 export default class Reporter {
-  optionsSetInConstructor: any;
-  constructor(options: any) {
-    this.optionsSetInConstructor = options;
-  }
+    optionsSetInConstructor: any
+    constructor(options: any) {
+        this.optionsSetInConstructor = options
+    }
 
-  write(msg: any) {
-    writeMock(msg);
-  }
+    write(msg: any) {
+        writeMock(msg)
+    }
 }
