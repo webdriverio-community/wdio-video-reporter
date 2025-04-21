@@ -52,7 +52,7 @@
     "allure-commandline": "^2.32.0",
     "eslint": "^9.15.0",
     "npm-run-all2": "^7.0.1",
-    "release-it": "^18.0.0",
+    "release-it": "^19.0.1",
     "rollup": "^4.24.3",
     "rollup-plugin-delete": "^3.0.0",
     "ts-node": "^10.9.2",
