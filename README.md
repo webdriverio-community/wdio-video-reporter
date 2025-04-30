@@ -48,6 +48,7 @@ Adding the Allure reporter as well automatically updates the reports with videos
  reporters: [
     ['video', {
       saveAllVideos: false,       // If true, also saves videos for successful test cases
+      mergeVideos: false,         // If true, saved videos will be merged into one video per spec
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
     }],
     ['allure', {
@@ -90,6 +91,13 @@ Most users may want to set these configurations:
 ### `saveAllVideos`
 
 Set to true to save videos for passing tests.
+
+Type: `boolean`<br>
+Default: `false`
+
+### `mergeVideos`
+
+Set to true to merge all videos per spec.
 
 Type: `boolean`<br>
 Default: `false`
