@@ -44,7 +44,7 @@
     "@types/mocha": "^10.0.9",
     "@vitest/coverage-v8": "^2.1.2",
     "@wdio/cli": "^9.2.6",
-    "@wdio/eslint": "^0.0.5",
+    "@wdio/eslint": "^0.1.1",
     "@wdio/cucumber-framework": "^9.2.5",
     "@wdio/jasmine-framework": "^9.2.6",
     "@wdio/local-runner": "^9.2.6",
