@@ -21,6 +21,7 @@ export const config: WebdriverIO.Config = {
   reporters: [
     'spec',
     [video, {
+      mergeVideos: true, // If true, merges all videos into one
       saveAllVideos: false,       // If true, also saves videos for successful test cases
       videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
       videoRenderTimeout: 15000,      // milliseconds to wait for a video to finish rendering
