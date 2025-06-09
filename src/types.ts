@@ -33,6 +33,12 @@ export interface ReporterOptions extends Reporters.Options {
   saveAllVideos?: boolean
 
   /**
+   * Should merge all videos into one
+   * @default false
+   */
+  mergeVideos?: boolean
+
+  /**
    * @default 3
    */
   videoSlowdownMultiplier?: number

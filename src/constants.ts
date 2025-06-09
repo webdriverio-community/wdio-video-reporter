@@ -30,6 +30,9 @@ export const DEFAULT_OPTIONS = {
     // Should all videos be saved, or only from failed tests
     saveAllVideos: false,
 
+    // Should merge all videos into one
+    mergeVideos: false,
+
     // Video slowdown multiplier
     videoSlowdownMultiplier: 3,
 
