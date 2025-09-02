@@ -42,6 +42,8 @@ export default class VideoReporter extends WdioReporter {
     recordingPath?: string
     testNameStructure: string[] = []
     testName?: string
+    txtFilePath?: string
+    specFileName?: string
     isCucumberFramework = false
 
     /**
@@ -50,6 +52,9 @@ export default class VideoReporter extends WdioReporter {
     constructor (options: ReporterOptions) {
         super(options)
         this.options = Object.assign({}, DEFAULT_OPTIONS, options) as Required<ReporterOptions>
+        if (this.options.mergeVideos === true) {
+            this.options.saveAllVideos = true
+        }
 
         if (this.options.screenshotIntervalSecs) {
             this.options.screenshotIntervalSecs = Math.max(this.options.screenshotIntervalSecs, 0.5)
@@ -118,6 +123,16 @@ export default class VideoReporter extends WdioReporter {
         if (this.#usingAllure) {
             process.on('exit', () => this.onExit.call(this))
         }
+
+        const specName = path.basename(runner.specs[0], path.extname(runner.specs[0])) 
+      
+        const browserName = typeof runner.capabilities.browserName === 'string' ? runner.capabilities.browserName : 'unknown-browser';
+        this.specFileName = generateFilename(this.options.maxTestNameCharacters, browserName, specName)
+        const listFileName = `video_list-${this.specFileName}.txt`
+        this.txtFilePath = path.resolve(this.#outputDir, listFileName)
+        return fsp.writeFile(this.txtFilePath, '').then(() => {
+            this.#log(`Video list file created: ${this.txtFilePath}`)
+        })
     }
 
     onBeforeCommand () {
@@ -311,6 +326,12 @@ export default class VideoReporter extends WdioReporter {
         }
 
         Promise.all(this.videoPromises)
+            .then(() => {
+                if (this.options.mergeVideos && this.txtFilePath) {
+                    const mergedVideo = path.join(this.#outputDir, `${this.specFileName}.${this.options.videoFormat}`)
+                    return this.combineVideos(this.txtFilePath, mergedVideo)
+                }
+            })
             .then(wrapItUp)
             .catch((error) => {
                 this.#log(`onRunnerEnd promise resolution caught ${error}\n`)
@@ -408,6 +429,8 @@ export default class VideoReporter extends WdioReporter {
         const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
         this.videos.push(videoPath)
 
+        fsp.appendFile(this.txtFilePath || "video.txt", `file '${videoPath}'\n`)
+     
         // send event to nice-html-reporter
         // @ts-expect-error
         process.emit('test:video-capture', videoPath)
@@ -512,5 +535,53 @@ export default class VideoReporter extends WdioReporter {
 
     #log (...args: string[]) {
         this.write(`[${new Date().toISOString()}] ${args.join(' ')}\n`)
+    }
+
+    combineVideos(listPath: string, finalPath: string) {
+        const command = `"${ffmpegPath}"`
+        const args = [
+            '-f', 'concat',
+            '-safe', '0',
+            '-i', `"${listPath}"`,
+            '-c', 'copy',
+            `"${finalPath}"`
+        ]
+        this.#log(`Combining videos using ${listPath} into ${finalPath}`)
+        this.#log(`ffmpeg command: ${command} ${args.join(' ')}`)
+        return new Promise<void>((resolve) => {
+            const cp = spawn(`${command}`, args, {
+                stdio: 'ignore',
+                shell: true,
+                windowsHide: true,
+            })
+            cp.on('close', () => {
+                this.#log(`Final combined video created: ${finalPath}`)
+                this.deleteListedFiles(listPath).finally(() => resolve())
+            })
+        })
+    }
+
+    deleteListedFiles(listPath: string) {
+        return fsp.readFile(listPath, 'utf-8')
+            .then((lines) => {
+                const files = lines.split('\n').map(line => {
+                    const match = line.match(/file '(.+)'/)
+                    return match ? match[1] : null
+                }).filter(Boolean) as string[]
+
+                return Promise.all([
+                    ...files.map(file =>
+                        fsp.unlink(file)
+                            .then(() => this.#log(`Deleted merged video: ${file}`))
+                            .catch((e) => this.#log(`Failed to delete merged video: ${file}, error: ${e}`))
+                    ),
+                    fsp.unlink(listPath)
+                        .then(() => this.#log(`Deleted list file: ${listPath}`))
+                        .catch((e) => this.#log(`Failed to delete list file: ${listPath}, error: ${e}`))
+                ])
+            })
+            .catch((e) => {
+                this.#log(`Failed to process merged videos for deletion: ${e}`)
+            })
     }
 }
