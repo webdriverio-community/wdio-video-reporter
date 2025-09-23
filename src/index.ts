@@ -125,13 +125,8 @@ export default class VideoReporter extends WdioReporter {
             return
         }
 
-        const formatSettings = getVideoFormatSettings(this.options.videoFormat)
-        const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
-        if (!this.allureVideos.includes(videoPath)) {
-            this.allureVideos.push(videoPath)
-            this.#log(`Adding execution video attachment as ${videoPath}`)
-            this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
-        }
+        // Ensure video attachment happens regardless of disableWebdriverStepsReporting setting
+        this.#attachVideoToAllure()
     }
 
     /**
@@ -185,6 +180,8 @@ export default class VideoReporter extends WdioReporter {
 
         if (suite.type === 'scenario') {
             this.#setRecordingPath()
+            // Ensure video attachment happens for Allure in Cucumber scenarios too
+            this.#attachVideoToAllure()
         }
     }
 
@@ -224,6 +221,9 @@ export default class VideoReporter extends WdioReporter {
             this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
             this.#setRecordingPath()
         }
+
+        // Ensure video attachment happens for Allure, even when disableWebdriverStepsReporting is false
+        this.#attachVideoToAllure()
 
         if (this.options.screenshotIntervalSecs) {
             const instance = this
@@ -510,7 +510,22 @@ export default class VideoReporter extends WdioReporter {
         fs.mkdirSync(this.recordingPath, { recursive: true })
     }
 
+    #attachVideoToAllure () {
+        if (!this.#usingAllure || !this.testName || !this.#record) {
+            return
+        }
+
+        const formatSettings = getVideoFormatSettings(this.options.videoFormat)
+        const videoPath = getVideoPath(this.#outputDir, this.testName, formatSettings.fileExtension)
+        if (!this.allureVideos.includes(videoPath)) {
+            this.allureVideos.push(videoPath)
+            this.#log(`Adding execution video attachment as ${videoPath}`)
+            this.#allureReporter.addAttachment('Execution video', videoPath, formatSettings.contentType)
+        }
+    }
+
     #log (...args: string[]) {
         this.write(`[${new Date().toISOString()}] ${args.join(' ')}\n`)
     }
 }
+
