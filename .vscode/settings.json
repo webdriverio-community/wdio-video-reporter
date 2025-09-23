@@ -1,0 +1,14 @@
+{
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.validate.enable": false,
+  "typescript.suggest.enabled": false,
+  "files.exclude": {
+    "**/demo/**": false
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ]
+}
