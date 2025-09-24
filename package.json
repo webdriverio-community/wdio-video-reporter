@@ -26,7 +26,10 @@
     "test": "run-s test:*",
     "test:lint": "eslint .",
     "test:unit": "LC_ALL=en_US:en npx vitest --coverage --run",
-    "watch": "npm run build -- -w"
+    "watch": "npm run build -- -w",
+    "generate-allure-report": "allure generate demo/_results_/allure-raw -o allure-report --clean",
+    "open-allure-report": "allure open allure-report",
+    "serve-report": "npx http-server ./allure-report"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",

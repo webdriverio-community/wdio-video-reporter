@@ -89,7 +89,7 @@ export const config: WebdriverIO.Config = {
 
         console.log(
           '\n\nAllure report successfully generated at <project_root>/tests/_results_/allure-raw 🎉\n' +
-          'run `$ npx http-server ./allure-results` to visualize it.'
+          'run the serve-report or open-allure-report scripts to visualize it.'
         )
         resolve()
       })
