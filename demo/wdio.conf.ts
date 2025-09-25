@@ -9,8 +9,8 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 
 export const config: WebdriverIO.Config = {
   // Set up the browser window
-  before: function () {
-    browser.setWindowSize(1320, 768)
+  before: async function () {
+    await browser.setWindowSize(1320, 768)
   },
 
   // ===============
@@ -67,7 +67,7 @@ export const config: WebdriverIO.Config = {
   jasmineOpts: {
     defaultTimeoutInterval: 120000,
   },
-
+  injectGlobals: true,
   onComplete: () => {
     const reportError = new Error('Could not generate Allure report')
     const generation = allure([
