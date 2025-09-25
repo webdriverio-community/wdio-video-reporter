@@ -26,6 +26,7 @@
     "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
     "test": "run-s test:*",
     "test:lint": "eslint .",
+    "test:lint:fix": "eslint . --fix",
     "test:unit": "LC_ALL=en_US:en npx vitest --coverage --run",
     "watch": "npm run build -- -w",
     "generate-allure-report": "allure generate demo/_results_/allure-raw -o allure-report --clean",

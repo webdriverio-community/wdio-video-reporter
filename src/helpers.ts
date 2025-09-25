@@ -87,7 +87,6 @@ export function waitForVideosToBeWritten (videos: string[], abortTime: number, s
         return fileMap
     }, {} as Record<string, number>)
 
-    // eslint-disable-next-line no-constant-condition
     while ((Date.now() - start) <= abortTime) {
         sleepFn(100)
         const updatedSizes = videos.reduce((fileMap, filename) => {

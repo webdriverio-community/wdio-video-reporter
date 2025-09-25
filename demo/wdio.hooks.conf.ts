@@ -150,13 +150,41 @@ export const config: WebdriverIO.Config = {
    * Gets executed when all workers have shut down and the process is about to exit
    */
   onComplete: function(exitCode, config, capabilities, results) {
+
+      onComplete: () => {
+        const reportError = new Error('Could not generate Allure report')
+        const generation = allure([
+          'generate',
+          path.join(__dirname, '_results_', 'allure-raw'),
+          '--clean'
+        ])
+        return new Promise<void>((resolve, reject) => {
+          const generationTimeout = setTimeout(
+            () => reject(reportError),
+            5000)
+
+          generation.on('exit', function (exitCode) {
+            clearTimeout(generationTimeout)
+
+            if (exitCode !== 0) {
+              return reject(reportError)
+            }
+
+            console.log(
+              '\n\nAllure report successfully generated at <project_root>/tests/_results_/allure-raw 🎉\n' +
+              'run the serve-report or open-allure-report scripts to visualize it.'
+            )
+            resolve()
+          })
+        })
+
     console.log('=== WDIO Execution Complete ===')
-        console.log(`📁 Location: ${path.join(__dirname, '_results_hooks_', 'allure-report')}`)
+        console.log(`📁 Location: ${path.join(__dirname, '_results_', 'allure-report')}`)
         console.log('🎬 Videos should be attached to test cases in the report')
         console.log('\nTo view the report, run:')
-        console.log(`  allure open ${path.join(__dirname, '_results_hooks_', 'allure-report')}`)
+        console.log(`  allure open ${path.join(__dirname, '_results_', 'allure-report')}`)
         console.log('Or:')
-        console.log(`  npx http-server ${path.join(__dirname, '_results_hooks_', 'allure-report')}`)
+        console.log(`  npx http-server ${path.join(__dirname, '_results_', 'allure-report')}`)
         resolve()
   }
 }
