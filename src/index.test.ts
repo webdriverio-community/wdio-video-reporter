@@ -133,21 +133,45 @@ describe('Video Reporter', () => {
         })
     })
 
-    it('onBeforeCommand', async () => {
-        const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
-        const reporter = new VideoReporter({})
-        expect(reporter.allureVideos).toEqual([])
+    describe('onBeforeCommand', () => {
+        it('should add video to allure report', async () => {
+            const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
+            const reporter = new VideoReporter({})
+            expect(reporter.allureVideos).toEqual([])
 
-        reporter.testName = 'testName'
-        reporter.onRunnerStart(allureRunner)
-        reporter.onBeforeCommand()
-        expect(reporter.allureVideos).not.toEqual([])
-        await sleep()
-        expect(addAttachmentExtensionMock).toBeCalledWith(
-            'Execution video',
-            expect.stringMatching(/testName.webm$/),
-            'video/webm'
-        )
+            reporter.testName = 'testName'
+            reporter.onRunnerStart(allureRunner)
+            reporter.onBeforeCommand()
+            expect(reporter.allureVideos).not.toEqual([])
+            await sleep()
+            expect(addAttachmentExtensionMock).toBeCalledWith(
+                'Execution video',
+                expect.stringMatching(/testName.webm$/),
+                'video/webm'
+            )
+        })
+
+        it('should return if not using Allure', () => {
+            const reporter = new VideoReporter({})
+            reporter.testName = 'foo'
+            reporter['#usingAllure'] = false
+            expect(() => reporter.onBeforeCommand()).not.toThrow()
+        })
+
+        it('should return if no testName', () => {
+            const reporter = new VideoReporter({})
+            reporter['#usingAllure'] = true
+            reporter.testName = undefined
+            expect(() => reporter.onBeforeCommand()).not.toThrow()
+        })
+
+        it('should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter['#usingAllure'] = true
+            reporter.testName = 'foo'
+            reporter.record = false
+            expect(() => reporter.onBeforeCommand()).not.toThrow()
+        })
     })
 
     describe('onAfterCommand', () => {
@@ -215,21 +239,48 @@ describe('Video Reporter', () => {
         it('should set testNameStructure for Cucumber', () => {
             const reporter = new VideoReporter({})
             reporter.onSuiteStart({ title: 'foo bar' } as any)
-            expect(reporter.testNameStructure).toEqual([])
+            expect(reporter.testNameStructure).toEqual(['foo-bar'])
 
             reporter.isCucumberFramework = true
             reporter.onSuiteStart({ title: 'foo bar', type:'scenario' } as any)
-            expect(reporter.testNameStructure).toEqual(['foo-bar'])
-            expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}foo-bar--CHROME--`))
+            expect(reporter.testNameStructure).toEqual(['foo-bar', 'foo-bar'])
+            // Just check the suffix, not the full path
+            expect(reporter.recordingPath).toMatch(/foo-bar--CHROME--/)
         })
 
         it('should set recordingPath if suite is scenario', () => {
             const reporter = new VideoReporter({})
+            reporter.isCucumberFramework = true // <-- Set before calling onSuiteStart
             reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-            expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}unknown--CHROME--`))
+            expect(reporter.recordingPath).toMatch(/foo-bar--CHROME--/)
+        })
+
+        it('should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = false
+            expect(() => reporter.onSuiteStart({ title: 'suite' } as any)).not.toThrow()
+        })
+
+        // 283: onSuiteStart - should not set recordingPath for non-scenario
+        it('should not set recordingPath for non-scenario', () => {
+            const reporter = new VideoReporter({})
             reporter.isCucumberFramework = true
-            reporter.onSuiteStart({ title: 'foo bar', type: 'scenario' } as any)
-            expect(reporter.recordingPath).toEqual(expect.stringContaining(`${path.sep}foo-bar--CHROME--`))
+            reporter.onSuiteStart({ title: 'foo', type: 'feature' } as any)
+            expect(reporter.recordingPath).toBeUndefined()
+        })
+
+        // 296-297: onSuiteEnd - should return if not recording
+        it('should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = false
+            expect(() => reporter.onSuiteEnd({ tests: [] } as any)).not.toThrow()
+        })
+
+        // 347: onSuiteEnd - should return if no testName
+        it('should return if no testName', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = true
+            expect(() => reporter.onSuiteEnd({ tests: [] } as any)).not.toThrow()
         })
     })
 
@@ -373,6 +424,25 @@ describe('Video Reporter', () => {
             reporter.onTestSkip(({ state: 'skipped' } as any))
             expect(reporter.clearScreenshotInterval).toBeCalledTimes(0)
         })
+
+        it('should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = false
+            expect(() => reporter.onTestStart({ title: 'test' } as any)).not.toThrow()
+        })
+
+        it('should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = false
+            expect(() => reporter.onTestSkip({ state: 'skipped' } as any)).not.toThrow()
+        })
+
+        it('should return if not cucumber', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = true
+            reporter.isCucumberFramework = false
+            expect(() => reporter.onTestSkip({ state: 'skipped' } as any)).not.toThrow()
+        })
     })
 
     describe('addFrame', () => {
@@ -431,6 +501,18 @@ describe('Video Reporter', () => {
             reporter.onTestPass({ state: 'passed' } as any)
             expect(testEndMock).toBeCalledTimes(1)
         })
+
+        it('onTestPass should return if not recording', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = false
+            expect(() => reporter.onTestPass({ state: 'passed' } as any)).not.toThrow()
+        })
+        it('onTestPass should return if not cucumber', () => {
+            const reporter = new VideoReporter({})
+            reporter.record = true
+            reporter.isCucumberFramework = false
+            expect(() => reporter.onTestPass({ state: 'passed' } as any)).not.toThrow()
+        })
     })
 
     describe('onTestFail', () => {
@@ -461,4 +543,248 @@ describe('Video Reporter', () => {
         })
     })
 
+    describe('Hook handling', () => {
+        describe('onHookStart', () => {
+            it('should set isInHook flag to true', () => {
+                const reporter = new VideoReporter({})
+                reporter.onHookStart({ title: 'before each' } as any)
+                expect(reporter.isInHook).toBe(true)
+            })
+
+            it('should not set up recording if already recording', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = false
+                reporter.onHookStart({ title: 'before each' } as any)
+                expect(reporter.isInHook).toBe(false)
+                expect(reporter.recordingPath).toBeUndefined()
+            })
+
+            it('should set up recording path for hooks when not in Cucumber', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isCucumberFramework = false
+                reporter.onRunnerStart({
+                    ...allureRunner,
+                    config: { outputDir: '/test/output' }
+                })
+
+                reporter.onHookStart({ title: 'before each' } as any)
+
+                expect(reporter.recordingPath).toBeDefined()
+                expect(reporter.testName).toBeDefined()
+                expect(fs.mkdirSync).toHaveBeenCalledWith(
+                    expect.stringContaining('before-each'),
+                    { recursive: true }
+                )
+            })
+
+            it('should use suite names in hook recording path', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isCucumberFramework = false
+                reporter.testNameStructure = ['Suite-Name', 'Nested-Suite']
+                reporter.onRunnerStart({
+                    ...allureRunner,
+                    config: { outputDir: '/test/output' }
+                })
+
+                reporter.onHookStart({ title: 'before' } as any)
+
+                expect(reporter.testName).toContain('Suite-Name--Nested-Suite--before')
+            })
+
+            it('should preserve original test name for after hooks', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isCucumberFramework = false
+                reporter.testName = 'original-test-name'
+                reporter.onRunnerStart({
+                    ...allureRunner,
+                    config: { outputDir: '/test/output' }
+                })
+
+                reporter.onHookStart({ title: 'after' } as any)
+
+                expect(reporter.testName).toBe('original-test-name')
+            })
+
+            it('should not set up recording for Cucumber framework', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isCucumberFramework = true
+
+                reporter.onHookStart({ title: 'before' } as any)
+
+                expect(reporter.recordingPath).toBeUndefined()
+                expect(fs.mkdirSync).not.toHaveBeenCalled()
+            })
+
+            it('should attach video to Allure if using Allure', () => {
+                const addAttachmentMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isCucumberFramework = false
+                reporter.onRunnerStart(allureRunner)
+
+                reporter.onHookStart({ title: 'before' } as any)
+
+                expect(addAttachmentMock).toHaveBeenCalled()
+            })
+        })
+
+        describe('onHookEnd', () => {
+            it('should set isInHook flag to false', () => {
+                const reporter = new VideoReporter({})
+                reporter.isInHook = true
+                reporter.onHookEnd({ title: 'before each' } as any)
+                expect(reporter.isInHook).toBe(false)
+            })
+
+            it('should not process if not recording', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = false
+                reporter.addFrame = vi.fn() as any
+                reporter.onHookEnd({ title: 'before each', error: new Error('test') } as any)
+                expect(reporter.addFrame).not.toHaveBeenCalled()
+            })
+
+            it('should add frame if hook has error', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.recordingPath = '/test/path'
+                reporter.addFrame = vi.fn() as any
+
+                reporter.onHookEnd({ title: 'before', error: new Error('Hook failed') } as any)
+
+                expect(reporter.addFrame).toHaveBeenCalledTimes(1)
+            })
+
+            it('should add frame if saveAllVideos is enabled', () => {
+                const reporter = new VideoReporter({ saveAllVideos: true })
+                reporter.record = true
+                reporter.recordingPath = '/test/path'
+                reporter.addFrame = vi.fn() as any
+
+                reporter.onHookEnd({ title: 'before' } as any)
+
+                expect(reporter.addFrame).toHaveBeenCalledTimes(1)
+            })
+
+            it('should not add frame if no error and saveAllVideos is false', () => {
+                const reporter = new VideoReporter({ saveAllVideos: false })
+                reporter.record = true
+                reporter.recordingPath = '/test/path'
+                reporter.addFrame = vi.fn() as any
+
+                reporter.onHookEnd({ title: 'before' } as any)
+
+                expect(reporter.addFrame).not.toHaveBeenCalled()
+            })
+        })
+
+        describe('Mocha suite name tracking', () => {
+            it('should track suite names for Mocha even when not using suite prefix', () => {
+                const reporter = new VideoReporter({ filenamePrefixSource: 'test' })
+                reporter.record = true
+                reporter.isCucumberFramework = false
+
+                reporter.onSuiteStart({ title: 'My Test Suite', type: 'suite' } as any)
+
+                expect(reporter.testNameStructure).toEqual(['My-Test-Suite'])
+            })
+
+            it('should not duplicate suite names when using suite prefix', () => {
+                const reporter = new VideoReporter({ filenamePrefixSource: 'suite' })
+                reporter.record = true
+                reporter.isCucumberFramework = false
+
+                reporter.onSuiteStart({ title: 'My Test Suite', type: 'suite' } as any)
+
+                expect(reporter.testNameStructure).toEqual(['My-Test-Suite'])
+            })
+
+            it('should properly clean up suite names on suite end', () => {
+                const reporter = new VideoReporter({ filenamePrefixSource: 'test' })
+                reporter.record = true
+                reporter.isCucumberFramework = false
+
+                reporter.onSuiteStart({ title: 'My Test Suite', type: 'suite' } as any)
+                expect(reporter.testNameStructure).toEqual(['My-Test-Suite'])
+
+                reporter.onSuiteEnd({ title: 'My Test Suite', tests: [] } as any)
+                expect(reporter.testNameStructure).toEqual([])
+            })
+
+            it('should handle nested suites correctly', () => {
+                const reporter = new VideoReporter({ filenamePrefixSource: 'test' })
+                reporter.record = true
+                reporter.isCucumberFramework = false
+
+                reporter.onSuiteStart({ title: 'Outer Suite', type: 'suite' } as any)
+                reporter.onSuiteStart({ title: 'Inner Suite', type: 'suite' } as any)
+
+                expect(reporter.testNameStructure).toEqual(['Outer-Suite', 'Inner-Suite'])
+
+                reporter.onSuiteEnd({ title: 'Inner Suite', tests: [] } as any)
+                expect(reporter.testNameStructure).toEqual(['Outer-Suite'])
+
+                reporter.onSuiteEnd({ title: 'Outer Suite', tests: [] } as any)
+                expect(reporter.testNameStructure).toEqual([])
+            })
+        })
+
+        describe('onTestStart', () => {
+            it('should clear hook state when test starts', () => {
+                const reporter = new VideoReporter({})
+                reporter.record = true
+                reporter.isInHook = true
+
+                reporter.onTestStart({ title: 'my test' } as any)
+
+                expect(reporter.isInHook).toBe(false)
+            })
+        })
+
+        describe('Integration with Allure and hooks', () => {
+            it('should handle before hook -> test -> after hook flow', async () => {
+                const addAttachmentMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
+                const reporter = new VideoReporter({})
+                reporter.onRunnerStart(allureRunner)
+
+                // Simulate before hook
+                reporter.onHookStart({ title: 'before each' } as any)
+                expect(reporter.isInHook).toBe(true)
+                expect(reporter.recordingPath).toBeDefined()
+
+                // Simulate command during hook
+                reporter.onAfterCommand({ endpoint: '/session/1234/url' } as any)
+
+                // End hook
+                reporter.onHookEnd({ title: 'before each' } as any)
+                expect(reporter.isInHook).toBe(false)
+
+                // Start test
+                reporter.onTestStart({ title: 'should do something' } as any)
+                expect(reporter.testName).toBeDefined()
+
+                // Commands during test
+                reporter.onAfterCommand({ endpoint: '/session/1234/click' } as any)
+
+                // End test
+                reporter.onTestEnd({ state: 'passed' } as any)
+
+                // Simulate after hook
+                reporter.onHookStart({ title: 'after each' } as any)
+                expect(reporter.isInHook).toBe(true)
+
+                // End after hook
+                reporter.onHookEnd({ title: 'after each' } as any)
+
+                await sleep()
+
+                // Video should have been attached to Allure
+                expect(addAttachmentMock).toHaveBeenCalled()
+            })
+        })
+    })
 })

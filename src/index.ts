@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 
-import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
+import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats, type HookStats } from '@wdio/reporter'
 import { browser } from '@wdio/globals'
 import type { Options } from '@wdio/types'
 import type { BrowsingContextCaptureScreenshotParameters } from 'node_modules/webdriver/build/bidi/remoteTypes.js'
@@ -43,6 +43,8 @@ export default class VideoReporter extends WdioReporter {
     testNameStructure: string[] = []
     testName?: string
     isCucumberFramework = false
+    hookName?: string
+    isInHook = false
 
     /**
    * Set reporter options
@@ -130,6 +132,75 @@ export default class VideoReporter extends WdioReporter {
     }
 
     /**
+   * Handle hook start - set up recording context for before/after hooks
+   */
+    onHookStart (hook: HookStats) {
+        if (!this.#record) {
+            return
+        }
+
+        this.isInHook = true
+        this.hookName = hook.title
+
+        // If we don't have a recording path yet (e.g., in before/beforeEach hooks),
+        // set up a temporary one based on the hook and suite information
+        if (!this.recordingPath && !this.isCucumberFramework) {
+            // Create a test name structure for hooks
+            const hookPrefix = hook.title || 'hook'
+            const suiteNames = this.testNameStructure.length > 0
+                ? this.testNameStructure.join('--')
+                : 'suite'
+
+            // Generate a unique name for this hook execution
+            const fullName = `${suiteNames}--${hookPrefix}`
+
+            let browserName = 'browser'
+            const capabilities = getCurrentCapabilities(browser)
+
+            const deviceName = capabilities['appium:deviceName']
+            if (capabilities.browserName) {
+                browserName = capabilities.browserName.toUpperCase()
+            } else if (deviceName && capabilities.platformName) {
+                browserName = `${deviceName.toUpperCase()}-${capabilities.platformName.toUpperCase()}`
+            }
+
+            // Store the original testName if it exists (for after hooks)
+            const originalTestName = this.testName
+
+            // Set a temporary test name for the hook
+            this.testName = generateFilename(this.options.maxTestNameCharacters, browserName, fullName)
+            this.frameNr = 0
+            this.recordingPath = path.resolve(this.#outputDir ?? this.options.outputDir, this.options.rawPath, this.testName)
+
+            fs.mkdirSync(this.recordingPath, { recursive: true })
+
+            // Restore original test name if we had one (important for after hooks)
+            if (originalTestName) {
+                this.testName = originalTestName
+            }
+
+            // Attach to Allure if using it
+            this.#attachVideoToAllure()
+        }
+    }
+
+    /**
+   * Handle hook end
+   */
+    onHookEnd (hook: HookStats) {
+        if (!this.#record) {
+            return
+        }
+
+        this.isInHook = false
+
+        // Add a frame if the hook had any failures or if saveAllVideos is enabled
+        if ((hook.error || this.options.saveAllVideos) && this.recordingPath) {
+            this.addFrame()
+        }
+    }
+
+    /**
    * Save screenshot or add not available image movie stills
    */
     onAfterCommand (commandArgs: AfterCommandArgs) {
@@ -174,11 +245,23 @@ export default class VideoReporter extends WdioReporter {
             return
         }
 
-        if ((this.isCucumberFramework && suite.type === 'scenario') || this.options.filenamePrefixSource === 'suite') {
+        // Track suite names based on framework and configuration
+        if (this.isCucumberFramework) {
+            // For Cucumber, only track when it's a scenario or using suite prefix
+            if (suite.type === 'scenario' || this.options.filenamePrefixSource === 'suite') {
+                this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+            }
+        } else if (this.options.filenamePrefixSource === 'suite') {
+            // For non-Cucumber with suite prefix, always track
+            this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
+        } else if (!this.isCucumberFramework && suite.type !== 'scenario' && suite.title) {
+            // For Mocha with test prefix, track suite names for hook context
+            // but not for scenario types (which shouldn't occur in Mocha anyway)
             this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
         }
 
-        if (suite.type === 'scenario') {
+        // Only set recording path for Cucumber scenarios
+        if (suite.type === 'scenario' && this.isCucumberFramework) {
             this.#setRecordingPath()
             // Ensure video attachment happens for Allure in Cucumber scenarios too
             this.#attachVideoToAllure()
@@ -195,12 +278,24 @@ export default class VideoReporter extends WdioReporter {
 
         this.#extendAllureReport()
 
+        // Determine if we should pop from testNameStructure
+        const shouldPop = this.isCucumberFramework
+            ? (suite.type === 'scenario' || this.options.filenamePrefixSource === 'suite')
+            : (this.options.filenamePrefixSource === 'suite' || (suite.type !== 'scenario' && this.testNameStructure.length > 0))
+
         if (!this.testName) {
+            // Pop suite name even when no test name exists (for proper cleanup)
+            if (shouldPop) {
+                this.testNameStructure.pop()
+            }
             return
         }
-        if (this.isCucumberFramework || this.options.filenamePrefixSource === 'suite') {
+
+        // Clean up naming structure
+        if (shouldPop) {
             this.testNameStructure.pop()
         }
+
         const hasFailedTests = suite.tests.filter(test => test.state === 'failed').length > 0
         const allTestsPassed = suite.tests.filter(test => test.state === 'failed').length === 0
 
@@ -216,6 +311,9 @@ export default class VideoReporter extends WdioReporter {
         if (!this.#record) {
             return
         }
+
+        // Clear hook state when test starts
+        this.isInHook = false
 
         if (!this.isCucumberFramework && this.options.filenamePrefixSource === 'test') {
             this.testNameStructure.push(suite.title.replace(/ /g, '-').replace(/-{2,}/g, '-'))
@@ -528,4 +626,3 @@ export default class VideoReporter extends WdioReporter {
         this.write(`[${new Date().toISOString()}] ${args.join(' ')}\n`)
     }
 }
-
