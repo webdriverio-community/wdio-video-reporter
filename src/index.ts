@@ -110,7 +110,7 @@ export default class VideoReporter extends WdioReporter {
 
         this.isCucumberFramework = runnerInstance.framework === 'cucumber'
         const allureConfig = runnerInstance.reporters?.find((r) => r === 'allure' || (r as [string, WebdriverIO.ReporterOption])[0] === 'allure') as [string, WebdriverIO.ReporterOption]
-        if (allureConfig && allureConfig[1] && allureConfig[1].outputDir) {
+        if (allureConfig?.[1]?.outputDir) {
             this.#allureOutputDir = path.resolve(allureConfig[1].outputDir)
         }
         this.#usingAllure = Boolean(allureConfig)
@@ -137,7 +137,7 @@ export default class VideoReporter extends WdioReporter {
             return
         }
 
-        const command = commandArgs.endpoint && commandArgs.endpoint.match(/[^/]+$/)
+        const command = commandArgs.endpoint?.match(/[^/]+$/)
         const commandName = command ? command[0] : 'undefined'
 
         /**
