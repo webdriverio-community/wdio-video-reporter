@@ -2,7 +2,7 @@ import os from 'node:os'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
 
 import WdioReporter, { type RunnerStats, type AfterCommandArgs, type SuiteStats, type TestStats } from '@wdio/reporter'
 import { browser } from '@wdio/globals'
@@ -36,6 +36,7 @@ export default class VideoReporter extends WdioReporter {
     screenshotPromises: Promise<void>[] = []
     videos: string[] = []
     videoPromises: Promise<unknown>[] = []
+    processList: Set<ChildProcess> = new Set()
     frameNr = 0
     intervalScreenshot?: NodeJS.Timeout
     allureVideos: string[] = []
@@ -298,6 +299,7 @@ export default class VideoReporter extends WdioReporter {
 
         const abortTimer = setTimeout(() => {
             this.#log('videoRenderTimeout triggered before ffmpeg had a chance to wrap up')
+            this.processList.forEach((cp) => cp.kill())
             wrapItUp()
         }, this.options.videoRenderTimeout)
 
@@ -465,7 +467,9 @@ export default class VideoReporter extends WdioReporter {
                     shell: true,
                     windowsHide: true,
                 })
+                this.processList.add(cp)
                 cp.on('close', () => {
+                    this.processList.delete(cp)
                     this.#log(`Generated video: "${videoPath}" (${Date.now() - start}ms)`)
                     return resolve()
                 })
