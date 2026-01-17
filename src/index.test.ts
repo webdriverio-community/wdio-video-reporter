@@ -141,13 +141,9 @@ describe('Video Reporter', () => {
         reporter.testName = 'testName'
         reporter.onRunnerStart(allureRunner)
         reporter.onBeforeCommand()
-        expect(reporter.allureVideos).not.toEqual([])
+        expect(reporter.allureVideos).toEqual([])
         await sleep()
-        expect(addAttachmentExtensionMock).toBeCalledWith(
-            'Execution video',
-            expect.stringMatching(/testName.webm$/),
-            'video/webm'
-        )
+        expect(addAttachmentExtensionMock).not.toBeCalled()
     })
 
     describe('onAfterCommand', () => {
@@ -347,6 +343,42 @@ describe('Video Reporter', () => {
             reporter.generateVideo = vi.fn() as any
             reporter.onTestEnd({ state: 'failed' } as any)
             expect(reporter.generateVideo).toBeCalledTimes(1)
+        })
+    })
+
+    describe('generateVideo', () => {
+        it('should attach video to Allure when using Allure reporter', async () => {
+            const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
+            const reporter = new VideoReporter({})
+            reporter.testName = 'testName'
+            reporter.recordingPath = '/foo/bar'
+            reporter.onRunnerStart(allureRunner)
+            reporter.generateVideo()
+            await sleep()
+            expect(addAttachmentExtensionMock).toBeCalledWith(
+                'Execution video',
+                expect.stringMatching(/testName.webm$/),
+                'video/webm'
+            )
+        })
+
+        it('should not attach video to Allure when not using Allure reporter', async () => {
+            const addAttachmentExtensionMock = vi.spyOn(AllureReporterExtension.prototype, 'addAttachment')
+            addAttachmentExtensionMock.mockClear()
+            const reporter = new VideoReporter({})
+            reporter.testName = 'testName'
+            reporter.recordingPath = '/foo/bar'
+            reporter.onRunnerStart({
+                ...allureRunner,
+                instanceOptions: {
+                    1234: {
+                        reporters: ['spec']
+                    }
+                }
+            })
+            reporter.generateVideo()
+            await sleep()
+            expect(addAttachmentExtensionMock).not.toBeCalled()
         })
     })
 
