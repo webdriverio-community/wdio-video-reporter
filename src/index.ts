@@ -48,7 +48,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Set reporter options
    */
-    constructor (options: ReporterOptions) {
+    constructor(options: ReporterOptions) {
         super(options)
         this.options = Object.assign({}, DEFAULT_OPTIONS, options) as Required<ReporterOptions>
 
@@ -60,34 +60,34 @@ export default class VideoReporter extends WdioReporter {
     /**
    * overwrite `isSynchronised` method
    */
-    get isSynchronised () {
+    get isSynchronised() {
         return this.#isDone
     }
 
     /**
    * set getter to verify values for testing purposes
    */
-    get outputDir () { return this.#outputDir }
+    get outputDir() { return this.#outputDir }
 
     /**
    * set getter to verify values for testing purposes
    */
-    get allureOutputDir () { return this.#allureOutputDir }
+    get allureOutputDir() { return this.#allureOutputDir }
 
     /**
    * set getter to verify values for testing purposes
    */
-    get record () { return this.#record }
+    get record() { return this.#record }
 
     /**
    * set setter to verify values for testing purposes
    */
-    set record (value) { this.#record = value }
+    set record(value) { this.#record = value }
 
     /**
    * Set wdio config options
    */
-    onRunnerStart (runner: RunnerStats) {
+    onRunnerStart(runner: RunnerStats) {
         if (this.options.onlyRecordLastFailure && runner.retry !== runner.config.specFileRetries) {
             this.#record = false
             return
@@ -121,7 +121,7 @@ export default class VideoReporter extends WdioReporter {
         }
     }
 
-    onBeforeCommand () {
+    onBeforeCommand() {
         if (!this.#usingAllure || !this.testName || !this.#record) {
             return
         }
@@ -133,7 +133,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Save screenshot or add not available image movie stills
    */
-    onAfterCommand (commandArgs: AfterCommandArgs) {
+    onAfterCommand(commandArgs: AfterCommandArgs) {
         if (!this.#record) {
             return
         }
@@ -147,12 +147,12 @@ export default class VideoReporter extends WdioReporter {
         if (
             (
                 !this.options.recordAllActions &&
-        (
-            this.options.excludedActions.includes(commandName) ||
-          !this.options.snapshotCommands.includes(commandName)
-        )
+                (
+                    this.options.excludedActions.includes(commandName) ||
+                    !this.options.snapshotCommands.includes(commandName)
+                )
             ) ||
-      !this.recordingPath
+            !this.recordingPath
         ) {
             return false
         }
@@ -170,7 +170,7 @@ export default class VideoReporter extends WdioReporter {
    * 1. create the feature
    * 2. add the scenario to the feature
    */
-    onSuiteStart (suite: SuiteStats) {
+    onSuiteStart(suite: SuiteStats) {
         if (!this.#record) {
             return
         }
@@ -189,7 +189,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Clear suite name from naming structure
    */
-    onSuiteEnd (suite: SuiteStats) {
+    onSuiteEnd(suite: SuiteStats) {
         if (!this.#record) {
             return
         }
@@ -213,7 +213,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Setup filename based on test name and prepare storage directory
    */
-    onTestStart (suite: TestStats) {
+    onTestStart(suite: TestStats) {
         if (!this.#record) {
             return
         }
@@ -271,7 +271,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Add attachment to Allure if applicable and start to generate the video (Not applicable to Cucumber)
    */
-    onTestEnd (test: TestStats) {
+    onTestEnd(test: TestStats) {
         if (!this.#record) {
             return
         }
@@ -291,7 +291,7 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Wait for all ffmpeg-processes to finish
    */
-    onRunnerEnd () {
+    onRunnerEnd() {
         if (!this.#record) {
             this.#isDone = true
             return
@@ -323,12 +323,12 @@ export default class VideoReporter extends WdioReporter {
     /**
    * Finalize allure report
    */
-    onExit () {
+    onExit() {
         const allureOutputDir = this.#allureOutputDir
         if (!allureOutputDir) {
             return
         }
-        const abortTime =  this.options.videoRenderTimeout
+        const abortTime = this.options.videoRenderTimeout
 
         const startTime = new Date().getTime()
 
@@ -345,7 +345,7 @@ export default class VideoReporter extends WdioReporter {
             .filter(line => line.endsWith(video.fileExtension))
             .map(filename => path.resolve(allureOutputDir, filename))
             .filter(allureFile => fs.statSync(allureFile).size < 1024)
-        // Dont parse other browsers videos since they may not be ready
+            // Dont parse other browsers videos since they may not be ready
             .filter(allureFile => this.videos.includes(fs.readFileSync(allureFile).toString()))
             .forEach((filePath) => {
                 const videoFilePath = fs.readFileSync(filePath).toString() // The contents of the placeholder file is the video path
@@ -363,8 +363,8 @@ export default class VideoReporter extends WdioReporter {
         const frame = this.frameNr++
         const filePath = path.resolve(this.recordingPath, frame.toString().padStart(SCREENSHOT_PADDING_WITH, '0') + '.png')
 
-        if (browser.isBidi) {
-            browser.getWindowHandle().then((contextId:string) => {
+        if (browser.isBidi && !browser.isMultiremote) {
+            browser.getWindowHandle().then((contextId: string) => {
                 const contextCaptureScreenshotParameters: BrowsingContextCaptureScreenshotParameters = {
                     context: contextId,
                     origin: 'viewport',
@@ -384,7 +384,7 @@ export default class VideoReporter extends WdioReporter {
 
         } else {
             this.screenshotPromises.push(
-                browser.saveScreenshot(filePath)
+                (browser.isMultiremote ? browser[browser.instances[0]] : browser).saveScreenshot(filePath)
                     .then(() => this.#log(`- Screenshot (frame: ${frame})`))
                     .catch((error: Error) => {
                         fs.writeFileSync(filePath, notAvailableImage, 'base64')
@@ -394,14 +394,14 @@ export default class VideoReporter extends WdioReporter {
         }
     }
 
-    clearScreenshotInterval () {
+    clearScreenshotInterval() {
         if (this.intervalScreenshot) {
             clearInterval(this.intervalScreenshot)
             this.intervalScreenshot = undefined
         }
     }
 
-    generateVideo () {
+    generateVideo() {
         if (!this.testName) {
             return
         }
@@ -479,7 +479,7 @@ export default class VideoReporter extends WdioReporter {
         return promise
     }
 
-    #extendAllureReport () {
+    #extendAllureReport() {
         if (!this.#usingAllure) {
             return
         }
@@ -493,7 +493,7 @@ export default class VideoReporter extends WdioReporter {
         }
     }
 
-    #setRecordingPath () {
+    #setRecordingPath() {
         const fullName = this.testNameStructure.slice(1)
             .reduce((cur, acc) => cur + '--' + acc, this.testNameStructure[0] || 'unknown')
 
@@ -514,7 +514,7 @@ export default class VideoReporter extends WdioReporter {
         fs.mkdirSync(this.recordingPath, { recursive: true })
     }
 
-    #attachVideoToAllure () {
+    #attachVideoToAllure() {
         if (!this.#usingAllure || !this.testName || !this.#record) {
             return
         }
@@ -528,7 +528,7 @@ export default class VideoReporter extends WdioReporter {
         }
     }
 
-    #log (...args: string[]) {
+    #log(...args: string[]) {
         this.write(`[${new Date().toISOString()}] ${args.join(' ')}\n`)
     }
 }
