@@ -13,7 +13,7 @@ export function sleep(ms: number) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(1024)), 0, 0, ms)
 }
 
-export function generateFilename (maxTestNameCharacters: number, browserName: string, fullName: string) {
+export function generateFilename(maxTestNameCharacters: number, browserName: string, fullName: string) {
     const date = new Date()
     const msec = ('000' + date.getMilliseconds()).slice(-3)
     const timestamp = date.toLocaleString('iso', TO_LOCAL_STRING_OPTIONS)
@@ -27,18 +27,18 @@ export function generateFilename (maxTestNameCharacters: number, browserName: st
         .replace(/[/\\?%*:'|"<>()]/g, '')
 
     if (filename.length > maxTestNameCharacters) {
-        const truncLength = (maxTestNameCharacters - 2)/2
+        const truncLength = (maxTestNameCharacters - 2) / 2
         filename = filename.slice(0, truncLength) + '--' + filename.slice(-truncLength)
     }
 
     return filename
 }
 
-export function getVideoPath (outputDir: string, testName: string, ext: VideoFileExtension) {
+export function getVideoPath(outputDir: string, testName: string, ext: VideoFileExtension) {
     return path.resolve(outputDir, `${testName}.${ext}`)
 }
 
-export function getVideoFormatSettings (videoFormat: VideoFileExtension) {
+export function getVideoFormatSettings(videoFormat: VideoFileExtension) {
     return SUPPORTED_VIDEO_FORMATS[videoFormat]
 }
 
@@ -48,7 +48,7 @@ export function getVideoFormatSettings (videoFormat: VideoFileExtension) {
  * @param abortTime  timeout in ms
  * @param sleepFn    sleep function (for testing purposes)
  */
-export function waitForVideosToExist (videos: string[], abortTime: number, sleepFn = sleep) {
+export function waitForVideosToExist(videos: string[], abortTime: number, sleepFn = sleep) {
     const waitTime = 100
     const allExist = videos
         .map(v => fs.existsSync(v))
@@ -80,7 +80,7 @@ export function waitForVideosToExist (videos: string[], abortTime: number, sleep
  * @param abortTime timeout in ms
  * @param sleepFn   sleep function (for testing purposes)
  */
-export function waitForVideosToBeWritten (videos: string[], abortTime: number, sleepFn = sleep) {
+export function waitForVideosToBeWritten(videos: string[], abortTime: number, sleepFn = sleep) {
     const start = Date.now()
     let currentSizes = videos.reduce((fileMap, filename) => {
         fileMap[filename] = fs.statSync(filename).size
@@ -105,15 +105,20 @@ export function waitForVideosToBeWritten (videos: string[], abortTime: number, s
     return false
 }
 
-export function getCurrentCapabilities (browser: WebdriverIO.Browser) {
-    const mrCaps = browser.capabilities as Capabilities.RequestedMultiremoteCapabilities
-    const w3cCaps = browser.capabilities as Capabilities.W3CCapabilities
-    const currentCapabilities: WebdriverIO.Capabilities = browser.isMultiremote
-        ? mrCaps[Object.keys(browser.capabilities)[0]].capabilities as WebdriverIO.Capabilities
-        : w3cCaps.alwaysMatch || browser.capabilities as WebdriverIO.Capabilities
-    return currentCapabilities
+export function getCurrentCapabilities(browser: WebdriverIO.Browser) {
+    const caps = browser.capabilities
+    if (browser.isMultiremote) {
+        if (caps && typeof caps === 'object') {
+            const keys = Object.keys(caps)
+            if (keys.length > 0) {
+                return caps[keys[0]]?.capabilities ?? caps[keys[0]] ?? {}
+            }
+        }
+        return {}
+    }
+    return caps?.alwaysMatch || caps || {}
 }
 
-export function pad (frameNumber: number) {
+export function pad(frameNumber: number) {
     return frameNumber.toString().padStart(SCREENSHOT_PADDING_WITH, '0')
 }
