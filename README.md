@@ -1,6 +1,13 @@
 WebdriverIO Video Reporter [![test](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml/badge.svg)](https://github.com/webdriverio-community/wdio-video-reporter/actions/workflows/test.yaml) [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 ===================
 
+> [!IMPORTANT]
+> **This repository serves WebdriverIO v9 only.** It gets only maintenance fixes for v9.
+>
+> For WebdriverIO v10, this reporter moves into the main WebdriverIO repository as
+> [`@wdio/video-reporter`](https://github.com/webdriverio/webdriverio/tree/main/packages/wdio-video-reporter).
+> Report v10 issues in [webdriverio/webdriverio](https://github.com/webdriverio/webdriverio/issues).
+
 <p align="center">
   <img width="100%" src="https://media.giphy.com/media/7Fgle7bHGrxR3zY6Gw/giphy.gif" />
 </p>
